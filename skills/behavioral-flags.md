@@ -1,9 +1,8 @@
-# behavioral_flags.md — Wren Standing Behavioral Patterns
+# behavioral_flags.md — Standing Behavioral Patterns
 
-> Wren reads this at the start of every sweep for Channel 11
+> Read this file at the start of every sweep for Channel 11
 > (behavioral cross-check).
-> Wren writes to this file when behavioral-pattern-analysis.md confirms a
-> new pattern.
+> This file is written and maintained by the agent — not by humans.
 > Humans may review but should not overwrite confirmed entries.
 > Last updated: 2026-06-09
 
@@ -11,15 +10,15 @@
 
 ## How Channel 11 uses this file
 
-At the end of every sweep, after Channels 1–10 have run, Wren:
-1. Reads all Active flags in this file
-2. Cross-references every signal found this sweep against each flag's known
+At the end of every sweep, after Channels 1–10 have run:
+1. Read all Active flags in this file
+2. Cross-reference every signal found this sweep against each flag's known
    playbook
-3. If a new signal matches a standing pattern → escalates to High Priority
-   and notes "consistent with standing flag"
-4. If a new signal contradicts a standing pattern → notes "possible strategy
-   shift" and escalates
-5. If a new pattern is emerging across 2+ new signals → creates a new entry
+3. If a new signal matches a standing pattern → escalate to High Priority
+   and note "consistent with standing flag"
+4. If a new signal contradicts a standing pattern → note "possible strategy
+   shift" and escalate
+5. If a new pattern is emerging across 2+ new signals → create a new entry
    below as Watching
 
 ---
@@ -35,10 +34,9 @@ At the end of every sweep, after Channels 1–10 have run, Wren:
 
 **Sourcing note — important:**
 The LinkedIn layer of this flag (RFP win posts, skip-the-RFP coaching posts)
-was originally identified via manual human research conducted before Wren's
-Apify integration (pre-2026-06-09). Those LinkedIn findings are valid and
-confirmed by the human researcher, but they are **human-sourced**, not
-Wren-automated. Label them accordingly:
+was originally identified via manual human research (pre-2026-06-09). Those
+LinkedIn findings are valid and confirmed by the human researcher, but they
+are **human-sourced**, not automated. Label them accordingly:
 `Source: eCIO LinkedIn — human-sourced [date]`
 
 When Apify subsequently confirms the same LinkedIn posts or finds new ones
@@ -62,13 +60,13 @@ skip-the-RFP coaching content. Both actively promoted simultaneously.
 
 **Primary sources:**
 - getecio.com/submit-an-investment-management-request-for-proposal-rfp ·
-  retrieved Jun 2026 · Confirmed (Wren web search)
+  retrieved Jun 2026 · Confirmed (web search)
 - getecio.com/resources/should-you-issue-an-rfp-to-select-your-next-investment-advisor ·
-  retrieved Jun 2026 · Confirmed (Wren web search)
+  retrieved Jun 2026 · Confirmed (web search)
 - getecio.com/resource-center/rfp-resources · retrieved Jun 2026 ·
-  Confirmed (Wren web search)
+  Confirmed (web search)
 - SAM.gov search — "eCIO investment advisory" — zero results ·
-  retrieved Jun 5, 2026 · Confirmed (Wren web search)
+  retrieved Jun 5, 2026 · Confirmed (web search)
 - eCIO LinkedIn — RFP win posts + skip-the-RFP coaching posts ·
   human-sourced pre-2026-06-09 · Confirmed (human researcher)
 
@@ -104,7 +102,7 @@ skip-the-RFP coaching content. Both actively promoted simultaneously.
 **Pattern type:** Market-shaping (consolidate-to-the-largest-provider)
 
 **Sourcing note:**
-All FLAG-002 sources are Wren web search confirmed. No LinkedIn dependency.
+All FLAG-002 sources confirmed via web search. No LinkedIn dependency.
 
 **The pattern — two coordinated pieces:**
 1. April 7, 2026 press release introduces "OCIO 2.0" — service framed as
@@ -121,9 +119,9 @@ All FLAG-002 sources are Wren web search confirmed. No LinkedIn dependency.
 
 **Primary sources:**
 - privatebank.bankofamerica.com/articles/should-nonprofits-consolidate-ocio-providers.html ·
-  retrieved 2026-06-06 · Confirmed (Wren web search)
+  retrieved 2026-06-06 · Confirmed (web search)
 - newsroom.bankofamerica.com — "OCIO 2.0" release · Apr 7, 2026 ·
-  retrieved 2026-06-06 · Confirmed (Wren web search)
+  retrieved 2026-06-06 · Confirmed (web search)
 
 **What to check every sweep:**
 - New "consolidation" / "single OCIO" content, or OCIO 2.0 framed as a
@@ -177,7 +175,7 @@ None yet.
 
 ---
 
-## Instructions to Wren
+## Instructions
 - Read this file at the start of every sweep before running Channel 11
 - After Channel 11 runs: update "New iterations logged" for any active flag
   that fired this sweep
