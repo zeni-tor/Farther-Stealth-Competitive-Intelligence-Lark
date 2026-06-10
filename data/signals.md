@@ -4,6 +4,7 @@
 > (signal cross-check).
 > Lark writes to this file when a signal pattern is confirmed, refined, or retired.
 > Humans may review but should not overwrite confirmed entries.
+> Last updated: 2026-06-09
 
 ---
 
