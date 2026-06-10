@@ -184,7 +184,7 @@ Add these CSS rules to the report template for Lark:
 ```css
 .tag-score3 { background: var(--alert-red); color: #f5f4ef; }
 .tag-score2 { background: var(--amber); color: #f5f4ef; }
-.tag-score1 { background: var(--wren); color: #f5f4ef; }
+.tag-score1 { background: #3d6b4f; color: #f5f4ef; }
 ```
 
 ---
