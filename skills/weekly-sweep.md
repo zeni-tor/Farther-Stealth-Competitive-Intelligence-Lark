@@ -8,16 +8,28 @@
 
 ## The model
 
-Every HubSpot contact in `data/contacts.md` does not get visited.
-8 signal channels get run across the full contact list.
+Lark does not visit every contact.
+8 signal channels run across the active cohort loaded from HubSpot via MCP.
 When a signal fires on a contact, that contact's profile lights up.
 If no profile exists yet, create one from `profiles/_template.md`.
 If nothing fires on a channel, one line: "No activity detected."
 
 The report reflects what actually changed in the pipeline this week —
-not a status update on what 50 organizations are generally up to.
+not a status update on what organizations are generally up to.
 
 A quiet week is short. That is correct.
+
+---
+
+## Phase 1 — Test cohort rules (active now)
+
+- Cohort: 100–500 contacts loaded from HubSpot via MCP
+- Signal: SIG-001 (New CFO/Finance Director) only — Channel 1 only
+- Purpose: validate signal quality, matching, write-back before full rollout
+- Do not run Channels 2–8 until Phase 1 is validated
+- Selection criteria for cohort: orgs with known AUM above $5M preferred ·
+  orgs with recent 990 activity · any segment team already has conviction on
+- Do not run against full 65K until Phase 1 complete
 
 ---
 
@@ -27,14 +39,14 @@ Web search is radar — broad, fast, free. Always runs first.
 Apify is the telescope — narrow, deep, paid. Only fires when radar
 surfaces a LinkedIn URL worth verifying.
 
-**Before any Apify call:** read `data/apify-config.md` for credit balance,
-tier thresholds, and call syntax. Never scrape proactively.
+**Before any Apify call:** check credit balance and call syntax.
+Never scrape proactively.
 
 **LinkedIn URL decision tree:**
 ```
 LinkedIn URL surfaces in search results
          ↓
-Is it from a High Priority channel (1, 2, 3, 5)?
+Is it from a High Priority channel (1, 2, 3)?
          ↓ Yes                    ↓ No
    Always scrape          Is it the ONLY source
    via Apify              confirming this signal?
@@ -47,7 +59,7 @@ Is it from a High Priority channel (1, 2, 3, 5)?
 
 ## Compound scoring — apply after all channels run
 
-After Channels 1–8 have completed, score each contact that fired at
+After all active channels complete, score each contact that fired at
 least one signal. Read `data/signals.md` for full scoring reference.
 
 ```
@@ -56,19 +68,39 @@ Score 2 → 1 High + 1 Medium, or 2+ Medium signals
 Score 1 → Single signal, any tier
 ```
 
-Score-3 contacts are the highest priority output. Flag prominently in
-both Slack and HTML report. Always include a recommended outreach angle.
+Score-3 contacts are the highest priority output. Flag prominently.
+Always include a recommended outreach angle.
+
+---
+
+## HubSpot write-back (after scoring)
+
+After scoring, write results back to HubSpot via MCP.
+Read `data/hubspot-properties.md` before any write.
+MCP key: [PENDING] — when available, confirm single-record write works
+before running a full cohort sweep.
+
+Write per matched contact:
+- lark_signal_type · lark_signal_date · lark_signal_source
+- lark_compound_score · lark_score_updated · lark_signals_active
+- lark_action_window · lark_contact_status → Signal Detected
+- lark_aum_estimated · lark_aum_source (if ProPublica data found)
+- lark_incumbent_advisor (if found)
+- lark_last_sweep · lark_notes
+
+Write on quiet contacts (no signal fired):
+- lark_last_sweep only
 
 ---
 
 ## The 8 signal channels
 
-Run these queries every sweep against every contact in `data/contacts.md`.
-Each channel maps to one or more named signals in `data/signals.md`.
+Channels 2–8 are defined but inactive during Phase 1.
+Only Channel 1 runs until the test cohort is validated.
 
 ---
 
-### Channel 1 — Leadership changes
+### Channel 1 — Leadership changes · ACTIVE (Phase 1)
 **Signals:** SIG-001 (New CFO) · SIG-002 (New CEO/ED) · SIG-005 (New IC chair)
 **Purpose:** Has a key decision-maker changed at this org?
 
@@ -77,204 +109,96 @@ Each channel maps to one or more named signals in `data/signals.md`.
 - `"[org name]" "new" "executive director" OR "CEO" OR "president" 2026`
 - `"[org name]" "joins" OR "named" OR "appointed" 2026 site:linkedin.com`
 - `"[org name]" "investment committee" "chair" OR "chairman" 2026`
-- `"[org name]" leadership OR "staff announcement" OR "team" 2026`
+- `"[org name]" leadership OR "staff announcement" 2026`
+
+**Phase 1 focus — SIG-001 only:**
+During Phase 1 run CFO/finance director queries only. Do not score
+SIG-002 or SIG-005 hits until Phase 1 is validated and signals expanded.
 
 **Fires when:** Named leadership change at a contact org confirmed or
-strongly inferred from a primary source
-**LinkedIn rule:** High Priority channel → always scrape via Apify when
-LinkedIn URL surfaces · extract: name, title, previous org, start date,
-post text, engagement, top comments
+strongly inferred from a primary source.
+**LinkedIn rule:** High Priority → always scrape via Apify when LinkedIn
+URL surfaces. Extract: name, title, previous org, start date, post text.
 **Small org note:** Small nonprofits announce hires almost exclusively on
-LinkedIn — do not discount LinkedIn-only signals. A post with low engagement
-from a $3M community foundation is still a High Priority signal.
+LinkedIn — never discount LinkedIn-only signals.
 **Profile action:** Update Leadership section · Update compound score ·
-Flag action window in open threads
+Flag action window in open threads.
 
 ---
 
-### Channel 2 — Financial events
-**Signals:** SIG-003 (Campaign close) · SIG-004 (Large gift) · SIG-006 (Campaign launch) · SIG-007 (AUM threshold)
-**Purpose:** Has a significant financial event occurred that changes this org's investment needs?
-
-**Queries — run for each contact org:**
-- `"[org name]" "campaign" "raised" OR "goal" OR "complete" OR "close" 2026`
-- `"[org name]" "gift" OR "donation" OR "bequest" OR "pledge" "$" 2026`
-- `"[org name]" "capital campaign" OR "endowment campaign" 2026`
-- `"[org name]" "endowment" "million" 2026`
-- `"[org name]" "largest gift" OR "transformative gift" OR "legacy gift" 2026`
-
-**Fires when:** Confirmed or announced financial event that materially
-changes the org's asset base or investment trajectory
-**LinkedIn rule:** High Priority channel → always scrape via Apify when
-LinkedIn URL surfaces
-**Gift threshold guidance:**
-- $500K–$1M: Score-1 standalone · combine with other signals
-- $1M–$5M: Score-1 standalone · High signal for most pipeline contacts
-- $5M+: Score-3 regardless of other signals — move immediately
-**Sources:** Org website · local news · Chronicle of Philanthropy ·
-Inside Philanthropy · press releases · ProPublica 990 (for AUM threshold)
-**Profile action:** Update Financial profile · Recalculate compound score
+### Channel 2 — Financial events · INACTIVE (Phase 2)
+**Signals:** SIG-003 · SIG-004 · SIG-006 · SIG-007
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 3 — Governance events
-**Signals:** SIG-005 (New IC chair) · SIG-008 (Merger/restructuring)
-**Purpose:** Has a governance reset occurred that creates an advisor review moment?
-
-**Queries — run for each contact org:**
-- `"[org name]" "merger" OR "merge" OR "consolidation" OR "affiliation" 2026`
-- `"[org name]" "board" "restructur" OR "new chair" OR "reorganiz" 2026`
-- `"[org name]" "investment committee" "new" OR "restructur" 2026`
-- `"[org name]" "strategic plan" OR "new direction" OR "transformation" 2026`
-
-**Fires when:** Confirmed governance change that creates a fiduciary review
-moment or removes incumbent advisor entrenchment
-**LinkedIn rule:** High Priority for merger signals → always scrape via Apify
-· Medium for board changes → scrape only if sole source
-**Merger note:** Two boards + two investment committees = political pressure
-to reset the advisor relationship. Move immediately when merger confirmed.
-**Profile action:** Update Leadership section · Flag for compound scoring
+### Channel 3 — Governance events · INACTIVE (Phase 2)
+**Signals:** SIG-005 · SIG-008
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 4 — Strategic signals
-**Signals:** SIG-009 (New strategic plan) · SIG-010 (First-time endowment)
-**Purpose:** Has the org published a plan or announcement that signals financial intent?
-
-**Queries — run for each contact org:**
-- `"[org name]" "strategic plan" 2026`
-- `"[org name]" "endowment" "establish" OR "launch" OR "first" OR "new" 2026`
-- `"[org name]" "annual report" 2026`
-- `"[org name]" "financial sustainability" OR "long-term" OR "permanent fund" 2026`
-
-**Fires when:** Strategic plan with explicit endowment growth language, OR
-confirmed first-time endowment establishment
-**Watch for:** Language like "grow endowment to $X by [year]" or "build a
-permanent endowment" — passive plans without investment language do not fire
-**LinkedIn rule:** Medium Priority → scrape only if sole source
-**First-time endowment note:** No incumbent to displace — highest conversion
-potential in the pipeline. Move immediately.
-**Profile action:** Note in What Lark knows · Flag for soft outreach
+### Channel 4 — Strategic signals · INACTIVE (Phase 2)
+**Signals:** SIG-009 · SIG-010
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 5 — LinkedIn activity
-**Signals:** All signal types — LinkedIn-specific sweep
-**Purpose:** Surface announcements, wins, and leadership changes that appear
-exclusively on LinkedIn and are not indexed by general web search yet.
-
-**Queries — run for each contact org:**
-- `site:linkedin.com "[org name]" 2026`
-- `site:linkedin.com "[org name]" "new" "director" OR "CFO" OR "executive" 2026`
-- `site:linkedin.com "[org name]" "gift" OR "campaign" OR "endowment" 2026`
-- `site:linkedin.com "[org name]" "strategic" OR "plan" OR "announce" 2026`
-
-**Fires when:** Any signal-relevant post surfaces for a contact org
-**LinkedIn rule:** High Priority channel → apply radar/telescope decision
-tree to every LinkedIn URL that surfaces. For small orgs, LinkedIn is
-often the primary announcement channel — always scrape when signal-relevant.
-**Apify extraction targets:**
-- Full post text + date
-- Author name and title
-- Engagement metrics (reactions, comments, shares)
-- Top 3–5 comments
-- Company page recent posts (last 5)
-**Profile action:** Classify signal type · update compound score ·
-label source as Apify-verified
+### Channel 5 — LinkedIn activity · INACTIVE (Phase 2)
+**All signal types — LinkedIn sweep.**
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 6 — Conference presence
-**Signals:** Compound amplifier for SIG-001 and SIG-002
-**Purpose:** Is a contact org presenting, attending, or mentioned at a
-sector conference — and does it create an outreach timing window?
-
-**Read `data/conferences.md` before running this channel.**
-Only run queries for conferences in their active monitoring window.
-
-**Queries — run for each contact org during monitoring windows:**
-- `"[conference name]" "[org name]" speaker OR presenter OR panelist [year]`
-- `"[conference name]" "[org name]" attending OR registration [year]`
-- `site:linkedin.com "[org name]" "[conference name]" [year]`
-
-**Regional query framework (for contacts outside major metros):**
-- `"[state] nonprofit" conference 2026 "[org name]"`
-- `AFP "[chapter]" conference 2026 "[org name]"`
-- `"[state] council of nonprofits" annual 2026 "[org name]"`
-
-**Fires when:** Contact org confirmed presenting or attending a Tier A or
-regional conference during the monitoring window
-**Conference + leadership signal = compound:** A new ED presenting at a
-sector conference within 6 months of appointment → Score-2 minimum
-**Farther presence note:** If Farther is attending the same conference
-(check `data/conferences.md` Farther presence table) → flag for warm
-outreach angle: "We'll both be at [event] — would love to connect."
-**LinkedIn rule:** Medium Priority → scrape only if sole source
-**Profile action:** Log conference presence · apply compound scoring ·
-flag outreach timing window
+### Channel 6 — Conference presence · INACTIVE (Phase 2)
+**Read `data/conferences.md` before running.**
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 7 — 990 and regulatory signals
-**Signals:** SIG-007 (AUM threshold) · SIG-010 (First-time endowment)
-**Purpose:** What does the most recent 990 reveal about this org's financial
-position that may not be visible in public announcements?
-
-**Run for contacts where 990 has not been pulled this quarter, or where
-an AUM threshold event is suspected.**
-
-**Queries:**
-- ProPublica Nonprofit Explorer: search by org name or EIN
-- Candid / GuideStar: EIN lookup for Schedule D (endowment funds)
-- `"[org name]" 990 endowment [year]`
-
-**What to extract from 990:**
-- Schedule D Part V: endowment fund beginning/end of year balance
-- Schedule D footnotes: named investment advisor (if disclosed)
-- Part IX: total expenses — signals org size and complexity
-- Part X: total assets — proxy for investable assets if endowment not broken out
-- Revenue trend: year-over-year growth signals capacity change
-
-**Fires when:**
-- Endowment crosses a threshold ($5M · $10M · $25M · $50M)
-- Endowment appears on Schedule D for the first time
-- Named advisor changes between tax years
-**990 lag note:** Data is 12–18 months old. Always state the tax year.
-Never present 990 AUM as current — use as confirmation layer.
-**LinkedIn rule:** Low Priority → log URL, do not scrape
-**Profile action:** Update Financial profile · Update AUM · Note tax year ·
-Flag threshold crossed if applicable
+### Channel 7 — 990 and regulatory signals · INACTIVE (Phase 2)
+**Signals:** SIG-007 · SIG-010
+**Activate after Phase 1 validation.**
 
 ---
 
-### Channel 8 — Signal cross-check
-**Signals:** All — compound scoring and pattern detection
-**Purpose:** Do any signals fired this sweep stack on the same contact?
-Does a new pattern emerge across multiple contacts?
+### Channel 8 — Signal cross-check · ACTIVE (Phase 1, limited)
+**Purpose:** Score contacts that fired in Channel 1. Detect patterns.
 
-**Action:** After Channels 1–7 have run:
-1. Read `data/signals.md` — all Active signals
-2. For each contact that fired at least one signal:
-   - Count signals by tier (High / Medium / Contextual)
-   - Calculate compound score (1 / 2 / 3)
-   - Write score to the contact's profile
-   - Flag recommended action and window
-3. Look across the full contact list:
-   - Are 2+ contacts showing the same signal type this week?
-     → Note as a sector trend in the report
-   - Is a contact showing a signal that contradicts a prior Speculative
-     finding? → Upgrade or drop the prior finding
-4. Flag Score-3 contacts prominently — these drive the Slack summary
+**Action — Phase 1:**
+1. Read `data/signals.md`
+2. For each contact that fired SIG-001:
+   - Score is automatically Score-1 (single signal)
+   - Write score to profile and HubSpot
+   - Flag action window: 60–90 days from signal date
+3. Look across contacts:
+   - Are multiple orgs showing new CFO hires this week?
+   - Note as a sector trend in the report if 3+ contacts show same signal
 
-**New pattern rule:** If a signal type fires on 3+ contacts in the same
-sweep → log as a pipeline-wide observation in the report. Example:
-"Three Hawaii community foundations announced new EDs this sweep —
-possible sector-wide leadership transition moment."
+**Always log:** contacts swept · signals processed · score breakdown ·
+HubSpot write-back status · Apify calls made
 
-**LinkedIn rule:** High Priority → always scrape via Apify when a LinkedIn
-URL surfaces and is relevant to compound scoring
-**Always log:** total signals processed · High / Medium / Contextual /
-Discarded counts · Score-3 contacts · Apify calls made · credits used
+---
+
+## Enrichment (matched contacts only)
+
+Run after a signal fires and org is confirmed matched to HubSpot record.
+Never run on unmatched orgs or on the full contact list.
+
+```
+Step 1 · ProPublica API (free · every match)
+  → search by org name or EIN
+  → extract: total assets, revenue, endowment, NTEE code, filing year
+  → write to: lark_aum_estimated, lark_aum_source, lark_propublica_ein
+
+Step 2 · Google Drive 990s (high-score only · via MCP)
+  → open only for Score-2 or Score-3 contacts
+  → extract: Schedule D endowment, incumbent advisor, spending policy
+
+Step 3 · Web fetch (gap fill)
+  → org website: leadership page, news, strategic plan
+  → fill remaining gaps in the profile
+```
 
 ---
 
@@ -283,27 +207,37 @@ Discarded counts · Score-3 contacts · Apify calls made · credits used
 ### If signals fire:
 - Report only contacts where something actually happened
 - One finding card per signal (use `skills/alert-writer.md` format)
-- Load the relevant profile, update it, note it in the report
 - Score-3 contacts first — always
-- Label all Apify-sourced LinkedIn data:
+- Label Apify-sourced LinkedIn data:
   `Source: [org] LinkedIn — [post date] — retrieved via Apify [date]`
 
 ### If no signals fire on a channel:
-- One line only: `Channel [N] — [name]: No activity detected this sweep.`
-- Do not fabricate findings to fill the report
+- One line: `Channel [N] — [name]: No activity detected this sweep.`
+- Do not fabricate findings
 
-### If Apify credits are exhausted:
-- Note in report: `LinkedIn verification unavailable this sweep —
-  Apify credits exhausted. [N] LinkedIn URLs logged for manual review.`
-- List the unverified URLs in a gap box at the end of the report
+### If HubSpot MCP key is pending:
+- Complete the sweep and produce the HTML report normally
+- Note at top of report: `HubSpot write-back pending — MCP key not yet
+  configured. Findings ready to write when key is available.`
+- List all write-back actions that would have been taken
 
-### Report structure:
+### If Apify credits are low:
+- Note in report: `LinkedIn verification unavailable — Apify credits low.
+  [N] LinkedIn URLs logged for manual review.`
+- List unverified URLs in a gap box
+
+---
+
+## Report structure
+
 ```
-🪦 Lark · Weekly Brief · [DATE]
+Lark · Weekly Brief · [DATE]
 
-CONTACTS SWEPT: [N] · SIGNALS FIRED: [N]
-HIGH: [N] · MEDIUM: [N] · CONTEXTUAL: [N] · DISCARDED: [N]
-SCORE-3 CONTACTS: [N] · APIFY CALLS: [N] · CREDITS USED: ~$[X]
+COHORT: [N] contacts swept · PHASE: [1 / 2]
+SIGNALS PROCESSED: [N] · HIGH: [N] · MEDIUM: [N] · CONTEXTUAL: [N] · DISCARDED: [N]
+SCORE-3: [N] · SCORE-2: [N] · SCORE-1: [N]
+HUBSPOT WRITE-BACK: [Complete / Pending — MCP key not configured]
+APIFY CALLS: [N] · CREDITS USED: ~$[X]
 
 SCORE-3 — [Org name] — [signals] — Move immediately
 [Finding cards]
@@ -315,31 +249,27 @@ SCORE-1 — [Org name] — [signal] — Soft touch
 [Finding cards]
 
 CHANNELS WITH NO ACTIVITY: [list]
-LINKEDIN URLS LOGGED BUT NOT SCRAPED: [list if any]
+HUBSPOT WRITE-BACK LOG: [list of records written / pending]
 PROFILES UPDATED: [list]
-PROFILES CREATED: [list — new contacts encountered]
+PROFILES CREATED: [list]
 Next sweep: [date]
 ```
 
 ---
 
 ## Coverage gaps — note when applicable
-- LinkedIn Ad Library: sponsored content not accessible via Apify standard
-  actors — requires manual check · never fabricate ad data
-- Apify credits exhausted: LinkedIn URLs logged but not scraped — note as
-  gap, list URLs for manual review
-- IRS 990 lag: 12–18 months behind real time — always state tax year
-- Board meeting minutes: not always public — note when relevant
-- Gated content: partially inaccessible — note as gap, do not fabricate
+- HubSpot MCP key pending: write-back staged, not executed
+- LinkedIn Ad Library: not accessible via Apify standard actors
+- Apify credits exhausted: LinkedIn URLs logged, not scraped
+- IRS 990 lag: 12–18 months behind — always state tax year
+- Board meeting minutes: not always public
+- Gated content: partially inaccessible — never fabricate
 
 ---
 
 ## What this is not
-- Not a status report on what 50 orgs are generally doing
-- Not "I checked the Aloha Community Foundation website and nothing changed"
-- Not padding with low-signal observations to make the report look full
+- Not a status report on what organizations are generally doing
+- Not padding with low-signal observations to fill the report
 - Not a check-in. An early warning system.
 - Not proactive LinkedIn scraping — Apify fires on demand only
-
-If nothing fired this week, the report is short. That is a good outcome.
-A quiet week is intelligence too.
+- Not geography-specific — Lark is a national agent

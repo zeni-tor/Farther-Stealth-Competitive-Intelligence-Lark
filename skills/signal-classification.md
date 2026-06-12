@@ -1,54 +1,74 @@
-# signal-classification.md
+# signal-classification.md — Lark · Signal Triage
 
-Triage every raw signal before output. Three questions:
+Triage every raw signal before output. Four questions:
+
+---
 
 ## 1. Relevant?
 Discard if none apply:
-- Mentions any of the 50 monitored competitors by name or brand
-- Relates to nonprofit investment advisory, endowments, OCIO, or RFP activity
-- Involves personnel, content, clients, or filings from any monitored firm
+- Mentions a contact org from the active HubSpot cohort by name or domain
+- Relates to nonprofit leadership change, financial event, governance change,
+  or strategic event at a contact org
+- Involves a person named in the contact org's HubSpot record
 
 If uncertain → flag `RELEVANCE: Uncertain`, pass through with note.
 
-## 2. Signal type?
-`RFP` · `Client` · `Content` · `LinkedIn` · `ADV` · `Behavioral` · `Campaign`
+---
 
-If spans multiple → classify by primary action, note secondary.
-Campaign vs. Content: a single published piece is `Content`. Two or more
-surfaces running a shared nonprofit theme within 60 days is `Campaign`.
+## 2. Signal type?
+Match to one of the 10 named signals in `data/signals.md`:
+
+`SIG-001` New CFO / Finance Director
+`SIG-002` New CEO / Executive Director
+`SIG-003` Capital campaign close
+`SIG-004` Large gift or bequest
+`SIG-005` New investment committee chair
+`SIG-006` Capital campaign launch
+`SIG-007` AUM threshold crossed
+`SIG-008` Merger or restructuring
+`SIG-009` New strategic plan
+`SIG-010` First-time endowment
+
+If spans multiple → classify by primary signal, note secondary.
+
+---
 
 ## 3. Priority?
 
 **High** — any of:
-- Named client win announced
-- New gated asset published (always flag for behavioral-pattern-analysis)
-- Content coaching nonprofits to skip/reframe RFP process
-- New RFP response or public RFP issued to any monitored firm found
-- New hire or departure at director level+
-- ADV shows 20%+ change in charitable org client count
-- Coordinated campaign detected: 2+ surfaces, shared nonprofit theme,
-  within 60 days (always flag for behavioral-pattern-analysis)
+- Named leadership change (CFO, CEO, ED, IC chair)
+- Capital campaign close or large gift confirmed
+- Merger or restructuring announced
+- First-time endowment confirmed
 
-**Medium** — any of (Tier 1 only):
-- New article, guide, webinar, market commentary
-- LinkedIn post with 50+ reactions or 10+ comments
-- Minor ADV change
+**Medium** — any of:
+- Capital campaign launch announced
+- AUM threshold crossed (990 data)
+- Board or committee restructuring (not leadership change)
+- Strategic plan with explicit endowment growth target
 
-**Low** — relevant but doesn't meet above thresholds
+**Contextual** — any of:
+- New strategic plan without explicit investment language
+- Conference presence (activate in Phase 2)
 
-**Discard** — not relevant
+**Discard** — not relevant to any contact in the active cohort
+
+---
 
 ## 4. LinkedIn URL present?
 
 If the signal source includes a LinkedIn URL, apply the Apify decision:
 
 ```
-Is this signal High Priority AND from channel 1, 2, 3, 6, 8, or 11?
-         ↓ Yes                        ↓ No
-  Flag: APIFY_SCRAPE: YES      Is LinkedIn the ONLY source?
-  Read apify-config.md               ↓ Yes        ↓ No
-  before proceeding             APIFY_SCRAPE: YES  APIFY_SCRAPE: NO
-                                                   Log URL only
+LinkedIn URL surfaces in search results
+         ↓
+Is the signal High Priority?
+         ↓ Yes                    ↓ No
+   Always scrape          Is it the ONLY source
+   via Apify              confirming this signal?
+                               ↓ Yes        ↓ No
+                          Scrape it     Log URL only
+                          via Apify     Mark Speculative
 ```
 
 Add to output:
@@ -58,19 +78,23 @@ APIFY_REASON: [why scrape was triggered or skipped]
 LINKEDIN_URL: [URL if present]
 ```
 
+---
+
 ## Output format
+
 ```
-SIGNAL TYPE: [type]
-PRIORITY: [High/Medium/Low/Discard]
+SIGNAL TYPE: [SIG-00X]
+PRIORITY: [High/Medium/Contextual/Discard]
 DISCARD REASON: [if discarded]
+ORG NAME: [as found in source]
+HUBSPOT MATCH: [Confirmed / Pending fuzzy match / No match]
 SOURCE: [URL or reference]
 DATE: [ISO date]
 APIFY_SCRAPE: [YES/NO — only if LinkedIn URL present]
 APIFY_REASON: [rationale]
 LINKEDIN_URL: [URL if present]
-NOTES: [ambiguity or behavioral flag]
+NOTES: [ambiguity or confidence flags]
 ```
 
 Stop here if Discard. Pass to alert-writer.md otherwise.
-Gated content → always also flag for behavioral-pattern-analysis.md.
-APIFY_SCRAPE: YES → read data/apify-config.md before calling Apify.
+High signal + LinkedIn URL → scrape via Apify before writing findings.
