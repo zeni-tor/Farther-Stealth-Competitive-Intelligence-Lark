@@ -20,10 +20,12 @@ EIN: [for 990 lookups]
 
 ---
 
-## HubSpot contact
+## HubSpot record
+HUBSPOT COMPANY ID: [ID — used for MCP write-back]
 CONTACT NAME:
 TITLE:
 EMAIL:
+DOMAIN: [company domain — primary matching surface]
 HUBSPOT STATUS: [Cold / Warming / Active]
 LAST OUTREACH DATE:
 LAST OUTREACH BY:
@@ -35,11 +37,12 @@ NOTES FROM HUBSPOT:
 EST. AUM: [$ figure · date · source]
 AUM SOURCE: [990 · self-reported · estimated · unknown]
 990 TAX YEAR: [most recent year available]
+PROPUBLICA EIN: [EIN returned by ProPublica lookup]
 ENDOWMENT STATUS: [Established · First-time · None known · Unknown]
 CAPITAL CAMPAIGN: [None · Active · Recently closed · Unknown]
 CURRENT ADVISOR: [Firm name · Confirmed / Inferred / Unknown]
 ADVISOR SINCE: [year · source]
-MINIMUM AUM THRESHOLD MET: [Yes — $5M+ · Yes — $10M+ · Yes — $25M+ · No · Unknown]
+AUM THRESHOLD MET: [Yes — $5M+ · Yes — $10M+ · Yes — $25M+ · No · Unknown]
 
 ---
 
@@ -60,10 +63,10 @@ CURRENT SCORE: [0 / 1 / 2 / 3]
 SCORE LAST UPDATED: [ISO date]
 SIGNALS CONTRIBUTING:
 - [SIG-00X — signal name — Confirmed/Inferred/Speculative]
-- [SIG-00X — signal name — Confirmed/Inferred/Speculative]
 RECOMMENDED ACTION: [Senior outreach immediately · Researched outreach
                      within 2 weeks · Soft touch · Monitor only]
 ACTION WINDOW: [specific date range or "open now"]
+HUBSPOT WRITE STATUS: [Written · Pending — MCP key not configured]
 
 ---
 
@@ -86,7 +89,6 @@ ACTION WINDOW: [specific date range or "open now"]
 ## What Lark currently knows
 > Confirmed facts only. Label each: Confirmed / Inferred / Speculative.
 > Do not add general knowledge — only findings from actual sweeps.
-> Do not add assumptions about org intent or advisor satisfaction.
 
 [No sweep completed yet]
 
@@ -95,8 +97,9 @@ ACTION WINDOW: [specific date range or "open now"]
 ## Open threads
 > Things to check on next sweep of this contact.
 
-- [ ] Pull most recent 990 from ProPublica / Candid
+- [ ] Pull most recent 990 from ProPublica
 - [ ] Confirm current investment advisor (990 Schedule D or press)
 - [ ] Check LinkedIn for leadership changes
 - [ ] Check org website for campaign or strategic plan announcements
 - [ ] Confirm AUM and endowment status
+- [ ] Confirm HubSpot Company ID for MCP write-back
