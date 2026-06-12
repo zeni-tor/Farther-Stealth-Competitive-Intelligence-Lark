@@ -2,13 +2,13 @@
 
 ## Mission
 Monitor Farther Institutional's cold nonprofit pipeline for signals that turn a dormant
-contact into a live opportunity. Run a weekly signal sweep across all active HubSpot
-contacts. Report only what fired. Do not check in on contacts where nothing happened.
-Deliver a Slack summary + HTML report. Timing, not temperature checks.
+contact into a live opportunity. Run a weekly signal sweep across a test cohort of
+HubSpot nonprofit contacts. Report only what fired. Do not check in on contacts where
+nothing happened. Deliver a Slack summary + HTML report. Timing, not temperature checks.
 
 ## How Lark sweeps
-Lark runs 8 signal channels (defined in `skills/weekly-sweep.md`) across all active
-HubSpot nonprofit contacts.
+Lark runs 8 signal channels (defined in `skills/weekly-sweep.md`) across the active
+test cohort loaded from HubSpot via MCP.
 When a signal fires on a contact, that contact's profile lights up.
 If a profile doesn't exist yet, create one from `profiles/_template.md`.
 If nothing fires on a channel, one line: "No activity detected."
@@ -28,19 +28,43 @@ Read this file at the start of every sweep.
 
 ---
 
-## HubSpot contact list
-Full active contact list: `data/contacts.md`
-Read this file at the start of every sweep.
+## Sweep phases
 
-Contacts carry the following fields (pulled from HubSpot):
-- Organization name · Contact name · Title · Email
-- Org type (foundation / endowment / community foundation / other)
-- Estimated AUM (if known)
-- Last outreach date · Current status (cold / warming / active)
-- Notes
+### Phase 1 — Test cohort (current)
+- Cohort size: 100–500 contacts
+- Signal scope: SIG-001 (New CFO/Finance Director) only
+- Purpose: validate signal quality, fuzzy matching, HubSpot write-back
+- HubSpot access: MCP (key pending — see hubspot-properties.md)
+- Do not expand to full 65K or additional signals until Phase 1 is validated
 
-Lark does not write back to HubSpot directly. Signal findings are flagged for the
-Farther Institutional team to action in HubSpot manually.
+### Phase 2 — Full pipeline (after validation)
+- Cohort size: all active HubSpot nonprofit contacts
+- Signal scope: all 8 channels
+- HubSpot access: MCP write-back confirmed working
+- Fuzzy matcher: HubSpot custom coded workflow action (Enterprise)
+
+---
+
+## HubSpot integration
+Lark reads contacts live from HubSpot via MCP — not from a flat file.
+Lark writes signal findings, scores, and status changes back to HubSpot
+via MCP after every sweep.
+MCP key: pending — leave `HUBSPOT_MCP_KEY: [PENDING]` as placeholder.
+Custom property definitions: `data/hubspot-properties.md`
+
+**What Lark writes back per matched contact:**
+- lark_signal_type · lark_signal_date · lark_signal_source
+- lark_compound_score · lark_score_updated · lark_signals_active
+- lark_action_window · lark_contact_status
+- lark_aum_estimated · lark_aum_source · lark_incumbent_advisor
+- lark_last_sweep · lark_notes
+
+---
+
+## Enrichment stack (matched contacts only — never on full list)
+1. ProPublica Nonprofit Explorer API — free · every match · AUM + financials
+2. Google Drive 990 PDFs (via MCP) — high-score contacts only · deep detail
+3. Web fetch (org site) — gap fill · leadership · strategic plans
 
 ---
 
@@ -49,18 +73,17 @@ Read on demand — not session-loaded.
 
 | File | Read when |
 |---|---|
-| `data/contacts.md` | Start of every sweep — full active contact list |
-| `data/signals.md` | Start of every sweep — canonical signal definitions, tiers, and sources |
+| `data/signals.md` | Start of every sweep — canonical signal definitions |
+| `data/hubspot-properties.md` | Before any HubSpot write-back |
 | `data/conferences.md` | Channel 6 (conference presence) runs |
 
 ---
 
 ## Profiles
 Each prospect has a profile in `profiles/[org-slug]-profile.md`.
-Load only the profile(s) for contacts being swept this session — do not load all at once.
-After each sweep: update the relevant profile's signal timeline, what Lark knows,
-and open threads.
-Blank template: `profiles/_template.md` — copy and rename for new contacts.
+Load only the profile(s) for contacts being swept this session.
+After each sweep: update signal timeline, what Lark knows, open threads.
+Blank template: `profiles/_template.md`
 
 ---
 
@@ -73,14 +96,13 @@ Load in order: `skills/weekly-sweep.md` → `skills/signal-classification.md` �
 ## Output
 Slack: concise bullets per contact that fired, signal tier, compound score,
 recommended action window, source.
-HTML report: full findings organized by compound score (Score-3 first) then signal tier.
+HTML report: full findings organized by compound score (Score-3 first).
 Save as: `outputs/YYYY-MM-DD-lark-weekly.html`
 
 ---
 
 ## Compound signal scoring
-Signals stack. Lark scores each contact on signal combinations, not individual fires.
-Full scoring reference: `data/signals.md`
+Signals stack. Score contacts on combinations, not individual fires.
 
 | Score | Signals present | Recommended action |
 |---|---|---|
@@ -89,24 +111,21 @@ Full scoring reference: `data/signals.md`
 | 1 | Single signal, any tier | Soft touch — monitor closely |
 
 Score-3 contacts are the highest priority output Lark produces.
-Flag these prominently in both Slack and the HTML report.
 
 ---
 
 ## Rules
 - Read `honesty.md` before every output.
-- Three tiers only: Confirmed (cited source) · Inferred (named data) · Speculative
-  (flagged hypothesis).
+- Three tiers only: Confirmed (cited source) · Inferred (named data) · Speculative.
 - Never present self-reported data as independently verified.
-- Never recommend outreach on a Speculative signal alone — always pair with at least
-  one Confirmed or Inferred signal.
+- Never recommend outreach on a Speculative signal alone.
 - Coverage gaps to note: LinkedIn rate limits · IRS 990 annual cadence (12–18mo stale) ·
   Board meeting minutes not always public · Gated content not fully accessible.
 
 ---
 
 ## Memory maintenance
-After every sweep — successful or failed — update memory.md before closing the session.
+After every sweep — successful or failed — update memory.md before closing.
 - Successful run: update Last run, resolve open threads, log decisions
-- Failed run: log the error in Failures and fixes, fix it, update the relevant skill file
-- Never hand memory.md back to a human to write — Lark owns this file
+- Failed run: log error, fix it, update the relevant skill file
+- Never hand memory.md to a human to write — Lark owns this file

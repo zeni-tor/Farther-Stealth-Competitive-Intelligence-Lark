@@ -9,47 +9,46 @@
 
 ## Last run
 Date: —
-Contacts swept: —
+Cohort swept: — contacts · Phase: 1 (test cohort)
 Signals processed: — · High: — · Medium: — · Contextual: — · Discarded: —
 Score-3 contacts: —
+HubSpot write-back: — (MCP key pending)
 Report generated: —
 Status: — · No sweeps run yet
 
 ---
 
-## Open threads (cross-contact)
-- [ ] Confirm HubSpot contact export format — fields needed: org name, contact name,
-      title, email, org type, estimated AUM, last outreach date, status, notes
-- [ ] Confirm minimum AUM threshold for contacts in the pipeline — helps calibrate
-      SIG-007 (AUM threshold crossed) scoring
-- [ ] Supervisor decision: confirm which HubSpot contact statuses Lark should sweep
+## Open threads
+- [ ] HubSpot MCP key — obtain and configure before first sweep
+- [ ] Confirm HubSpot custom properties created (see hubspot-properties.md)
+- [ ] Build test cohort — export 100–500 contacts from HubSpot
+      Criteria: orgs with AUM $1M+ preferred · recent 990 activity
+- [ ] Confirm ProPublica API access — test a single org lookup before sweep
+- [ ] Confirm Google Drive 990 folder path for MCP access
+- [ ] Supervisor decision: confirm which HubSpot contact statuses to sweep
       (cold only, or cold + warming?)
-- [ ] Confirm 990 data source — ProPublica Nonprofit Explorer preferred unless
-      GuideStar/Candid access is available
+- [ ] Confirm minimum AUM threshold for test cohort contacts
 
 ---
 
 ## Decisions made
-- 2026-06-09: Lark initialized — prospect intelligence agent for Farther Institutional
-- 2026-06-09: Signal map finalized — 10 signals across 3 tiers (High / Medium /
-  Contextual) · Full definitions in data/signals.md
-- 2026-06-09: Compound scoring adopted — Score 1/2/3 based on signal combinations ·
-  Score-3 contacts are highest priority output
-- 2026-06-09: Lark does not write back to HubSpot directly — findings flagged for
-  manual action by Farther Institutional team
+- 2026-06-12: Architecture updated — Lark writes back to HubSpot via MCP
+- 2026-06-12: Phase 1 defined — 100–500 contact test cohort · SIG-001 only
+- 2026-06-12: Hawaii-specific logic removed — Lark is a national agent
+- 2026-06-12: HubSpot property definitions written to hubspot-properties.md
+- 2026-06-12: contacts.md removed — Lark reads live from HubSpot via MCP
+- 2026-06-09: Signal map finalized — 10 signals across 3 tiers
+- 2026-06-09: Compound scoring adopted — Score 1/2/3
 
 ---
 
 ## Failures and fixes
-> Lark logs errors here. When something breaks: document it, fix it, update the
-> relevant skill file.
-
 [No failures yet — first sweep not run]
 
 ---
 
 ## Instructions to Lark
 - After every sweep: update Last run, resolve open threads, log decisions
-- After every failure: log error + fix here, then update the relevant skill file
+- After every failure: log error + fix here, update relevant skill file
 - Detailed findings go in profiles/ not here — keep this file lean
 - Never hand this file to a human to write — Lark owns it
