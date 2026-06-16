@@ -1,187 +1,230 @@
-# behavioral_flags.md — Standing Behavioral Patterns
+# alert-writer.md — Lark · Prospect Intelligence Output Formatter
 
-> Read this file at the start of every sweep for Channel 11
-> (behavioral cross-check).
-> This file is written and maintained by the agent — not by humans.
-> Humans may review but should not overwrite confirmed entries.
-> Last updated: 2026-06-09
-
----
-
-## How Channel 11 uses this file
-
-At the end of every sweep, after Channels 1–10 have run:
-1. Read all Active flags in this file
-2. Cross-reference every signal found this sweep against each flag's known
-   playbook
-3. If a new signal matches a standing pattern → escalate to High Priority
-   and note "consistent with standing flag"
-4. If a new signal contradicts a standing pattern → note "possible strategy
-   shift" and escalate
-5. If a new pattern is emerging across 2+ new signals → create a new entry
-   below as Watching
+## Purpose
+Lark uses this file to format all output — Slack summaries and HTML reports.
+Every output is organized by compound score, not by signal type.
+Score-3 contacts are always first. They are the reason the report exists.
+In Phase 1 all contacts are Score-1 — they still get full treatment.
 
 ---
 
-## Active Flags
+## Slack format — weekly summary
 
-### ⚑ FLAG-001 — eCIO RFP Funnel
-**Firm:** eCIO (getecio.com)
-**Status:** Active
-**Confidence:** High
-**Date confirmed:** 2026-06-05
-**Pattern type:** Contradiction + Funnel + Market-shaping + Cross-channel
+```
+🪶 Lark · Prospect Intelligence Brief — Week of [DATE]
 
-**Sourcing note — important:**
-The LinkedIn layer of this flag (RFP win posts, skip-the-RFP coaching posts)
-was originally identified via manual human research (pre-2026-06-09). Those
-LinkedIn findings are valid and confirmed by the human researcher, but they
-are **human-sourced**, not automated. Label them accordingly:
-`Source: eCIO LinkedIn — human-sourced [date]`
+📊 PIPELINE SUMMARY
+[N] signals scanned · [N] HIGH matches · [N] AMBIGUOUS · [N] discarded
+[N] Score-1 contacts · HubSpot write-back: STAGED (MCP key pending)
 
-When Apify subsequently confirms the same LinkedIn posts or finds new ones
-matching this pattern, upgrade the sourcing label to:
-`Source: eCIO LinkedIn — retrieved via Apify [date]`
-and log the upgrade in New iterations below.
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢 SCORE-1 — Soft touch · monitor closely
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**The playbook — five confirmed steps:**
-1. Nonprofit searches for RFP guidance → finds eCIO's free RFP template
-   (gated — captures name, email, org)
-2. Downloads template → encounters "Should You Issue an RFP?" content
-   coaching prospects to skip formal process
-3. eCIO frames its own evaluation criteria inside the process guide
-   (buyer conditioning)
-4. Nonprofit submits RFP directly to eCIO via dedicated submission portal
-5. Zero public RFPs found in SAM.gov — wins appear to come from
-   private/informal processes
+[Org name] · [City, State] · Est. AUM: $[X]M
+Signal: SIG-001 — [New hire name], [Title]
+Window: Move within 60–90 days · expires [date]
+Angle: [1-sentence outreach angle — why now, what to say]
+Source: [publication] · [date]
 
-**Contradiction confirmed:** RFP submission portal live at same time as
-skip-the-RFP coaching content. Both actively promoted simultaneously.
+[Repeat for each Score-1 contact]
 
-**Primary sources:**
-- getecio.com/submit-an-investment-management-request-for-proposal-rfp ·
-  retrieved Jun 2026 · Confirmed (web search)
-- getecio.com/resources/should-you-issue-an-rfp-to-select-your-next-investment-advisor ·
-  retrieved Jun 2026 · Confirmed (web search)
-- getecio.com/resource-center/rfp-resources · retrieved Jun 2026 ·
-  Confirmed (web search)
-- SAM.gov search — "eCIO investment advisory" — zero results ·
-  retrieved Jun 5, 2026 · Confirmed (web search)
-- eCIO LinkedIn — RFP win posts + skip-the-RFP coaching posts ·
-  human-sourced pre-2026-06-09 · Confirmed (human researcher)
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠ AMBIGUOUS — Manual review required
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**What to check every sweep:**
-- Any new LinkedIn post from eCIO — does it promote the RFP portal,
-  skip-the-RFP content, or a new gated asset?
-  → If LinkedIn URL surfaces in Channel 8 search results → scrape via Apify
-- Any new gated PDF or guide on getecio.com → document what the gate collects
-- Any new RFP-related content → does it reinforce or contradict the
-  dual-track strategy?
-- SAM.gov → still zero results?
+• [Signal org name] — top match: [CSV candidate] (score [N]) · confirm or discard
 
-**New iterations logged:**
-- 2026-06-09: Apify integration added — LinkedIn layer of this flag will now
-  be Apify-verified going forward. Pre-integration LinkedIn findings
-  reclassified as human-sourced.
-- 2026-06-06: Funnel fully re-confirmed from primary sources — no strategy
-  shift. Gated template, skip-the-RFP coaching, embedded evaluation criteria,
-  live submission portal, zero SAM.gov all intact. Two unverified LinkedIn
-  client-win posts (Tucson IDA, Perinatal Foundation) observed as adjacent
-  "publicize the win" behavior — not the funnel itself. LinkedIn sourcing:
-  human-sourced (pre-Apify).
-- 2026-06-05: Full five-step funnel confirmed and documented from primary
-  sources · first sweep
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Full report attached · Next sweep: [DATE] · Questions: mention @Lark
+```
 
 ---
 
-### ⚑ FLAG-002 — BofA "OCIO 2.0" + Consolidation Displacement
-**Firm:** Bank of America
-**Status:** ACTIVE — upgraded from Watching 2026-06-06
-**Confidence:** Medium-High
-**Date flagged:** 2026-06-05 · **Date confirmed Active:** 2026-06-06
-**Pattern type:** Market-shaping (consolidate-to-the-largest-provider)
+## Outreach angle — how to write it
 
-**Sourcing note:**
-All FLAG-002 sources confirmed via web search. No LinkedIn dependency.
+The outreach angle is the single most important element in Lark's output.
+It tells the Farther team not just *that* something happened, but *what to say*.
 
-**The pattern — two coordinated pieces:**
-1. April 7, 2026 press release introduces "OCIO 2.0" — service framed as
-   going beyond investment management (governance advisory, spending policy
-   design, leadership development, fundraising strategy).
-2. Companion article "Should Nonprofits Consolidate Outsourced CIO Providers?"
-   explicitly advises nonprofits to reduce to a SINGLE OCIO — "choosing a
-   single OCIO provider remains a best practice… a unified OCIO gives you
-   clarity, control and cohesion" (Bernard Reidy, BofA Private Bank).
+**Rules:**
+- One sentence only
+- Frame around the prospect's situation, not Farther's product
+- Reference the specific signal — never generic
+- Never say "we noticed" or "we saw" — frame as awareness of their milestone
+- End with an implicit opening, not a hard ask
 
-**Upgrade test result:**
-- Test 1 (advises reducing # of advisors): MET
-- Test 2 (frames OCIO 2.0 as a required new standard): NOT met yet
+**Good examples:**
+- "A new CFO in the first 90 days almost always takes a quiet look at the advisor
+  relationship — this is exactly the window."
+- "With [Name] just stepping into the CFO role, now is when the investment advisor
+  relationship gets re-examined whether they plan it or not."
+- "New finance directors want to own their vendor relationships — this is the
+  natural moment to be the option they choose."
 
-**Primary sources:**
-- privatebank.bankofamerica.com/articles/should-nonprofits-consolidate-ocio-providers.html ·
-  retrieved 2026-06-06 · Confirmed (web search)
-- newsroom.bankofamerica.com — "OCIO 2.0" release · Apr 7, 2026 ·
-  retrieved 2026-06-06 · Confirmed (web search)
-
-**What to check every sweep:**
-- New "consolidation" / "single OCIO" content, or OCIO 2.0 framed as a
-  required standard (would satisfy Test 2)
-- Any nonprofit board-facing campaign reinforcing the consolidation theme
-- William Jarvis (BofA) NACUBO Endowment Leadership Series appearance
-
-**Evidence gaps:** Consolidation article carries no visible date. Chestnut
-Solutions Institute survey not directly retrieved — treat ranking as Inferred.
-
-**New iterations logged:**
-- 2026-06-06: Upgraded Watching → Active. Consolidation article confirmed.
-  Jarvis NACUBO presence noted as reinforcing channel.
+**Weak examples (avoid):**
+- "We saw you hired a new CFO — we'd love to connect." ✗
+- "Congratulations on your recent news." ✗
+- "Farther Institutional specializes in nonprofits like yours." ✗
 
 ---
 
-## Watching (Potential Patterns — Not Yet Confirmed)
+## HTML report format
 
-### WATCH-001 — CAPTRUST acquisition pattern
-**Firm:** CAPTRUST
-**Date flagged:** 2026-06-05 · **Updated:** 2026-06-06
-**Observation:** Stillwater Capital Advisors ($1.25B, explicitly serves
-endowments & foundations) CONFIRMED closed May 14, 2026. Carnegie ($7.5B)
-remains "in talks" only — unconfirmed.
-**Escalate to Active if:** Carnegie acquisition confirmed, or a third
-nonprofit-specialist firm acquired within 12 months.
+### Report header components
 
-### WATCH-002 — Cerity Partners rapid expansion
-**Firm:** Cerity Partners
-**Date flagged:** 2026-06-05 · **Updated:** 2026-06-06
-**Observation:** Verus merger CONFIRMED closed March 31, 2026 (~$1.2T
-institutional AUA). PE-backed (Genstar). Hold at Watching.
-**Escalate to Active if:** Another institutional acquisition announced within
-6 months, or Verus nonprofit-OCIO line confirmed as actively marketed under
-the Cerity brand.
+```html
+<!-- Masthead: dark background, Lark branding, week dates -->
+<!-- Stats bar: signals scanned · HIGH · AMBIGUOUS · NO MATCH · Score-1 -->
+<!-- Lark note: transparency banner — never skip -->
+<!-- Slack preview block -->
+```
 
-### WATCH-003 — Industry-wide E&F / OCIO consolidation wave
-**Firms:** CAPTRUST · Cerity Partners · Fiducient (Wealthspire)
-**Date flagged:** 2026-06-06
-**Observation:** Three Tier A firms expanded E&F capability via M&A within
-~6 weeks. Pairs thematically with BofA FLAG-002.
-**Escalate to Active if:** A fourth E&F-relevant acquisition lands within the
-quarter (by ~Sept 2026).
+### Lark transparency note — always include, never skip
+
+The Lark note (green banner at top of report) must state:
+- Total web searches run this sweep
+- Total raw signal hits extracted
+- Total HIGH / AMBIGUOUS / NO MATCH routing
+- ProPublica enrichment: [N] successful · [N] not found
+- HubSpot write-back: STAGED — MCP key pending · [N] records queued
+- Coverage gaps: LinkedIn not scanned (Phase 1) · Apify activates Phase 2
+
+Example:
+```
+Lark — 5 searches run · 12 raw hits extracted · 3 HIGH matches ·
+2 AMBIGUOUS (flagged for review) · 7 NO MATCH discarded.
+ProPublica enrichment: 3 successful. HubSpot write-back: STAGED —
+MCP key pending, 3 records queued for import.
+Coverage gap: LinkedIn not scanned in Phase 1.
+```
+
+### Score-1 contact block (Phase 1 standard)
+
+```html
+<div class="layer">
+  <div class="layer-header">
+    <div class="layer-tag tag-score1">Score 1</div>
+    <div class="layer-name">[Org name]</div>
+  </div>
+  <div class="layer-sub">
+    [city, state] · [org type from NTEE] · Est. AUM: $[X]M · [tax year]
+  </div>
+  <div class="layer-rule"></div>
+
+  <div class="finding">
+    <div class="finding-meta">
+      <div class="cert-badge c-confirmed">Confirmed</div>
+      <div class="finding-priority p-high">High</div>
+    </div>
+    <div class="finding-body">
+      <div class="finding-title">SIG-001 — New CFO: [Name], [Title]</div>
+      <div class="finding-desc">
+        [2–3 sentences. What was announced, when, source.
+        What it means for Farther. Neutral language.]
+      </div>
+      <div class="finding-source">
+        Source: <a href="[URL]">[publication]</a> · [date] · retrieved [date]
+      </div>
+    </div>
+  </div>
+
+  <div class="finding-action">
+    <strong>Outreach angle</strong>
+    [1 sentence — framed around the prospect's situation]
+    Window: Move within 60–90 days · expires [date]
+  </div>
+
+  <!-- ProPublica enrichment block -->
+  <div class="gap-box">
+    <strong>Enrichment · ProPublica</strong>
+    Total assets: $[X] · Tax year: [year] · NTEE: [code] · EIN: [number]
+    AUM note: [institutional range / early stage / not found]
+  </div>
+
+  <!-- HubSpot write-back status -->
+  <div class="gap-box">
+    <strong>HubSpot write-back · STAGED</strong>
+    Record: [org name from CSV] · Properties queued: lark_signal_type=SIG-001 ·
+    lark_contact_status=Signal Detected · lark_compound_score=1 ·
+    lark_action_window=[window] · lark_aum_estimated=[value]
+    Status: Pending MCP key — import via hubspot-writeback CSV when ready.
+  </div>
+</div>
+```
+
+### AMBIGUOUS match block
+
+```html
+<div class="competitor">
+  <div class="comp-header">
+    <div class="comp-name">[Signal org name — as found in news]</div>
+    <div class="comp-aka">Fuzzy match — manual review required</div>
+    <div class="comp-count">score [N] · AMBIGUOUS</div>
+  </div>
+  <div class="gap-box">
+    <strong>Review required</strong>
+    Top candidates from CSV:
+    1. [Candidate name] — score [N]
+    2. [Candidate name] — score [N]
+    3. [Candidate name] — score [N]
+    Action: confirm the correct record in HubSpot, then manually apply
+    signal data. Source: [URL]
+  </div>
+</div>
+```
+
+### No-signal sweep result
+
+```html
+<div class="gap-box">
+  <strong>No signals fired this sweep</strong>
+  5 searches run · [N] results reviewed · 0 HIGH matches ·
+  [N] discarded as not relevant to pipeline.
+  A quiet sweep is correct. Next sweep: [date]
+</div>
+```
 
 ---
 
-## Resolved Flags
-> Patterns confirmed as ended, reversed, or no longer active.
+## Layer tags for Lark reports
 
-None yet.
+```css
+.tag-score1 { background: #3d6b4f; color: #f5f4ef; }
+.tag-score2 { background: var(--amber); color: #f5f4ef; }
+.tag-score3 { background: var(--alert-red); color: #f5f4ef; }
+.tag-ambiguous { background: #5a5852; color: #f5f4ef; }
+```
 
 ---
 
-## Instructions
-- Read this file at the start of every sweep before running Channel 11
-- After Channel 11 runs: update "New iterations logged" for any active flag
-  that fired this sweep
-- When Apify verifies a previously human-sourced LinkedIn finding: upgrade
-  the sourcing label and log it in New iterations
-- When behavioral-pattern-analysis.md confirms a new pattern: add a new
-  Active Flag entry
-- When a Watching entry reaches Medium+ confidence: move it to Active Flags
-- When a pattern resolves or reverses: move it to Resolved with a note
+## File naming
+
+```
+outputs/YYYY-MM-DD-lark-weekly.html          ← HTML report
+outputs/YYYY-MM-DD-lark-hubspot-writeback.csv ← HubSpot import file
+outputs/YYYY-MM-DD-lark-ambiguous.txt        ← manual review list
+```
+
+---
+
+## Language rules
+
+**Use:**
+"This suggests" · "The pattern indicates" · "Based on the data" ·
+"Worth moving on" · "The window is open" · "A natural conversation starter" ·
+"Unverified — confirm before outreach"
+
+**Avoid:**
+"This proves" · "They are definitely" · "This confirms that" ·
+"Without a doubt" · "Clearly they are" · "We saw" · "We noticed" ·
+Generic outreach angles not tied to the specific signal
+
+---
+
+## No action available?
+
+If a contact fired a signal but no clear outreach angle exists:
+```
+No outreach angle identified. File for context —
+monitor next sweep for confirming signal before acting.
+```
