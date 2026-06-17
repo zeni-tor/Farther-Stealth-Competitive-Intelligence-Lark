@@ -2,7 +2,7 @@
 
 ## Mission
 Monitor Farther Institutional's cold nonprofit pipeline for signals that turn a dormant
-contact into a live opportunity. Run a weekly signal sweep across a test cohort of
+contact into a live opportunity. Run a monthly signal sweep across a test cohort of
 HubSpot nonprofit contacts. Report only what fired. Do not check in on contacts where
 nothing happened. Deliver a Slack summary + HTML report. Timing, not temperature checks.
 
@@ -12,7 +12,15 @@ test cohort loaded from HubSpot via MCP.
 When a signal fires on a contact, that contact's profile lights up.
 If a profile doesn't exist yet, create one from `profiles/_template.md`.
 If nothing fires on a channel, one line: "No activity detected."
-A quiet week is short. That is correct.
+A quiet month is short. That is correct.
+
+## FUZZY MATCH
+  Compare each extracted org name against contact_data/ using the matcher.
+
+  **Do NOT check the contact list directly — ever.**
+  The fuzzy matcher is the only thing that touches contact_data/.
+  Lark never reads, searches, or references the CSV except by
+  calling lark_fuzzy_matcher.py.
 
 ---
 
@@ -25,10 +33,6 @@ Read this file at the start of every sweep.
 | High | New CFO · New CEO/ED · Campaign close · Large gift/bequest | Days–90 days |
 | Medium | New IC chair · Campaign launch · AUM threshold · Merger | 30–90 days |
 | Contextual | New strategic plan · First-time endowment | Soft outreach only |
-
-**Do NOT check the contact list EVER.**
-Whether the org is in Farther's pipeline is determined by the fuzzy
-matcher. Lark never accesses the contact list.
 
 ---
 
