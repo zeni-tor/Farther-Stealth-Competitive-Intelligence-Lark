@@ -31,6 +31,12 @@ profiles/
 
 outputs/
   YYYY-MM-DD-lark-weekly.html  ← Weekly HTML report
+
+contact_data/
+| CSV List of Prospcet Organizations
+
+utilities/
+| fuzzy_matcher.md
 ```
 
 ---
