@@ -1,66 +1,68 @@
 # weekly-sweep.md — Lark Signal-First Sweep Protocol
 
-> Not: "visit each HubSpot contact and see what's new."
-> Yes: "scan for signals that fire on contacts in the pipeline."
+> Not: "visit each contact and see what's new."
+> Yes: "scan the world for signals, match against pipeline."
 > If nothing fires, say so. Don't check in on quiet contacts.
 
 ---
 
 ## The model
 
-Lark does not visit every contact.
-8 signal channels run across the active cohort loaded from HubSpot via MCP.
-When a signal fires on a contact, that contact's profile lights up.
-If no profile exists yet, create one from `profiles/_template.md`.
-If nothing fires on a channel, one line: "No activity detected."
-
-The report reflects what actually changed in the pipeline this week —
-not a status update on what organizations are generally up to.
-
-A quiet week is short. That is correct.
-
----
-
-## Phase 1 — Test cohort rules (active now)
-
-- Cohort: 100–500 contacts loaded from HubSpot via MCP
-- Signal: SIG-001 (New CFO/Finance Director) only — Channel 1 only
-- Purpose: validate signal quality, matching, write-back before full rollout
-- Do not run Channels 2–8 until Phase 1 is validated
-- Selection criteria for cohort: orgs with known AUM above $5M preferred ·
-  orgs with recent 990 activity · any segment team already has conviction on
-- Do not run against full 65K until Phase 1 complete
-
----
-
-## Radar / Telescope rule
-
-Web search is radar — broad, fast, free. Always runs first.
-Apify is the telescope — narrow, deep, paid. Only fires when radar
-surfaces a LinkedIn URL worth verifying.
-
-**Before any Apify call:** check credit balance and call syntax.
-Never scrape proactively.
-
-**LinkedIn URL decision tree:**
 ```
-LinkedIn URL surfaces in search results
-         ↓
-Is it from a High Priority channel (1, 2, 3)?
-         ↓ Yes                    ↓ No
-   Always scrape          Is it the ONLY source
-   via Apify              confirming this signal?
-                               ↓ Yes        ↓ No
-                          Scrape it     Log URL only
-                          via Apify     Mark Speculative
+STEP 1 · SIGNAL SCAN (broad web search)
+  Search for signals across all US nonprofits.
+  Do NOT loop through contacts asking "what happened to you?"
+  Radar first — collect raw hits from news, press, org sites, 990s.
+
+STEP 2 · ORG EXTRACTION
+  For each hit, extract org name + domain if available.
+
+STEP 3 · FUZZY MATCH
+  Compare each org name against contact_data/ using the matcher.
+  from utilities.lark_fuzzy_matcher import LarkMatcher
+  HIGH → enrich · AMBIGUOUS → flag · NO_MATCH → discard
+
+STEP 4 · ENRICHMENT (HIGH matches only)
+  ProPublica API per confirmed match. Never on unmatched orgs.
+
+STEP 5 · SCORE
+  Apply compound scoring from data/signals.md
+
+STEP 6 · OUTPUT
+  HTML report + HubSpot write-back CSV
+  Update memory.md
 ```
 
 ---
 
-## Compound scoring — apply after all channels run
+## Sweep 1 gate — SIG-001 only
 
-After all active channels complete, score each contact that fired at
-least one signal. Read `data/signals.md` for full scoring reference.
+Run Channel 1 (SIG-001) only for the first sweep.
+Purpose: validate pipeline end-to-end before adding signal volume.
+After sweep 1 is confirmed working → activate all channels.
+
+```
+Sweep 1    → Channel 1 only (SIG-001)      ← current
+Sweep 2+   → All channels (all 10 signals) ← after validation
+Phase 2    → Apify + HubSpot MCP live      ← separate milestone
+```
+
+---
+
+## LinkedIn / Apify — DEFERRED
+
+LinkedIn scanning is not active. Do not attempt LinkedIn scrapes.
+See signal-classification.md for full coverage gap note.
+When a LinkedIn URL appears in search results:
+- Log the URL
+- Mark signal Speculative if LinkedIn is the only source
+- Do not scrape
+
+---
+
+## Compound scoring
+
+After all active channels run, score each org that fired a signal.
 
 ```
 Score 3 → 2+ High signals, or High + Medium + Contextual
@@ -68,208 +70,209 @@ Score 2 → 1 High + 1 Medium, or 2+ Medium signals
 Score 1 → Single signal, any tier
 ```
 
-Score-3 contacts are the highest priority output. Flag prominently.
-Always include a recommended outreach angle.
+Score-3 contacts are the highest priority output.
+Sweep 1: all contacts are Score-1 (single SIG-001 signal).
 
 ---
 
-## HubSpot write-back (after scoring)
+## HubSpot write-back
 
-After scoring, write results back to HubSpot via MCP.
-Read `data/hubspot-properties.md` before any write.
-MCP key: [PENDING] — when available, confirm single-record write works
-before running a full cohort sweep.
-
-Write per matched contact:
-- lark_signal_type · lark_signal_date · lark_signal_source
-- lark_compound_score · lark_score_updated · lark_signals_active
-- lark_action_window · lark_contact_status → Signal Detected
-- lark_aum_estimated · lark_aum_source (if ProPublica data found)
-- lark_incumbent_advisor (if found)
-- lark_last_sweep · lark_notes
-
-Write on quiet contacts (no signal fired):
-- lark_last_sweep only
+MCP key: PENDING — stage all write-back in CSV output.
+Do not attempt MCP calls.
+Read data/hubspot-properties.md before writing any field.
 
 ---
 
-## The 8 signal channels
+## Channel 1 — Leadership changes · ACTIVE (Sweep 1)
+**Signals:** SIG-001 · SIG-002 · SIG-005
+**Phase 1 focus:** SIG-001 only
 
-Channels 2–8 are defined but inactive during Phase 1.
-Only Channel 1 runs until the test cohort is validated.
+**Web search queries — run each sweep:**
+```
+"nonprofit" "new CFO" OR "new chief financial officer" 2026
+"nonprofit" "new finance director" OR "finance director joins" 2026
+"foundation" OR "endowment" "named CFO" OR "appointed CFO" 2026
+"nonprofit" "CFO" "joins" OR "named" OR "appointed" site:prnewswire.com OR site:businesswire.com 2026
+"nonprofit" "new" "vice president of finance" OR "VP finance" OR "director of finance" 2026
+```
 
----
-
-### Channel 1 — Leadership changes · ACTIVE (Phase 1)
-**Signals:** SIG-001 (New CFO) · SIG-002 (New CEO/ED) · SIG-005 (New IC chair)
-**Purpose:** Has a key decision-maker changed at this org?
-
-**Queries — run for each contact org:**
-- `"[org name]" "new" "CFO" OR "chief financial officer" OR "finance director" 2026`
-- `"[org name]" "new" "executive director" OR "CEO" OR "president" 2026`
-- `"[org name]" "joins" OR "named" OR "appointed" 2026 site:linkedin.com`
-- `"[org name]" "investment committee" "chair" OR "chairman" 2026`
-- `"[org name]" leadership OR "staff announcement" 2026`
-
-**Phase 1 focus — SIG-001 only:**
-During Phase 1 run CFO/finance director queries only. Do not score
-SIG-002 or SIG-005 hits until Phase 1 is validated and signals expanded.
+**When SIG-002 / SIG-005 activate (sweep 2+):**
+```
+"nonprofit" "new executive director" OR "new CEO" 2026
+"nonprofit" "executive director" "joins" OR "named" OR "appointed" 2026
+"foundation" "new" "investment committee" "chair" 2026
+```
 
 **Fires when:** Named leadership change at a contact org confirmed or
 strongly inferred from a primary source.
-**LinkedIn rule:** High Priority → always scrape via Apify when LinkedIn
-URL surfaces. Extract: name, title, previous org, start date, post text.
-**Small org note:** Small nonprofits announce hires almost exclusively on
-LinkedIn — never discount LinkedIn-only signals.
-**Profile action:** Update Leadership section · Update compound score ·
-Flag action window in open threads.
+**Small org note:** Small nonprofits may announce hires only on LinkedIn —
+these will be missed until Apify activates. Note as coverage gap.
+**Profile action:** Update Leadership section · compound score · action window.
 
 ---
 
-### Channel 2 — Financial events · INACTIVE (Phase 2)
+## Channel 2 — Financial events · READY (activate sweep 2+)
 **Signals:** SIG-003 · SIG-004 · SIG-006 · SIG-007
-**Activate after Phase 1 validation.**
+
+**Web search queries:**
+```
+"nonprofit" "capital campaign" "raised" OR "goal" OR "complete" OR "close" 2026
+"foundation" OR "endowment" "gift" OR "bequest" OR "pledge" "$" million 2026
+"nonprofit" "capital campaign" "launch" OR "announces" 2026
+"endowment" "million" site:prnewswire.com OR site:businesswire.com 2026
+"nonprofit" "largest gift" OR "transformative gift" OR "legacy gift" 2026
+```
+
+**ProPublica 990 queries (SIG-007):**
+Search by EIN or org name for AUM threshold crossing.
+Always state tax year — 990 data is 12–18 months behind.
 
 ---
 
-### Channel 3 — Governance events · INACTIVE (Phase 2)
+## Channel 3 — Governance events · READY (activate sweep 2+)
 **Signals:** SIG-005 · SIG-008
-**Activate after Phase 1 validation.**
+
+**Web search queries:**
+```
+"nonprofit" "merger" OR "merge" OR "consolidation" OR "affiliation" 2026
+"nonprofit" "board" "restructur" OR "reorganiz" 2026
+"foundation" "investment committee" "new chair" OR "restructur" 2026
+```
 
 ---
 
-### Channel 4 — Strategic signals · INACTIVE (Phase 2)
+## Channel 4 — Strategic signals · READY (activate sweep 2+)
 **Signals:** SIG-009 · SIG-010
-**Activate after Phase 1 validation.**
+
+**Web search queries:**
+```
+"nonprofit" "strategic plan" "endowment" 2026
+"nonprofit" "endowment" "establish" OR "launch" OR "first" 2026
+"foundation" "grow endowment" OR "permanent endowment" OR "endowment goal" 2026
+```
+
+**Watch for:** Language like "grow endowment to $X by [year]" —
+passive plans without investment language do not fire.
 
 ---
 
-### Channel 5 — LinkedIn activity · INACTIVE (Phase 2)
+## Channel 5 — LinkedIn activity · DEFERRED
 **All signal types — LinkedIn sweep.**
-**Activate after Phase 1 validation.**
+Deferred pending Apify financial justification.
+Do not activate until Apify credentials are configured.
+
+**When activated:** Run org name + signal keyword queries against
+LinkedIn via Apify. Extract post text, author, date, engagement.
 
 ---
 
-### Channel 6 — Conference presence · INACTIVE (Phase 2)
-**Read `data/conferences.md` before running.**
-**Activate after Phase 1 validation.**
+## Channel 6 — Conference presence · READY (activate sweep 2+)
+Read `data/conferences.md` before running.
+Only run for conferences in active monitoring window.
+
+**Queries per org in monitoring window:**
+```
+"[conference name]" "[org name]" speaker OR presenter OR panelist [year]
+"[conference name]" "[org name]" attending OR registration [year]
+```
 
 ---
 
-### Channel 7 — 990 and regulatory signals · INACTIVE (Phase 2)
+## Channel 7 — 990 and regulatory signals · READY (activate sweep 2+)
 **Signals:** SIG-007 · SIG-010
-**Activate after Phase 1 validation.**
 
----
-
-### Channel 8 — Signal cross-check · ACTIVE (Phase 1, limited)
-**Purpose:** Score contacts that fired in Channel 1. Detect patterns.
-
-**Action — Phase 1:**
-1. Read `data/signals.md`
-2. For each contact that fired SIG-001:
-   - Score is automatically Score-1 (single signal)
-   - Write score to profile and HubSpot
-   - Flag action window: 60–90 days from signal date
-3. Look across contacts:
-   - Are multiple orgs showing new CFO hires this week?
-   - Note as a sector trend in the report if 3+ contacts show same signal
-
-**Always log:** contacts swept · signals processed · score breakdown ·
-HubSpot write-back status · Apify calls made
-
----
-
-## Enrichment (matched contacts only)
-
-Run after a signal fires and org is confirmed matched to HubSpot record.
-Never run on unmatched orgs or on the full contact list.
-
+ProPublica API — free, no key:
 ```
-Step 1 · ProPublica API (free · every match)
-  → search by org name or EIN
-  → extract: total assets, revenue, endowment, NTEE code, filing year
-  → write to: lark_aum_estimated, lark_aum_source, lark_propublica_ein
-
-Step 2 · Google Drive 990s (high-score only · via MCP)
-  → open only for Score-2 or Score-3 contacts
-  → extract: Schedule D endowment, incumbent advisor, spending policy
-
-Step 3 · Web fetch (gap fill)
-  → org website: leadership page, news, strategic plan
-  → fill remaining gaps in the profile
+https://projects.propublica.org/nonprofits/api/v2/search.json?q=[ORG]
+https://projects.propublica.org/nonprofits/api/v2/organizations/[EIN].json
 ```
 
+Extract: Schedule D endowment balance · total assets · NTEE code
+Always state tax year. Never present 990 AUM as current.
+
 ---
 
-## Sweep output rules
+## Channel 8 — Signal cross-check · ACTIVE (all sweeps)
+**Purpose:** Score contacts, detect patterns across pipeline.
+
+After all active channels run:
+1. Read data/signals.md
+2. Score each org that fired a signal
+3. Write score to profile
+4. Look across all hits — are 3+ orgs showing the same signal?
+   → Note as sector trend in report
+5. Flag Score-3 contacts prominently
+
+---
+
+## Enrichment stack (matched contacts only)
+
+```
+Step 1 · ProPublica API (free · every HIGH match)
+  URL: https://projects.propublica.org/nonprofits/api/v2/search.json?q=[ORG]
+  Extract: total_assets · ntee_code · tax_prd_yr · ein · state
+  Write to: lark_aum_estimated · lark_aum_source · lark_propublica_ein
+
+Step 2 · Web fetch org site (gap fill · high-score contacts)
+  Check: leadership page · news · strategic plan · campaign pages
+  Fill: CFO name confirmation · endowment status · campaign status
+
+Step 3 · Google Drive 990s (Phase 2 · via MCP)
+  Activate when MCP key is live.
+```
+
+---
+
+## Output rules
 
 ### If signals fire:
-- Report only contacts where something actually happened
-- One finding card per signal (use `skills/alert-writer.md` format)
-- Score-3 contacts first — always
-- Label Apify-sourced LinkedIn data:
-  `Source: [org] LinkedIn — [post date] — retrieved via Apify [date]`
+- Report only orgs where something actually happened
+- Score-3 first, then Score-2, then Score-1
+- Label every finding: Confirmed / Inferred / Speculative
+- One finding card per signal per org
 
-### If no signals fire on a channel:
-- One line: `Channel [N] — [name]: No activity detected this sweep.`
+### If nothing fires:
+- One line: `Channel [N]: No activity detected this sweep.`
 - Do not fabricate findings
+- Short report is correct
+
+### If LinkedIn is the only source:
+- Mark signal Speculative
+- Log URL for manual review
+- Note in coverage gaps section
 
 ### If HubSpot MCP key is pending:
-- Complete the sweep and produce the HTML report normally
-- Note at top of report: `HubSpot write-back pending — MCP key not yet
-  configured. Findings ready to write when key is available.`
-- List all write-back actions that would have been taken
-
-### If Apify credits are low:
-- Note in report: `LinkedIn verification unavailable — Apify credits low.
-  [N] LinkedIn URLs logged for manual review.`
-- List unverified URLs in a gap box
+- Complete sweep and report normally
+- Note: `HubSpot write-back staged — MCP key pending`
+- Output write-back CSV to outputs/
 
 ---
 
 ## Report structure
 
 ```
-Lark · Weekly Brief · [DATE]
+SWEEP DATE: [date] · PHASE: 1 · SWEEP: [N]
+CHANNELS ACTIVE: [list] · CHANNELS DEFERRED: Channel 5 (LinkedIn)
+SIGNALS: [N] raw hits · HIGH: [N] · AMBIGUOUS: [N] · DISCARDED: [N]
+MATCHES: [N] HIGH · [N] AMBIGUOUS
+SCORES: Score-3: [N] · Score-2: [N] · Score-1: [N]
+HUBSPOT: STAGED — MCP key pending · [N] records queued
+COVERAGE GAP: LinkedIn not scanned · small org hires may be missed
 
-COHORT: [N] contacts swept · PHASE: [1 / 2]
-SIGNALS PROCESSED: [N] · HIGH: [N] · MEDIUM: [N] · CONTEXTUAL: [N] · DISCARDED: [N]
-SCORE-3: [N] · SCORE-2: [N] · SCORE-1: [N]
-HUBSPOT WRITE-BACK: [Complete / Pending — MCP key not configured]
-APIFY CALLS: [N] · CREDITS USED: ~$[X]
-
-SCORE-3 — [Org name] — [signals] — Move immediately
-[Finding cards]
-
-SCORE-2 — [Org name] — [signals] — Outreach within 2 weeks
-[Finding cards]
-
-SCORE-1 — [Org name] — [signal] — Soft touch
-[Finding cards]
-
-CHANNELS WITH NO ACTIVITY: [list]
-HUBSPOT WRITE-BACK LOG: [list of records written / pending]
-PROFILES UPDATED: [list]
-PROFILES CREATED: [list]
-Next sweep: [date]
+[Score-3 finding cards]
+[Score-2 finding cards]
+[Score-1 finding cards]
+[AMBIGUOUS review list]
+[Channels with no activity]
+[Coverage gaps]
+[HubSpot write-back log]
 ```
 
 ---
 
-## Coverage gaps — note when applicable
-- HubSpot MCP key pending: write-back staged, not executed
-- LinkedIn Ad Library: not accessible via Apify standard actors
-- Apify credits exhausted: LinkedIn URLs logged, not scraped
-- IRS 990 lag: 12–18 months behind — always state tax year
-- Board meeting minutes: not always public
-- Gated content: partially inaccessible — never fabricate
-
----
-
-## What this is not
-- Not a status report on what organizations are generally doing
-- Not padding with low-signal observations to fill the report
-- Not a check-in. An early warning system.
-- Not proactive LinkedIn scraping — Apify fires on demand only
-- Not geography-specific — Lark is a national agent
+## Coverage gaps — always note when applicable
+- LinkedIn not scanned — Apify deferred
+- IRS 990 lag — 12–18 months behind, always state tax year
+- HubSpot write-back staged — MCP key pending
+- Board meeting minutes not always public
+- Gated content partially inaccessible — never fabricate
