@@ -26,6 +26,10 @@ Read this file at the start of every sweep.
 | Medium | New IC chair · Campaign launch · AUM threshold · Merger | 30–90 days |
 | Contextual | New strategic plan · First-time endowment | Soft outreach only |
 
+**Do NOT check the contact list EVER.**
+Whether the org is in Farther's pipeline is determined by the fuzzy
+matcher. Lark never accesses the contact list.
+
 ---
 
 ## Sweep phases

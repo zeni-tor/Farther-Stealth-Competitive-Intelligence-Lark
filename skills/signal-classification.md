@@ -1,15 +1,22 @@
 # signal-classification.md — Lark · Signal Triage
 
-Triage every raw signal before output. Four questions:
+Triage every raw signal before output. Three questions.
+LinkedIn / Apify is deferred — see note at bottom.
 
 ---
 
 ## 1. Relevant?
+
 Discard if none apply:
-- Mentions a contact org from the active HubSpot cohort by name or domain
-- Relates to nonprofit leadership change, financial event, governance change,
-  or strategic event at a contact org
-- Involves a person named in the contact org's HubSpot record
+- Relates to a US nonprofit, foundation, endowment, or similar org
+- Event type matches a leadership change, financial event, governance
+  change, or strategic event (one of the 10 signals in data/signals.md)
+- Source is credible — press release, news outlet, org website, or 990
+
+**Do NOT check the contact list at this stage.**
+Whether the org is in Farther's pipeline is determined by the fuzzy
+matcher in Step 3 — not here. Lark never accesses the contact list
+during triage. Keep these two jobs separate.
 
 If uncertain → flag `RELEVANCE: Uncertain`, pass through with note.
 
@@ -49,34 +56,9 @@ If spans multiple → classify by primary signal, note secondary.
 
 **Contextual** — any of:
 - New strategic plan without explicit investment language
-- Conference presence (activate in Phase 2)
+- Conference presence (Phase 2)
 
-**Discard** — not relevant to any contact in the active cohort
-
----
-
-## 4. LinkedIn URL present?
-
-If the signal source includes a LinkedIn URL, apply the Apify decision:
-
-```
-LinkedIn URL surfaces in search results
-         ↓
-Is the signal High Priority?
-         ↓ Yes                    ↓ No
-   Always scrape          Is it the ONLY source
-   via Apify              confirming this signal?
-                               ↓ Yes        ↓ No
-                          Scrape it     Log URL only
-                          via Apify     Mark Speculative
-```
-
-Add to output:
-```
-APIFY_SCRAPE: [YES/NO]
-APIFY_REASON: [why scrape was triggered or skipped]
-LINKEDIN_URL: [URL if present]
-```
+**Discard** — not a US nonprofit event, or not one of the 10 signals
 
 ---
 
@@ -86,15 +68,43 @@ LINKEDIN_URL: [URL if present]
 SIGNAL TYPE: [SIG-00X]
 PRIORITY: [High/Medium/Contextual/Discard]
 DISCARD REASON: [if discarded]
-ORG NAME: [as found in source]
-HUBSPOT MATCH: [Confirmed / Pending fuzzy match / No match]
+ORG NAME: [as found in source — exact text, do not look up]
+DOMAIN: [if visible in source URL or article]
 SOURCE: [URL or reference]
 DATE: [ISO date]
-APIFY_SCRAPE: [YES/NO — only if LinkedIn URL present]
-APIFY_REASON: [rationale]
-LINKEDIN_URL: [URL if present]
 NOTES: [ambiguity or confidence flags]
 ```
 
-Stop here if Discard. Pass to alert-writer.md otherwise.
-High signal + LinkedIn URL → scrape via Apify before writing findings.
+Stop here if Discard.
+Pass to fuzzy matcher (utilities/lark_fuzzy_matcher.py) with ORG NAME + DOMAIN.
+Fuzzy matcher determines whether org is in the pipeline — not this file.
+
+---
+
+## LinkedIn / Apify — DEFERRED
+
+LinkedIn scanning via Apify is not active. Financial justification
+required before activating.
+
+**Impact on coverage:**
+- Large orgs (CEO/ED hires, capital campaigns, major gifts) → well covered
+  by press releases, nonprofit news, and org websites
+- Small orgs ($1M–$5M, community-based) → CFO/finance director hires
+  may appear on LinkedIn only and will be missed until Apify activates
+
+**Coverage gap note — include in every report:**
+"LinkedIn not scanned this sweep. Small org leadership changes
+announced exclusively on LinkedIn are outside current coverage.
+Apify integration deferred pending financial justification."
+
+**When LinkedIn URL appears in web search results:**
+- Do not attempt to scrape
+- Log the URL as a coverage note
+- Mark the signal Speculative if LinkedIn is the only source
+- Confirmed or Inferred requires a non-LinkedIn source
+
+**To activate LinkedIn scanning:**
+1. Confirm Apify Starter plan ($29/mo) is justified by signal volume
+2. Add Apify credentials to utilities/
+3. Update this file: remove DEFERRED status
+4. Update weekly-sweep.md Channel 5: remove DEFERRED status
