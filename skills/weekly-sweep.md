@@ -223,6 +223,86 @@ Step 3 · Google Drive 990s (Phase 2 · via MCP)
 
 ---
 
+## Compound scoring
+
+Compound scoring is Lark's judgment call — not a script. After all channels
+run, reason through each matched org's signal stack and assign a score.
+The rubric below is the floor; apply judgment above it.
+
+**Base scoring rules:**
+
+Score 3 → 2+ High signals, or High + Medium + Contextual
+Score 2 → 1 High + 1 Medium, or 2+ Medium signals
+Score 1 → Single signal, any tier
+
+**Signal strength — reason within the tier:**
+
+SIG-001 (New CFO / Finance Director):
+- Strongest: external hire + "investment oversight" or "endowment management"
+  in the job posting or announcement
+- Weaker: internal promotion, no investment language
+- Upgrade consideration: external hire + AUM ≥ $5M → treat as Score-2 candidate
+  even without a second signal
+
+SIG-002 (New CEO / Executive Director):
+- Strongest: external hire + announcement language includes "strategic reset,"
+  "new direction," or "transformation" + prior ED had long tenure (7+ years)
+- Weaker: internal promotion, board member stepping in as interim
+- Interim designation is a weaker form — note as such, and watch for permanent
+  hire confirmation next sweep (confirmation upgrades the score)
+
+SIG-003 (Capital Campaign Close):
+- Strongest: oversubscribed + endowment component explicitly named
+- Standard: campaign completed at or near goal
+- Context check: what was the org's endowment before the campaign? A $3M → $28M
+  jump is a Score-3 candidate on its own regardless of other signals
+
+SIG-004 (Large Gift / Bequest):
+- $5M+: floor is Score-3 regardless of other signals — rivals see the same
+  press release; move immediately
+- $1M–$5M: standard High
+- $500K–$1M + any other signal: consider Score-2
+
+**Context modifiers — adjust up or down:**
+
+Reason UP (consider raising score by one) when:
+- Org is 990PF with investments > $5M — investment management is core to
+  operations, not incidental
+- No advisor change on record for 3+ years — entrenchment creates review
+  motivation when a new leader arrives
+- Org's investments-to-total-assets ratio is high — the advisor relationship
+  is central to how the org operates
+- Two signals both fall within their active action windows in this sweep
+
+Reason DOWN (hold or note as weaker) when:
+- Signal source is LinkedIn only — label Inferred, not Confirmed; do not
+  recommend outreach without a non-LinkedIn corroboration
+- Org is near the $1M AUM floor — the advisory fee is likely too small to
+  justify the sales cycle
+- SIG-001 signal was an internal promotion with no investment language in
+  the announcement — still worth tracking, but below the threshold for
+  immediate outreach
+
+**Window alignment:**
+
+Signals that fire within the same sweep compound more strongly than signals
+separated by months. A SIG-003 and SIG-001 in the same sweep = Score-3
+unless both individually show weaknesses.
+
+SIG-007 (AUM threshold) and SIG-010 (First-Time Endowment) always confirm,
+never lead. They only contribute to Score-2 or Score-3 when paired with a
+fresher signal from this sweep. Either signal alone is not an outreach trigger.
+
+SIG-009 (New Strategic Plan) is Contextual — it creates a talking point,
+not an action window. Confirm endowment language before treating it as a
+signal at all. Only contributes to scoring when stacked with a High signal.
+
+**Score-3 contacts are the highest priority output.** Always first in both
+the Slack summary and the HTML report. Include a specific one-sentence outreach
+angle tied to the exact signal combination — not a generic opener.
+
+---
+
 ## Output rules
 
 ### If signals fire:
