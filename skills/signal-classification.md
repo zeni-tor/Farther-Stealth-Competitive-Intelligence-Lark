@@ -81,10 +81,7 @@ Fuzzy matcher determines whether org is in the pipeline — not this file.
 
 ---
 
-## LinkedIn / Apify — DEFERRED
-
-LinkedIn scanning via Apify is not active. Financial justification
-required before activating.
+## LinkedIn / Apify
 
 **Impact on coverage:**
 - Large orgs (CEO/ED hires, capital campaigns, major gifts) → well covered
