@@ -346,11 +346,11 @@ Phase 4 — groups signals by org for Lark to evaluate.
 Returns mechanical scores as a starting point. **Lark assigns final scores.**
 
 ```python
-from utilities.lark_signal_grouper import group_signals
-grouped = group_signals(all_signal_fires)
-for contact in grouped:
-    print(contact.for_lark())
-    # Lark reads this and assigns final compound score with context
+from utilities.lark_signal_grouper import score_contacts
+scored = score_contacts(all_signal_fires)
+for contact in scored:
+  print(contact.summary())
+  # Lark reads this and assigns final compound score with context
 ```
 
 Lark's judgment layer — external hire vs internal promotion, campaign type,

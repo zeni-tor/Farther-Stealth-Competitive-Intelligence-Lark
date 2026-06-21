@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-lark_scorer.py — Lark Compound Scoring Utility
+lark_signal_grouper.py - groups signals accordingly
 ===============================================
 Calculates compound scores for matched contacts after Phase 2.
 Groups signals by org, stacks them, and returns scored contact dicts

@@ -36,10 +36,10 @@ CSV_FILE = "hubspot_export.csv"
 
 # Column names in your HubSpot CSV export
 # Adjust these to match your actual column headers exactly
-COL_COMPANY_NAME = "Company name"       # required
-COL_DOMAIN       = "Company Domain Name" # optional — leave blank if not in CSV
-COL_CONTACT_NAME = "Associated Contact" # optional — leave blank if not in CSV
-
+COL_COMPANY_NAME = "Org Name"       # required
+COL_DOMAIN       = "Web Address" # optional — leave blank if not in CSV
+COL_CONTACT_NAME = "Principal Officer" # optional — leave blank if not in CSV
+COL_ASSETS       = "Total Assets" # AUM Filtering 
 # Incoming signal org names to test
 # These simulate what Lark would receive from a press release or LinkedIn post
 # Add as many as you want — one per line
