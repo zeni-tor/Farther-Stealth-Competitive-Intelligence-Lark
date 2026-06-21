@@ -26,7 +26,7 @@ Lark/
     conferences.md                 ← conference calendar
 
   skills/
-    weekly-sweep.md                ← sweep protocol (monthly cadence)
+    monthly-sweep.md                ← sweep protocol (monthly cadence)
     signal-classification.md       ← signal triage
     alert-writer.md                ← output formatting
     behavioral-flags.md            ← standing patterns
@@ -52,7 +52,7 @@ Lark/
     contacts.csv                   ← full contacts list (190K)
 
   outputs/
-    YYYY-MM-DD-lark-weekly.html            ← HTML report
+    YYYY-MM-DD-lark-monthly.html            ← HTML report
     YYYY-MM-DD-lark-hubspot-writeback.csv  ← staged write-back
     YYYY-MM-DD-lark-hubspot-sweep-only.csv ← lark_last_sweep only
 ```
@@ -129,7 +129,7 @@ Do NOT start the next phase until the current one is fully complete.**
 ║  PHASE 4 — SCORE + OUTPUT                                    ║
 ║                                                              ║
 ║  Score each confirmed match (compound scoring).              ║
-║  Generate HTML report → outputs/YYYY-MM-DD-lark-weekly.html  ║
+║  Generate HTML report → outputs/YYYY-MM-DD-lark-monthly.html  ║
 ║  Generate write-back CSV → outputs/YYYY-MM-DD-lark-hubspot.. ║
 ║  Update memory.md and profiles/                              ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -361,7 +361,7 @@ Self-test: `python utilities/lark_signal_grouper.py`
 
 ### lark_report.py
 Phase 4 — generates the full HTML sweep report.
-Takes a `SweepData` object. Outputs `outputs/YYYY-MM-DD-lark-weekly.html`.
+Takes a `SweepData` object. Outputs `outputs/YYYY-MM-DD-lark-monthly.html`.
 
 ```python
 from utilities.lark_report import generate_report, SweepData
@@ -452,7 +452,7 @@ Slack preview → Score-3 → Score-2 → Score-1 → HIGH MATCH · NOTED →
 AMBIGUOUS → Discarded → Channel summary → Coverage gaps
 
 Files written per sweep:
-- `outputs/YYYY-MM-DD-lark-weekly.html`
+- `outputs/YYYY-MM-DD-lark-monthly.html`
 - `outputs/YYYY-MM-DD-lark-hubspot-writeback.csv`
 - `outputs/YYYY-MM-DD-lark-hubspot-sweep-only.csv`
 

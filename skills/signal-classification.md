@@ -104,4 +104,4 @@ Apify integration deferred pending financial justification."
 1. Confirm Apify Starter plan ($29/mo) is justified by signal volume
 2. Add Apify credentials to utilities/
 3. Update this file: remove DEFERRED status
-4. Update weekly-sweep.md Channel 5: remove DEFERRED status
+4. Update monthly-sweep.md Channel 5: remove DEFERRED status

@@ -2,7 +2,7 @@
 """
 lark_report.py — Lark HTML Report Generator
 ============================================
-Generates the weekly HTML report and Slack preview from structured sweep data.
+Generates the monthly HTML report and Slack preview from structured sweep data.
 Offloads the most token-intensive step in Phase 4 from Lark's context.
 
 TOKEN SAVINGS:
@@ -36,7 +36,7 @@ USAGE — Phase 4:
     print(f"Report written to: {path}")
 
 OUTPUT:
-    outputs/YYYY-MM-DD-lark-weekly.html
+    outputs/YYYY-MM-DD-lark-monthly.html
 """
 
 import os
@@ -440,7 +440,7 @@ def generate_report(sweep: SweepData, output_dir: str = "outputs/") -> str:
         Path to the generated HTML file
     """
     os.makedirs(output_dir, exist_ok=True)
-    filename = f"{sweep.date}-lark-weekly.html"
+    filename = f"{sweep.date}-lark-monthly.html"
     filepath = os.path.join(output_dir, filename)
 
     score1_display  = sweep.score1_count()

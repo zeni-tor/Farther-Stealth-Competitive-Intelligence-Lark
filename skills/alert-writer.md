@@ -8,7 +8,7 @@ In Phase 1 all contacts are Score-1 — they still get full treatment.
 
 ---
 
-## Slack format — weekly summary
+## Slack format — monthly summary
 
 ```
 🪶 Lark · Prospect Intelligence Brief — Week of [DATE]
@@ -200,7 +200,7 @@ Coverage gap: LinkedIn not scanned in Phase 1.
 ## File naming
 
 ```
-outputs/YYYY-MM-DD-lark-weekly.html          ← HTML report
+outputs/YYYY-MM-DD-lark-monthly.html          ← HTML report
 outputs/YYYY-MM-DD-lark-hubspot-writeback.csv ← HubSpot import file
 outputs/YYYY-MM-DD-lark-ambiguous.txt        ← manual review list
 ```
