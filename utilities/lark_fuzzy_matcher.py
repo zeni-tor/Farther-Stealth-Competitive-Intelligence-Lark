@@ -129,20 +129,58 @@ class MatchResult:
 
 # ── ABBREVIATION DETECTION ────────────────────────────────────────────────────
 
+# Explicitly known 5–6 char nonprofit acronyms that the vowel heuristic
+# below would misclassify. Add to this list as new cases surface in sweeps.
+_KNOWN_ACRONYMS_5_6: frozenset = frozenset({
+    'NAACP', 'ASPCA', 'PFLAG', 'UNICEF', 'UNHCR', 'AIPAC',
+})
+
+_VOWELS = frozenset('AEIOU')
+
+
+def _vowel_run_count(text: str) -> int:
+    """Count separated vowel groups — a rough proxy for syllable count.
+
+    Real English words tend to have 2+ separated vowel groups (CANDID → A,I).
+    Acronyms tend to have 0–1 (YMCA → A only; NAACP → AA together = 1 run).
+    """
+    runs, in_vowel = 0, False
+    for c in text.upper():
+        if c in _VOWELS:
+            if not in_vowel:
+                runs += 1
+                in_vowel = True
+        else:
+            in_vowel = False
+    return runs
+
+
 def _is_abbreviation(text: str) -> bool:
     """
     Detect if incoming org name looks like an abbreviation or acronym.
-    Triggers on: MADD · MDA · YMCA · UWNYC · M.A.D.D.
-    Does NOT trigger on: "YMCA of Montclair" · "BOSTON FOUNDATION"
+
+    Tiers:
+    1. Dotted form (M.A.D.D.) — always abbreviation.
+    2. 2–4 all-caps chars (YMCA, MADD, ACLU) — always abbreviation.
+    3. 5–6 all-caps chars — check known nonprofit acronym list first,
+       then fall back to vowel heuristic: 1 vowel run → acronym,
+       2+ vowel runs → real word, not an abbreviation.
+
+    Known edge case: vowel digraphs (FAITH → AI = 1 run) are
+    misclassified as acronyms. Acceptable — 5-char bare ALL CAPS
+    signals are vanishingly rare in practice (press releases use
+    title case full names, not bare acronyms).
     """
     t = text.strip()
-    if re.match(r'^([A-Z]\.){2,6}$', t):           # M.A.D.D.
+    if re.match(r'^([A-Z]\.){2,}$', t):      # M.A.D.D.
         return True
-    if re.match(r'^[A-Z]{2,6}$', t):               # MADD · YMCA
+    if not re.match(r'^[A-Z]{2,6}$', t):     # must be 2–6 all-caps letters
+        return False
+    if len(t) <= 4:                           # YMCA · MADD · ACLU · AARP
         return True
-    if re.match(r'^[A-Z0-9]{2,6}$', t) and any(c.isdigit() for c in t):
+    if t in _KNOWN_ACRONYMS_5_6:             # NAACP · ASPCA · PFLAG
         return True
-    return False
+    return _vowel_run_count(t) < 2           # CANDID=2 runs → word; NAACP=1 → acronym
 
 
 def _make_acronym(org_name: str) -> str:
@@ -187,7 +225,7 @@ def _parse_aum(raw: str) -> Optional[float]:
 # ── FUZZY MATCHING FUNCTIONS ──────────────────────────────────────────────────
 
 def _levenshtein(s1: str, s2: str) -> int:
-    s1, s2 = s1.lower().strip(), s2.lower().strip()
+    s1, s2 = s1.strip(), s2.strip()    # inputs already uppercase from _normalize
     if s1 == s2: return 0
     if not s1: return len(s2)
     if not s2: return len(s1)
@@ -207,15 +245,28 @@ def _levenshtein(s1: str, s2: str) -> int:
 
 
 def _normalize(text: str) -> str:
+    """
+    Uppercase and strip noise tokens before scoring.
+
+    Converts the incoming signal name to uppercase so it matches the CSV,
+    which is already stored in ALL CAPS (IRS/NTEE format). This is simpler
+    than lowercasing the CSV to meet the signal — the data is already there.
+
+    Strips only legal suffixes and pure filler — words that carry zero
+    identity information. Keeps all meaningful words (FOUNDATION, NATIONAL,
+    AMERICAN, COMMUNITY, etc.) so similar-sector orgs with different names
+    are correctly distinguished.
+
+    Normalises ampersand to AND so 'Boys & Girls' and 'Boys and Girls'
+    score identically.
+    """
     if not text: return ""
-    text = text.lower().strip()
-    for s in [r'\binc\.?\b', r'\bllc\.?\b', r'\bcorp\.?\b', r'\bltd\.?\b',
-              r'\bfoundation\b', r'\bfund\b', r'\btrust\b', r'\bassociation\b',
-              r'\bsociety\b', r'\borganization\b', r'\borganisation\b',
-              r'\bcharity\b', r'\bcharitable\b', r'\bthe\b', r'\bof\b',
-              r'\bcommunity\b', r'\bnational\b', r'\bamerican\b']:
+    text = text.upper().strip()
+    text = text.replace('&', 'AND')                          # & → AND
+    for s in [r'\bINC\.?\b', r'\bLLC\.?\b', r'\bCORP\.?\b', r'\bLTD\.?\b',
+              r'\bTHE\b', r'\bA\b', r'\bAN\b', r'\bOF\b', r'\bAND\b']:
         text = re.sub(s, '', text)
-    text = re.sub(r'[^a-z0-9\s]', '', text)
+    text = re.sub(r'[^A-Z0-9\s]', '', text)
     return re.sub(r'\s+', ' ', text).strip()
 
 
