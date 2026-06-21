@@ -29,21 +29,18 @@ Status: No sweeps run yet
 ## Open threads
 - [ ] HubSpot MCP key — obtain and configure for write-back
 - [ ] HubSpot custom properties — create 15 properties (hubspot-properties.md)
-- [ ] Run lark_fuzzy_matcher.py self-test to confirm module loads cleanly
-- [ ] Confirm ProPublica API — test single org lookup before first sweep
 - [ ] Review first sweep results — validate signal quality before expanding channels
-- [ ] Decision pending: activate Channels 2–7 after sweep 1 validated
 
 ---
 
 ## Decisions made
-- 2026-06-17: LinkedIn/Apify deferred — financial justification required
+- 2026-06-17: LinkedIn/Apify active — Apify Starter plan approved · ~$1.20/sweep
 - 2026-06-17: Fuzzy matcher thresholds validated — HIGH ≥ 80 · AMBIGUOUS ≥ 50
 - 2026-06-17: Claude Code runtime confirmed — Lark runs locally, not Claude.ai
 - 2026-06-17: Contact source = contact_data/ CSV (local) — not HubSpot MCP
 - 2026-06-17: HubSpot write-back staged to CSV — MCP key pending
-- 2026-06-17: Sweep 1 gate = SIG-001 only · Channels 2–7 READY after validation
-- 2026-06-17: Channel 5 (LinkedIn) DEFERRED — separate from channel activation
+- 2026-06-17: All Channel Sweep Ready
+- 2026-06-17: Channel 5 (LinkedIn) Ready and Active.
 - 2026-06-16: lark_fuzzy_matcher.py built — callable module in utilities/
 - 2026-06-16: lark_fuzzy_test.py validated — 10/10 exact matches scored HIGH
 - 2026-06-12: Phase 1 defined — SIG-001 only · CSV contacts · broad web search
