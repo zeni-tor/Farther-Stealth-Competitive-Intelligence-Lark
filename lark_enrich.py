@@ -41,6 +41,7 @@ REQUIREMENTS:
 
 import os
 import sys
+from typing import Optional
 import argparse
 import subprocess
 from datetime import datetime
@@ -149,7 +150,7 @@ ADVISOR_COL_CANDIDATES = [
 ]
 
 
-def _find_col(headers: list, candidates: list) -> int | None:
+def _find_col(headers: list, candidates: list) -> Optional[int]:
     lower_headers = [str(h).strip().lower() for h in headers]
     for candidate in candidates:
         for i, h in enumerate(lower_headers):
@@ -278,7 +279,7 @@ def _parse_spreadsheet(df_raw_fn, path: str, advisor_filter: str | None) -> list
     return list(orgs.values())
 
 
-def parse_excel_file(path: str, advisor_filter: str | None = None) -> list[dict]:
+def parse_excel_file(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
     try:
         import pandas as pd
     except ImportError:
@@ -294,7 +295,7 @@ def parse_excel_file(path: str, advisor_filter: str | None = None) -> list[dict]
     return _parse_spreadsheet(loader, path, advisor_filter)
 
 
-def parse_csv_file(path: str, advisor_filter: str | None = None) -> list[dict]:
+def parse_csv_file(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
     try:
         import pandas as pd
     except ImportError:
@@ -352,7 +353,7 @@ def parse_org_file(path: str) -> list[dict]:
 
 # ── INPUT ROUTER ──────────────────────────────────────────────────────────────
 
-def parse_input(path: str, advisor_filter: str | None = None) -> list[dict]:
+def parse_input(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
     ext = path.lower()
     if ext.endswith(".xlsx") or ext.endswith(".xls"):
         return parse_excel_file(path, advisor_filter)
@@ -501,7 +502,7 @@ def launch_claude(prompt: str):
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 
-def _interactive_mode() -> tuple[str, str | None]:
+def _interactive_mode() -> tuple:
     """
     Prompt the user to choose a file when lark_enrich.py is run with no arguments.
     Scans inputs/ for Excel, CSV, and text files and presents them as a numbered
