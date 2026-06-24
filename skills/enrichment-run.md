@@ -11,8 +11,8 @@
 An Enrichment Run is a targeted operation on a specific list of orgs that
 have already been decided as needing enrichment. There is no signal search.
 There is no world scan. You are handed a list of names and your job is to
-fill in what we know about each one: AUM, EIN, leadership, incumbent advisor,
-and any standing intelligence gaps.
+fill in what we know about each one — and answer five specific questions
+an advisor needs before picking up the phone.
 
 The monthly sweep finds orgs worth paying attention to.
 The Enrichment Run fills in the intelligence on orgs we already decided matter.
@@ -57,8 +57,15 @@ Anderson Family Foundation | andersonfamilyfoundation.org
 Boston Senior Home Care | bostonseniorhomecare.org
 ```
 
-If no domain is provided, proceed without one — the fuzzy matcher can match
-on name alone, though domain improves confidence.
+Optionally with pre-existing GS fields from a HubSpot export:
+
+```
+Anderson Family Foundation | gs_total_assets=1426346 | gs_investments=523135
+```
+
+If GS fields are present, use them as the starting AUM estimate and cross-reference
+against ProPublica — do not ignore them. If no domain is provided, proceed without
+one — the fuzzy matcher can match on name alone.
 
 ---
 
@@ -101,49 +108,199 @@ Matching rules in this mode:
 
 ---
 
-## Phase B — Enrich (all HIGH matches above AUM threshold)
+## Phase B — Research (answer the five advisor questions)
 
-Run in the same order as the monthly sweep Phase 3. For each HIGH match:
+This is the core of the enrichment run. For each HIGH match, you are
+answering five specific questions an advisor needs before a cold call.
+Run all five research steps. Log what you find and what you don't.
 
-**Step 1 — ProPublica 990**
+The goal is not a data dump — it is a briefing. Write as if you are a
+smart colleague who did the research and is telling the advisor what they
+need to know in plain English, before they pick up the phone.
+
+---
+
+### Question 1 — What is this org focused on?
+
+**Sources:** org website About page, 990 program description, NTEE code
+
+Fetch the org's website. Find the About page or mission statement.
+Read it and synthesize — do not paste it verbatim.
+
+Write one or two sentences that tell the advisor, in plain language,
+what this org actually does and who it serves. Think: if a friend asked
+you "what does this place do?", what would you say?
+
+Good: "They run after-school arts programs for middle schoolers in
+underserved neighborhoods across Chicago. About 4,000 kids a year."
+
+Bad: "After School Matters is a nonprofit organization dedicated to
+providing Chicago teens with opportunities to explore their interests
+and develop their talents through after-school and summer programs in
+the arts, science and technology, sports, and trades."
+
+If the website is thin or unavailable, use the 990 program service
+description or NTEE classification, and label it Inferred.
+If nothing meaningful found, write that explicitly.
+
+---
+
+### Question 2 — Any capital campaigns recently or coming up?
+
+**Sources:** org website news/press page, 990 revenue schedule, web search
+
+Run two targeted searches:
+  - `"[org name]" "capital campaign" OR "campaign goal" OR "fundraising goal"`
+  - `"[org name]" "new building" OR "renovation" OR "expansion" OR "new facility"`
+
+Also check the org website news or press page directly.
+
+Also check the 990: if contributions and grants revenue spiked significantly
+in a recent year, that may indicate a campaign in flight or recently closed
+even without a press release.
+
+Write what you find in plain English:
+
+Good: "They closed a $12M capital campaign for a new performance center
+in 2024. No new campaign announced yet, but the building opens in fall
+2026 — a natural conversation point."
+
+Good: "No capital campaign found. Revenue has been flat the past two years
+and the website doesn't reference any campaign. Not a current angle."
+
+Do not manufacture urgency. If nothing found, say so.
+
+---
+
+### Question 3 — How is their financial health? Growing, flat, or contracting?
+
+**Sources:** ProPublica 990 — pull TWO years minimum, three if available
+
 ```python
 from utilities.lark_propublica import enrich_batch, to_hubspot_fields
 enriched = enrich_batch(high_matches)
+# Also fetch prior year: enrich_batch(high_matches, year_offset=1)
 ```
 
-Extract: total_assets · ntee_code · tax_prd_yr · ein · state
-Always state the 990 tax year. Never present as current AUM.
-If ProPublica returns no result: log as gap, note "not found in ProPublica."
+For each org, pull:
+  - Total revenue (current year and prior year)
+  - Total expenses (current year and prior year)
+  - Net assets / fund balance (current year and prior year)
+  - Total assets (current year and prior year)
+  - Investments / securities line (current year and prior year)
 
-**Step 2 — Org website check**
-For each HIGH match, do a targeted web fetch of the org's website.
-Look for:
-- About page: mission statement, programs, communities served
-- Leadership page: current CFO, CEO, board chair, investment committee chair
-- Board page: full board list — note any recognizable names
-- News or press releases: campaigns, gifts, strategic plans, new programs, new facilities
-- Financials or annual report page: endowment language, AUM disclosures
+Calculate:
+  - Revenue growth YoY (% change)
+  - Surplus or deficit (revenue minus expenses)
+  - Net asset trend (growing / flat / declining)
 
-This step is enrichment only — do NOT create signals from what you find here.
-Log findings in the profile under "What Lark currently knows."
-Label each finding Confirmed / Inferred / Speculative.
+Always state the 990 tax year. Never present as current.
+If GS fields were passed in, cross-reference against the 990 figure and
+note any divergence — but use the 990 as the authoritative source and
+label the GS figure as "Farther internal estimate."
 
-**Step 3 — Recent news search (talking points)**
-Search: `"[org name]" recent news [year]`
-Also search specifically for:
-  - `"[org name]" "capital campaign" OR "campaign goal"`
-  - `"[org name]" "strategic plan"`
-  - `"[org name]" "new" "director" OR "president" OR "CEO"`
-  - `"[org name]" "new building" OR "renovation" OR "expansion"`
+Write in plain English with a clear characterization:
 
-Prioritize results from the past 6 months. If nothing recent, go back 12 months
-and note the age. If nothing meaningful found, log explicitly — do not fabricate.
-These findings feed the TALKING POINTS section of the call-prep card.
+Good: "Financially they look solid. Revenue grew about 8% last year to
+$14M, they ran a small surplus, and net assets are up over the past two
+years. Nothing alarming — this is a healthy, stable org."
 
-**Step 4 — Incumbent advisor check**
-Search: `"[org name]" "investment advisor" OR "endowment manager" OR "OCIO"`
-If found: log in lark_incumbent_advisor + lark_incumbent_source.
-If not found: log as unknown — do not estimate.
+Good: "Worth flagging — they ran a deficit of about $800K last year on
+$6M in revenue, and net assets dipped for the second year in a row. May
+be under some budget pressure. Not necessarily a problem, but worth being
+aware of on the call."
+
+Good: "Only one year of 990 data available in ProPublica. Can't establish
+a trend. Total assets $3.2M as of tax year 2022. [Confirmed · IRS 990]"
+
+If ProPublica returns no result, note it explicitly and use GS fields
+if available, labeled as Farther internal estimate.
+
+---
+
+### Question 4 — Who is on the board? Anyone worth referencing?
+
+**Sources:** org website Board page, 990 officer table (for officers only)
+
+Fetch the org's board page. List all board members found with their titles.
+Note retrieval date.
+
+Then do something the advisor actually needs: flag anyone who might be
+recognizable or worth referencing on the call. Look for:
+  - Board members with notable titles (CEO/President of a recognizable company,
+    prominent local institution, university, hospital, foundation)
+  - Names that appear in mutual professional circles
+  - Long-serving board chairs or investment committee members
+  - Board members who are also donors (sometimes listed in annual reports)
+
+Write the full board list so the advisor can scan it. Then add a short
+"Notable" section calling out anyone worth mentioning:
+
+Good:
+"Board includes 14 members. A few names worth scanning before your call:
+  - James Whitfield · CEO, Banner Health · [might come up if he knows him]
+  - Priya Nair · Partner, Quarles & Brady · [prominent Phoenix firm]
+  - David Rosen · Former Superintendent, Phoenix USD
+
+If the board is not publicly listed, note it. If only the 990 officer
+table is available (chair, treasurer, secretary), list what's there and
+note the board is not fully public."
+
+---
+
+### Question 5 — Is there something happening right now worth mentioning?
+
+**Sources:** web search, org website news feed, press releases
+
+This is the most important section for the call. Run targeted searches
+for each of the following triggers:
+
+  - Recent hires:
+    `"[org name]" "new" "director" OR "president" OR "CEO" OR "executive director" OR "hired"`
+  - New board members:
+    `"[org name]" "joins board" OR "appointed" OR "new board member"`
+  - Recent fundraising news:
+    `"[org name]" "grant" OR "donation" OR "gift" OR "award" [current year]`
+  - Recent building / capital project:
+    `"[org name]" "new building" OR "renovation" OR "groundbreaking" OR "opening"`
+  - Recent programs:
+    `"[org name]" "new program" OR "launch" OR "initiative" OR "partnership"`
+  - Strategic plan:
+    `"[org name]" "strategic plan" OR "strategic priorities" [current year OR prior year]`
+
+Prioritize results from the past 6 months. If nothing in 6 months,
+go back 12 months and note the age. If nothing meaningful found across
+all searches, say so clearly — do not fabricate a hook.
+
+For each finding, write it as a natural conversation opener — not a
+headline, but something an advisor could actually say on a call:
+
+Good: "They just hired a new Executive Director in March — Sarah Kim,
+coming from the Chicago Community Foundation. She's only been in the
+role about three months, which is often a good time to reach out since
+new EDs are typically reassessing vendor relationships."
+
+Good: "They launched a new workforce development program in partnership
+with the City of Phoenix in January. Named it the Phoenix Pathways
+Initiative. Good opener — shows you're paying attention."
+
+Good: "Nothing significant found in the past 12 months. The most recent
+item is a board appointment from 14 months ago. No strong hook right now."
+
+Do not pad this section. Two strong talking points beat five weak ones.
+
+---
+
+### Incumbent advisor check (runs alongside the above)
+
+Search: `"[org name]" "investment advisor" OR "endowment manager" OR "OCIO"
+         OR "investment consultant" OR "wealth management"`
+
+Also check 990 Schedule D (if accessible) — some orgs disclose the name
+of their investment manager in the endowment footnotes.
+
+If found: log name, source URL, and confidence.
+If not found: log as unknown. Do not estimate or guess.
 
 ---
 
@@ -167,7 +324,7 @@ update = EnrichmentProfileUpdate(
     advisor_source    = advisor_source_url,
     ceo_ed            = ceo_name,            # "Name · Title · retrieved YYYY-MM-DD"
     cfo               = cfo_name,
-    enrichment_notes  = enrichment_summary,  # 1–3 sentences, labeled Confirmed/Inferred
+    enrichment_notes  = enrichment_summary,  # answers to the 5 questions, plain English
 )
 upsert_enrichment_profile(update, profiles_dir="EnrichmentProfileUpdate/")
 ```
@@ -199,7 +356,7 @@ lark_aum_source             ← "IRS 990 · tax year [year]"
 lark_propublica_ein         ← if found
 lark_incumbent_advisor      ← if found
 lark_incumbent_source       ← if found
-lark_notes                  ← enrichment summary
+lark_notes                  ← plain English summary (mission + financial health + hook)
 lark_last_sweep             ← today's date
 ```
 
@@ -216,108 +373,128 @@ This is separate from the sweep write-back CSV to avoid overwriting signal data.
 
 ## Phase E — Report
 
-Output a call-prep report. One card per enriched org, structured so the
-advisor can pick it up before a cold call and have everything they need
-for the first conversation.
+Output a call-prep report. One card per enriched org, structured around
+the five advisor questions. The advisor should be able to pick this up
+cold and have everything they need for a confident first conversation.
 
 Filename: `outputs/YYYY-MM-DD-lark-enrichment-report.html`
 
 The goal of the first call is a second meeting:
 "I would love to set up time to visit and learn more about the work you all are doing."
-The card should give the advisor one strong external hook and enough background
-to sound like they did their homework — not a data dump.
 
-Report structure:
+The card should read like a smart colleague briefed the advisor —
+not a data export, not a Wikipedia summary, not a list of facts.
+Write in plain, direct sentences. Use the advisor's voice, not a researcher's.
 
-```
-Lark · Enrichment Run · [DATE]
-
-ORGS REQUESTED: [N] · ENRICHED: [N] · AMBIGUOUS: [N] · NO_MATCH: [N]
-
-[One call-prep card per HIGH match — see format below]
-
-[AMBIGUOUS — needs human review before outreach]
-
-[NO_MATCH — org name may be wrong or not in pipeline]
-
-[Coverage gaps]
-
-HubSpot write-back: STAGED · outputs/YYYY-MM-DD-lark-enrichment.csv
-```
+---
 
 **Call-prep card format:**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [ORG NAME]
-[City, State] · [org type] · EIN: [number]
-AUM: $[X]M (IRS 990 · tax year [year]) · Endowment: [established / first-time / none known]
-Incumbent advisor: [firm or Unknown]
+[City, State] · EIN: [number] · [org type / NTEE]
+AUM: $[X]M (IRS 990 · tax year [year]) · Incumbent: [firm or Unknown]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MISSION
-  [1–2 sentences — what is this org focused on? What community or cause do they serve?
-   Source: org website About page. Label: Confirmed / Inferred.]
+WHAT THEY DO
+  [1–2 sentences in plain English. What is this org focused on?
+   Who do they serve and how? Write it the way you'd explain it to a
+   friend, not the way the org describes itself in a grant application.
+   Source and confidence label at the end.]
 
-FUNDRAISING
-  Capital campaigns:  [active / recent / none known · name · goal · status if available]
-  Recent major gifts: [if found — amount, purpose, source]
-  Campaign history:   [pattern or gap from 990 — growth, one-time, recurring]
+  Source: [org website About page · retrieved YYYY-MM-DD] · [Confirmed / Inferred]
 
-FINANCIAL HEALTH (IRS 990 · tax year [year])
-  Revenue:   $[X]M   YoY: [+X% / -X% / flat / unknown]
-  Expenses:  $[X]M   Budget: [balanced / surplus / deficit · amount if known]
-  Net assets: $[X]M  Trend: [growing / flat / declining over [N] years]
-  [1 sentence characterizing trajectory — stated as of tax year, not current]
+CAPITAL CAMPAIGNS & FUNDRAISING
+  [What fundraising activity has there been recently, or is coming?
+   If a campaign is active or just closed, describe it in a sentence.
+   If revenue data from the 990 suggests a campaign spike, note it.
+   If nothing found, say so in one sentence — do not leave this blank.]
 
-BOARD (from org website · retrieved [date])
-  [List board members with titles. Flag anyone who may be recognizable —
-   notable names, shared institutions, mutual connections worth referencing.
-   If the board is not publicly listed: note as not found.]
-  Notable: [Name · Title · why they may be worth referencing on the call]
+  Source: [org website / web search / IRS 990 · tax year [year]] · [Confirmed / Inferred / Not found]
 
-TALKING POINTS — why reach out today
-  [2–3 items found via web search, org website, or news. Recency matters.
-   Each item: what happened · when · source URL · why it's a conversation opener.
-   Drawn from: recent hires · new board members · fundraising news ·
-   new building / capital project · new programs · current or expired strategic plan.
-   Label each: Confirmed · Inferred · Speculative.
-   If nothing recent found: note explicitly — do not fabricate a hook.]
+FINANCIAL HEALTH  (IRS 990 · tax year [year] vs. [prior year])
+  [2–3 sentences characterizing the org's financial trajectory in plain
+   English. Is this a healthy, growing org? Stable but not growing? Under
+   some budget pressure? Include the key numbers — revenue, surplus/deficit,
+   net asset trend — but lead with the characterization, not the numbers.
+   Always state the tax year. Never present as current.]
 
-  1. [Hook] — [date] — [source] — [Confirmed / Inferred]
-  2. [Hook] — [date] — [source] — [Confirmed / Inferred]
-  3. [Hook] — [date] — [source] — [Confirmed / Inferred]
+  Revenue:   $[X]M → $[X]M  ([+/-X%] YoY)
+  Surplus / Deficit:  $[X]K [surplus / deficit]
+  Net assets: $[X]M → $[X]M  ([growing / flat / declining])
+
+  [Confirmed · IRS 990 · tax year [year] vs. [prior year]]
+
+BOARD
+  [Full board list with titles, retrieved from org website.
+   Then a short "Worth noting" paragraph calling out anyone with a
+   recognizable title, institution, or mutual connection worth mentioning
+   on the call. If the board is not publicly listed, say so.]
+
+  Worth noting: [Name · Title · why they may be worth a mention]
+
+  Source: [org website Board page · retrieved YYYY-MM-DD] · [Confirmed / Not publicly listed]
+
+WHY REACH OUT NOW
+  [2–3 talking points — the most recent, most relevant things happening
+   at this org that give the advisor a natural reason to call today.
+   Write each one as a sentence the advisor could almost say verbatim,
+   then note the date and source underneath.
+   Lead with the strongest hook.
+   If nothing recent found, say so honestly — one sentence, no padding.]
+
+  1. [What happened, when, why it's a good opener.]
+     [date] · [source URL] · [Confirmed / Inferred]
+
+  2. [What happened, when, why it's a good opener.]
+     [date] · [source URL] · [Confirmed / Inferred]
+
+  3. [What happened, when, why it's a good opener — or: Nothing else
+     significant found in the past 12 months.]
+     [date searched] · [Confirmed / Not found]
 
 CALL CONTACT
-  ED / CEO:   [name · title · source]
-  CFO:        [name · title · source]
-  IC Chair:   [name · title · source]
-  [If contact is unclear: note who to ask for on the call]
+  Who to ask for:  [ED / CEO name and title — this is the primary target]
+  Also on file:    [CFO, IC Chair, or board chair if found]
+  Contact on file: [Name · Title from HubSpot · Decision Maker: Yes/No]
+  Note:            [Any routing note — e.g., "Contact on file is a gatekeeper —
+                    ask Brittany to introduce you to the ED."]
 
 OPEN THREADS
-  - [anything that needs follow-up before outreach]
+  - [anything that needs follow-up or verification before outreach]
 
 HubSpot write-back: STAGED · [N] fields queued
 ```
 
+---
+
 **Sourcing rules for the card:**
-- Mission: org website About page — Confirmed only
-- Fundraising: org website news/press + 990 Schedule B where available
-- Financial health: IRS 990 only — always state tax year, never present as current
+- What they do: org website About page — Confirmed only. Inferred if from 990 only.
+- Fundraising: org website news/press + web search + 990 revenue trends
+- Financial health: IRS 990 only — always two years, always state tax year
 - Board: org website Board page — note retrieval date
-- Talking points: web search (`"[org name]" recent news`) + org website news feed
+- Talking points: web search (6 triggers above) + org website news feed
   - Prioritize items from the past 6 months
   - If nothing in 6 months, go back 12 — note the age
   - If nothing meaningful found: write "No recent news found — [date searched]"
 - All findings labeled Confirmed / Inferred / Speculative per honesty.md
 
-**What makes a good talking point:**
-A talking point is something that gives the advisor a natural reason to be
-calling *today* — not a generic "we saw you have an endowment." Ideal hooks:
-a strategic plan that just launched or is expiring, a new ED who is 3–6 months
-in, a recently closed capital campaign, a new program or facility, a board
-member the advisor may know. If none of these exist, say so — do not
-manufacture urgency.
+---
+
+**Tone rules for the card:**
+
+The advisor is going to read this before a cold call, possibly in a car or
+between meetings. Write accordingly.
+
+- Lead with the characterization, not the data. Numbers support the sentence,
+  they don't replace it.
+- Write in complete sentences. No bullet-point data dumps.
+- Be direct about gaps. "Board not publicly listed" is more useful than silence.
+- Don't editorialize about whether the advisor should call. Surface the facts
+  and let them decide.
+- Never manufacture urgency. If there's no hook, say there's no hook.
+- Confidence labels belong at the end of a section, not interrupting every sentence.
 
 ---
 
@@ -346,6 +523,8 @@ EnrichmentProfileUpdate/[org-slug]-profile.md   ← created or updated per org
 ## Coverage gaps — always note when applicable
 
 - ProPublica lag: 990 data is 12–18 months behind — always state tax year
+- Multi-year comparison: if only one year available, note it and do not fabricate a trend
 - Org websites vary in how current they are — note retrieval date
 - Incumbent advisor often not publicly disclosed — log as unknown if not found
+- GS fields (if passed in): treat as Farther internal estimate, cross-reference with 990
 - AMBIGUOUS and NO_MATCH orgs need human confirmation before enrichment
