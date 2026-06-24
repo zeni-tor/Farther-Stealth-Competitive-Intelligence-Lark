@@ -501,12 +501,80 @@ def launch_claude(prompt: str):
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 
+def _interactive_mode() -> tuple[str, str | None]:
+    """
+    Prompt the user to choose a file when lark_enrich.py is run with no arguments.
+    Scans inputs/ for Excel, CSV, and text files and presents them as a numbered
+    list. Returns (filepath, advisor_filter).
+    """
+    print("\n🪶  Lark · Enrichment Run Launcher")
+    print("─" * 48)
+
+    # Scan inputs/ for candidate files
+    inputs_dir = os.path.join(os.getcwd(), "inputs")
+    candidates = []
+    if os.path.isdir(inputs_dir):
+        for f in sorted(os.listdir(inputs_dir)):
+            if f.lower().endswith((".xlsx", ".xls", ".csv", ".txt")) and not f.startswith("."):
+                candidates.append(os.path.join(inputs_dir, f))
+
+    if not candidates:
+        print("\n   No files found in inputs/")
+        print("   Drop a HubSpot Excel export (.xlsx), CSV (.csv), or org list (.txt)")
+        print("   into the inputs/ folder, then run again.\n")
+        print("   Or pass a file directly:  python3 lark_enrich.py --orgs path/to/file.xlsx\n")
+        sys.exit(0)
+
+    print("\n   Files available in inputs/:\n")
+    for i, path in enumerate(candidates, 1):
+        fname = os.path.basename(path)
+        size  = os.path.getsize(path)
+        size_str = f"{size/1024:.0f}KB" if size > 1024 else f"{size}B"
+        print(f"   [{i}] {fname}  ({size_str})")
+
+    print(f"\n   [{len(candidates)+1}] Enter a different path")
+    print()
+
+    while True:
+        choice = input("   Select file (number or path): ").strip()
+        if not choice:
+            continue
+        if choice.isdigit():
+            idx = int(choice)
+            if 1 <= idx <= len(candidates):
+                filepath = candidates[idx - 1]
+                break
+            elif idx == len(candidates) + 1:
+                filepath = input("   Path to file: ").strip()
+                if not os.path.exists(filepath):
+                    print(f"   File not found: {filepath}")
+                    continue
+                break
+        else:
+            # Treat as a direct path
+            if os.path.exists(choice):
+                filepath = choice
+                break
+            print(f"   File not found: {choice}")
+
+    # Ask for advisor filter if Excel or CSV
+    advisor = None
+    if filepath.lower().endswith((".xlsx", ".xls", ".csv")):
+        advisor_input = input("\n   Filter by advisor name? (press Enter to include all): ").strip()
+        if advisor_input:
+            advisor = advisor_input
+
+    return filepath, advisor
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Lark Enrichment Run Launcher"
+        description="Lark Enrichment Run Launcher",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Run with no arguments for interactive mode."
     )
     parser.add_argument(
-        "--orgs", type=str, required=True,
+        "--orgs", type=str, default=None,
         help="Org list: plain text (.txt), HubSpot Excel (.xlsx), or CSV (.csv)"
     )
     parser.add_argument(
@@ -522,6 +590,13 @@ def main():
         help="Print prompt only — do not launch Claude Code"
     )
     args = parser.parse_args()
+
+    # ── Interactive mode when run with no arguments ────────────────────────
+    if args.orgs is None:
+        filepath, advisor = _interactive_mode()
+        args.orgs   = filepath
+        if advisor and args.advisor is None:
+            args.advisor = advisor
 
     today = args.date
     ext   = args.orgs.lower()
