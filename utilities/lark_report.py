@@ -2,7 +2,7 @@
 """
 lark_report.py — Lark HTML Report Generator
 ============================================
-Generates the monthly HTML report and Slack preview from structured sweep data.
+Generates the weekly HTML report and Slack preview from structured sweep data.
 Offloads the most token-intensive step in Phase 4 from Lark's context.
 
 TOKEN SAVINGS:
@@ -36,7 +36,7 @@ USAGE — Phase 4:
     print(f"Report written to: {path}")
 
 OUTPUT:
-    outputs/YYYY-MM-DD-lark-monthly.html
+    outputs/YYYY-MM-DD-lark-weekly.html
 """
 
 import os
@@ -142,9 +142,12 @@ class AmbiguousEntry:
 
 @dataclass
 class DiscardedEntry:
-    """A confirmed false positive or out-of-scope result."""
-    org_name:   str
-    reason:     str
+    """A low-score NO_MATCH or confirmed false positive."""
+    org_name:        str
+    reason:          str
+    score:           int  = 0
+    best_candidate:  str  = ""
+    is_no_match:     bool = False   # True = scored too low · human review for discard
 
 
 @dataclass

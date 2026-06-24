@@ -323,10 +323,17 @@ def _fetch_feed(
     url: str,
     lookback_days: int,
     verbose: bool,
+    as_of: Optional[datetime] = None,
 ) -> tuple[list[RSSSignal], int, Optional[str]]:
     """
     Fetch and parse a single GlobeNewswire Atom feed.
     Returns (signals, entries_reviewed, error_or_None).
+
+    as_of: the sweep date (timezone-aware). Cutoff is computed relative to
+           this date, not datetime.now(). Pass explicitly when running a
+           backdated sweep (e.g. --date 2026-06-17) so that entries published
+           after the sweep date are excluded even if preflight runs later.
+           Defaults to datetime.now(UTC) if not provided.
     """
     if verbose:
         print(f"[Layer A] Fetching: {feed_name}")
@@ -340,7 +347,8 @@ def _fetch_feed(
         err = str(feed.bozo_exception) if feed.bozo_exception else "unknown parse error"
         return [], 0, f"Feed parse failed ({feed_name}): {err}"
 
-    cutoff = datetime.now(timezone.utc) - timedelta(days=lookback_days)
+    reference = as_of if as_of is not None else datetime.now(timezone.utc)
+    cutoff = reference - timedelta(days=lookback_days)
     signals: list[RSSSignal] = []
     entries_reviewed = 0
 
@@ -352,7 +360,9 @@ def _fetch_feed(
         if published is None:
             continue  # skip undated entries
         if published < cutoff:
-            continue  # outside lookback window
+            continue  # before lookback window
+        if published > reference:
+            continue  # after sweep date — exclude future entries when backdating
 
         title   = entry.get("title", "")
         summary = entry.get("summary", "") or entry.get("description", "")
@@ -394,16 +404,22 @@ def fetch_gnw_signals(
     lookback_days: int = 30,
     feeds: Optional[list[str]] = None,
     verbose: bool = True,
+    as_of: Optional[str] = None,
 ) -> RSSFeedResult:
     """
     Fetch GlobeNewswire RSS feeds and return nonprofit signals.
 
     Args:
-        lookback_days:  Days to look back from today (default 30).
+        lookback_days:  Days to look back from as_of (default 30).
                         Entries older than this are discarded.
         feeds:          List of feed names to fetch. Defaults to all feeds.
                         Options: "directors_officers", "mergers_acquisitions"
         verbose:        Print progress to stdout (default True).
+        as_of:          Sweep date as "YYYY-MM-DD" string. Cutoff is computed
+                        relative to this date, not datetime.now(). Use when
+                        running a backdated sweep so that entries published
+                        after the sweep date are excluded even if preflight
+                        runs later. Defaults to today if not provided.
 
     Returns:
         RSSFeedResult with .to_signal_tuples() for match_batch() input.
@@ -411,7 +427,7 @@ def fetch_gnw_signals(
     Usage in sweep (Phase 1, Layer A):
         from utilities.lark_rss import fetch_gnw_signals
 
-        rss_result = fetch_gnw_signals(lookback_days=30)
+        rss_result = fetch_gnw_signals(lookback_days=30, as_of="2026-06-17")
         all_signals.extend(rss_result.to_signal_tuples())
         # Then continue with other channels before calling match_batch()
 
@@ -421,6 +437,17 @@ def fetch_gnw_signals(
         everything from the past month without re-processing old entries.
         For a real-time setup, lower this to 7 or 1.
     """
+    # Resolve as_of to a timezone-aware datetime
+    if as_of:
+        try:
+            as_of_dt = datetime.strptime(as_of, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
+        except ValueError:
+            as_of_dt = datetime.now(timezone.utc)
+    else:
+        as_of_dt = datetime.now(timezone.utc)
+
     active_feeds = feeds or list(FEEDS.keys())
     result       = RSSFeedResult()
     t0           = time.time()
@@ -432,7 +459,7 @@ def fetch_gnw_signals(
 
         url = FEEDS[feed_name]
         signals, reviewed, error = _fetch_feed(
-            feed_name, url, lookback_days, verbose
+            feed_name, url, lookback_days, verbose, as_of=as_of_dt
         )
 
         result.feeds_fetched    += 1
@@ -474,18 +501,27 @@ if __name__ == "__main__":
     """
     import sys
 
-    days = 30
+    days  = 30
+    as_of = None
     if "--days" in sys.argv:
         try:
             days = int(sys.argv[sys.argv.index("--days") + 1])
         except (IndexError, ValueError):
             pass
+    if "--date" in sys.argv:
+        try:
+            as_of = sys.argv[sys.argv.index("--date") + 1]
+        except IndexError:
+            pass
 
     print(f"\n🪶  lark_rss.py — self-test")
     print(f"   Feeds: Directors & Officers · Mergers & Acquisitions")
-    print(f"   Lookback: {days} days\n")
+    print(f"   Lookback: {days} days")
+    if as_of:
+        print(f"   As-of:   {as_of} (sweep date — entries after this date excluded)")
+    print()
 
-    result = fetch_gnw_signals(lookback_days=days, verbose=True)
+    result = fetch_gnw_signals(lookback_days=days, verbose=True, as_of=as_of)
 
     if not result.signals:
         print(f"\n  No nonprofit signals found in past {days} days.")

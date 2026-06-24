@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lark · Monthly Brief · 2026-06-17</title>
+<style>
+  :root {
+    --bg: #f5f4ef; --surface: #ffffff; --dark: #1a1916;
+    --mid: #5a5852; --light: #a8a49e; --border: #e2e0d8;
+    --green: #3d6b4f; --amber: #c8861a; --alert-red: #8b2222;
+    --tag-ambiguous: #5a5852; --score1-bg: #3d6b4f; --info-blue: #2b5278;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--dark); line-height: 1.55; font-size: 14px; }
+  .masthead { background: var(--dark); color: var(--bg); padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--green); }
+  .masthead-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--light); margin-bottom: 6px; }
+  .masthead-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .masthead-sub { font-size: 13px; color: var(--light); }
+  .stats-bar { background: var(--dark); border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 40px; display: flex; gap: 32px; flex-wrap: wrap; }
+  .stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); }
+  .stat-value { font-size: 18px; font-weight: 700; color: var(--bg); }
+  .stat-value.green { color: #6bcf8f; } .stat-value.amber { color: #f0b84a; } .stat-value.dim { color: var(--light); }
+  .lark-note { background: #edf7f0; border-left: 4px solid var(--green); margin: 24px 40px 0;
+    padding: 14px 18px; font-size: 12.5px; color: #2d4a38; border-radius: 0 4px 4px 0; }
+  .lark-note strong { font-weight: 600; }
+  .slack-preview { background: #1a1d21; border-radius: 8px; padding: 22px 26px; margin-bottom: 32px;
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; color: #d1d2d3; line-height: 1.85; }
+  .slack-header { font-size: 11px; color: #5a5a62; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .slack-channel { color: #4a9eda; } .slack-bot { color: #7c8b9a; }
+  .slack-preview .s-bold { color: #fff; font-weight: 500; } .slack-preview .s-green { color: #4CAF7A; }
+  .slack-preview .s-amber { color: #e8a44a; } .slack-preview .s-blue { color: #6ab0e8; }
+  .slack-preview .s-dim { color: #5a5a62; } .slack-preview .s-noted { color: #7c8b9a; }
+  .slack-divider { border: none; border-top: 1px solid #2e3238; margin: 10px 0; }
+  .main { max-width: 900px; margin: 0 auto; padding: 24px 40px 60px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin: 32px 0 16px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .section-tag { padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+  .tag-score1 { background: var(--score1-bg); } .tag-score2 { background: var(--amber); }
+  .tag-score3 { background: var(--alert-red); } .tag-ambig { background: var(--tag-ambiguous); }
+  .tag-high-noted { background: var(--info-blue); }
+  .section-title { font-size: 16px; font-weight: 600; color: var(--dark); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    margin-bottom: 20px; overflow: hidden; }
+  .card-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 14px; }
+  .card-score-tag { padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; white-space: nowrap; color: #fff; margin-top: 2px; }
+  .card-org { flex: 1; } .card-org-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .card-org-sub { font-size: 12.5px; color: var(--mid); margin-top: 2px; }
+  .card-body { padding: 16px 20px; }
+  .finding { display: flex; gap: 12px; margin-bottom: 14px; padding: 14px;
+    background: #fafaf7; border: 1px solid var(--border); border-radius: 4px; }
+  .finding-badges { display: flex; flex-direction: column; gap: 6px; min-width: 82px; }
+  .cert-badge { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+  .c-confirmed { background: #d4edda; color: #1a5c30; } .c-inferred { background: #fff3cd; color: #7a5010; }
+  .c-speculative { background: #f8d7da; color: #6b1a1a; }
+  .p-badge { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+  .p-high { background: #fde8e8; color: #8b2222; } .p-medium { background: #fdf3e0; color: #7a5010; }
+  .p-ctx { background: #e8edf5; color: #2b5278; }
+  .finding-content { flex: 1; } .finding-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .finding-desc { font-size: 13px; color: var(--dark); line-height: 1.6; margin-bottom: 8px; }
+  .finding-source { font-size: 11.5px; color: var(--mid); font-style: italic; }
+  .finding-source a { color: var(--info-blue); text-decoration: none; }
+  .action-box { background: #edf7f0; border: 1px solid #b8dfc6; border-radius: 4px;
+    padding: 12px 16px; margin-bottom: 14px; }
+  .action-box strong { font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--green); display: block; margin-bottom: 4px; }
+  .action-box p { font-size: 13px; color: var(--dark); }
+  .action-window { font-size: 12px; color: var(--mid); margin-top: 4px; }
+  .enrich-box { background: #f0f4fa; border: 1px solid #c5d4e8; border-radius: 4px;
+    padding: 12px 16px; margin-bottom: 14px; font-size: 12.5px; }
+  .enrich-box strong { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--info-blue); display: block; margin-bottom: 6px; }
+  .enrich-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 6px 16px; }
+  .enrich-item label { display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--mid); }
+  .enrich-item span { font-weight: 600; font-size: 13px; }
+  .hubspot-box { background: #fff8ee; border: 1px solid #f0d4a0; border-radius: 4px;
+    padding: 12px 16px; font-size: 12.5px; }
+  .hubspot-box strong { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--amber); display: block; margin-bottom: 6px; }
+  .prop-row { margin-bottom: 3px; }
+  .prop-name { font-family: 'SF Mono','Fira Code',monospace; font-size: 11px; color: var(--mid); }
+  .prop-val { font-size: 12px; color: var(--dark); font-weight: 600; }
+  .noted-v2 { background: var(--surface); border: 1px solid #c5d4e8;
+    border-left: 4px solid var(--info-blue); border-radius: 0 6px 6px 0; margin-bottom: 16px; overflow: hidden; }
+  .noted-v2-header { padding: 14px 20px 12px; border-bottom: 1px solid #e8eef6;
+    display: flex; align-items: flex-start; gap: 12px; background: #f4f7fb; }
+  .noted-match-tag { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .tag-high-badge { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    background: #dde8f5; color: var(--info-blue); white-space: nowrap; text-align: center; }
+  .tag-noted-badge { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    background: #e8edf5; color: var(--info-blue); white-space: nowrap; text-align: center;
+    border: 1px solid #c5d4e8; }
+  .noted-v2-org { flex: 1; } .noted-v2-name { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+  .noted-v2-sub { font-size: 12px; color: var(--mid); }
+  .noted-v2-body { padding: 14px 20px; }
+  .noted-signal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .noted-signal-label { font-size: 13px; font-weight: 700; color: var(--dark); }
+  .noted-window-expired { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; background: #fde8e8; color: #8b2222; }
+  .noted-detail-text { font-size: 13px; color: var(--mid); line-height: 1.65; margin-bottom: 12px; }
+  .noted-watchfor { background: #f0f4fa; border: 1px solid #c5d4e8; border-radius: 4px;
+    padding: 10px 14px; font-size: 12.5px; margin-bottom: 10px; }
+  .noted-watchfor strong { font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--info-blue); display: block; margin-bottom: 5px; }
+  .noted-enrich { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid #e8eef6; }
+  .noted-enrich-item label { display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--mid); }
+  .noted-enrich-item span { font-weight: 600; font-size: 13px; color: var(--dark); }
+  .ambig-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 16px 20px; margin-bottom: 14px; }
+  .ambig-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .ambig-score-tag { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    background: #e8e6e0; color: var(--mid); letter-spacing: 0.06em; }
+  .ambig-org { font-size: 15px; font-weight: 700; }
+  .ambig-signal { font-size: 12.5px; color: var(--mid); margin-bottom: 10px; }
+  .review-box { background: #f9f8f4; border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; font-size: 12.5px; white-space: pre-line; }
+  .channel-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .channel-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--mid); padding: 8px 12px; border-bottom: 2px solid var(--border);
+    background: #f9f8f4; }
+  .channel-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .channel-table tr:last-child td { border-bottom: none; }
+  .ch-fire { color: var(--green); font-weight: 700; } .ch-none { color: var(--light); }
+  .ch-deferred { color: var(--amber); font-style: italic; }
+  .gap-section { background: #fff8ee; border: 1px solid #f0d4a0; border-radius: 6px;
+    padding: 16px 20px; margin-top: 24px; }
+  .gap-section h3 { font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--amber); margin-bottom: 10px; }
+  .gap-section ul { list-style: none; padding: 0; }
+  .gap-section li { font-size: 13px; color: var(--dark); padding: 3px 0 3px 16px; position: relative; }
+  .gap-section li::before { content: '—'; position: absolute; left: 0; color: var(--amber); }
+  .footer { background: var(--dark); color: var(--light); padding: 18px 40px; font-size: 11.5px;
+    border-top: 1px solid rgba(255,255,255,0.08); margin-top: 40px; display: flex;
+    justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-eyebrow">Farther Institutional · Prospect Intelligence</div>
+  <div class="masthead-title">🪶 Lark · Monthly Brief</div>
+  <div class="masthead-sub">Sweep 1 · 2026-06-17 · Lookback: 2026-05-17 – 2026-06-17 (30 days)</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-label">Sweep</div><div class="stat-value dim">1</div></div>
+  <div class="stat-item"><div class="stat-label">Searches run</div><div class="stat-value dim">8+</div></div>
+  <div class="stat-item"><div class="stat-label">Signals batched</div><div class="stat-value dim">75</div></div>
+  <div class="stat-item"><div class="stat-label">HIGH matches</div><div class="stat-value green">11</div></div>
+  <div class="stat-item"><div class="stat-label">AMBIGUOUS</div><div class="stat-value amber">22</div></div>
+  <div class="stat-item"><div class="stat-label">NO_MATCH</div><div class="stat-value dim">42</div></div>
+  <div class="stat-item"><div class="stat-label">Score-1</div><div class="stat-value green">7</div></div>
+  <div class="stat-item"><div class="stat-label">Score-2 / Score-3</div><div class="stat-value dim">1 / 0</div></div>
+  <div class="stat-item"><div class="stat-label">HubSpot write-back</div><div class="stat-value amber">STAGED</div></div>
+</div>
+
+<div style="padding: 0 40px;">
+  <div class="lark-note">
+    <strong>Lark · Sweep log</strong> — Validation re-run of Sweep 1. Channel coverage gap: Layer B (Currents API) returned 403 Cloudflare block on all 7 queries — zero news signals captured. LinkedIn Channel 5 queries 4–6 (SIG-002 ED/CEO, SIG-005 CIO) returned 0 profiles — SIG-002 and SIG-005 detection via LinkedIn is unconfirmed this run. All actionable signals in this report are Inferred (LinkedIn recentlyChangedJobs=90d, exact hire dates unknown). Signal dates not available in LinkedIn Short mode.
+  </div>
+</div>
+
+<div class="main">
+
+  <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);margin-bottom:10px;display:flex;align-items:center;gap:12px;">Slack summary — delivered to #institutional-intel<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>
+  <div class="slack-preview">
+    <div class="slack-header">
+      <span class="slack-channel">#institutional-intel</span>
+      <span class="slack-bot">Lark · 2026-06-17 at 8:00 AM HST</span>
+    </div>
+    <div><span class="s-bold">🪶 Lark · Monthly Brief · 2026-06-17</span></div>
+    <div><span class="s-dim">Sweep 1 · 75 signals batched · 190,406 contacts · 30-day lookback</span></div>
+    <hr class="slack-divider">
+    <div><span class="s-bold">Score-1 contacts — soft touch recommended</span></div>
+    <div>🟢 <span class="s-bold">Historic Macon Foundation</span> — Macon, GA</div>
+    <div><span class="s-green">SIG-001 + SIG-002</span> — Stefanie Joyner listed as Director of Finance And Operations at Historic Macon Foundation on LinkedIn (recentlyChangedJo · <span class="s-dim">LinkedIn · Stefanie Joyner profile</span></div>
+    <div><span class="s-dim">Window: SIG-002 window through Aug 1, 2026 — 40 days remaining. Move now.</span></div>
+    <div>🟢 <span class="s-bold">NSABP Foundation</span> — Pittsburgh, PA</div>
+    <div><span class="s-green">SIG-001</span> — Pedro Barelli listed as Chief Financial Officer at NSABP Foundation Inc. on LinkedIn (recentlyChangedJobs filter — exact · <span class="s-dim">LinkedIn · Pedro Barelli profile</span></div>
+    <div><span class="s-dim">Window: Move within 60–90 days of appointment — verify hire date first</span></div>
+    <div>🟢 <span class="s-bold">International Tennis Hall of Fame</span> — Newport, RI</div>
+    <div><span class="s-green">SIG-001</span> — Mary L. Contadino CMA, CPA, CSCA listed as Vice President Finance at International Tennis Hall of Fame on LinkedIn (rece · <span class="s-dim">LinkedIn · Mary L. Contadino profile</span></div>
+    <div><span class="s-dim">Window: Move within 60–90 days of appointment — verify hire date and title seniority first</span></div>
+    <div>🟢 <span class="s-bold">Urban Edge Housing Corporation</span> — Boston, MA</div>
+    <div><span class="s-green">SIG-001</span> — Claire Sokolowski, CPA listed as Director of Finance at Urban Edge Housing Corporation on LinkedIn (recentlyChangedJobs  · <span class="s-dim">LinkedIn · Claire Sokolowski profile</span></div>
+    <div><span class="s-dim">Window: Move within 60–90 days of appointment — verify hire date and asset composition first</span></div>
+    <div>🟢 <span class="s-bold">Boston Senior Home Care</span> — Boston, MA</div>
+    <div><span class="s-green">SIG-001</span> — Todd Spencer listed as Chief Financial Officer at Boston Senior Home Care on LinkedIn (recentlyChangedJobs filter — exac · <span class="s-dim">LinkedIn · Todd Spencer profile</span></div>
+    <div><span class="s-dim">Window: Move within 60–90 days of appointment — verify hire date first</span></div>
+    <div>🟢 <span class="s-bold">Kids In Need Foundation</span> — Little Canada, MN</div>
+    <div><span class="s-green">SIG-001</span> — Martin Christian Boye, MBA listed as Director of Finance And Accounting at Kids In Need Foundation on LinkedIn (recently · <span class="s-dim">LinkedIn · Martin Christian Boye profile</span></div>
+    <div><span class="s-dim">Window: Move within 60–90 days of appointment — verify hire date first</span></div>
+    <div>🟢 <span class="s-bold">EFI Foundation</span> — Washington, DC</div>
+    <div><span class="s-green">SIG-001</span> — Lin Yuan listed as Director, Energy Finance at EFI Foundation on LinkedIn (recentlyChangedJobs filter — exact date unkno · <span class="s-dim">LinkedIn · Lin Yuan profile</span></div>
+    <div><span class="s-dim">Window: Verify role scope before acting — may not be SIG-001 equivalent</span></div>
+    <div>🟢 <span class="s-bold">DT Institute</span> — Arlington, VA</div>
+    <div><span class="s-green">SIG-001</span> — Dicky Dooradi listed as Vice President of Finance And Operations at DT Institute on LinkedIn (recentlyChangedJobs filter · <span class="s-dim">LinkedIn · Dicky Dooradi profile</span></div>
+    <div><span class="s-dim">Window: Soft outreach — verify hire date and whether assets are investable endowment</span></div>
+    <hr class="slack-divider">
+    <div><span class="s-bold">Ambiguous — manual review required</span></div>
+    <div>🟡 <span class="s-bold">Albuquerque Regional Economic Alliance:  State</span> — Score 68 · UNKNOWN (2026-06-22) · Signal in window ✓</div>
+    <div>🟡 <span class="s-bold">Parkland Health Foundation</span> — Score 64 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">American Brain Foundation</span> — Score 57 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">Saskatoon Community Foundation</span> — Score 57 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">Alliance for Tribal Clean Energy</span> — Score 57 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">Omaha Symphony</span> — Score 57 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">Foundation Wellness</span> — Score 57 · SIG-001 ()</div>
+    <div>🟡 <span class="s-bold">The OpenAI Foundation</span> — Score 57 · SIG-001 ()</div>
+    <hr class="slack-divider">
+    <div><span class="s-dim">Coverage gap: Layer B (Currents API) blocked — 403 Cloudflare on all 7 queries · news coverage zero this run · LinkedIn Ch5 queries 4–6 returned 0 profiles — SIG-002 (ED/CEO) and SIG-005 (CIO) undetected</span></div>
+    <div><span class="s-dim">HubSpot write-back: STAGED — MCP key pending · 8 records queued</span></div>
+    <div><span class="s-dim">Full report attached · Next sweep: see schedule · Questions: mention @Lark</span></div>
+  </div>
+
+  
+
+  
+  <div class="section-header">
+    <span class="section-tag tag-score2">Score 2</span>
+    <span class="section-title">Researched outreach within 2 weeks</span>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score2">Score 2</span>
+      <div class="card-org">
+        <div class="card-org-name">Historic Macon Foundation</div>
+        <div class="card-org-sub">Macon, GA · Arts &amp; Culture — Historic Preservation</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 + SIG-002 — New Finance Director + New Executive Director (compound)</div>
+          <div class="finding-desc">Stefanie Joyner listed as Director of Finance And Operations at Historic Macon Foundation on LinkedIn (recentlyChangedJobs filter — exact start date unknown). Compound signal: Emily Hopkins was named Executive Director in February 2026 (SIG-002 logged sweep 1). Two simultaneous leadership changes — new ED plus new finance director — create a compound window.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Stefanie Joyner profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>New finance director and new ED create a clean reset opportunity. Open the conversation with new ED Emily Hopkins — frame as a timely introduction given both leaders are establishing their vendor relationships.</p>
+        <div class="action-window">Window: SIG-002 window through Aug 1, 2026 — 40 days remaining. Move now.</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>510200143</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$6,639,893</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>A800</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$837,743</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$5M · first professional management</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">HISTORIC MACON FOUNDATION INC</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">2</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">SIG-002 expires Aug 1 2026</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">6,639,893</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Stefanie Joyner — Director of Finance And Operations at Historic Macon Foundation</span></div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section-header">
+    <span class="section-tag tag-score1">Score 1</span>
+    <span class="section-title">Signal detected · Soft touch recommended</span>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">NSABP Foundation</div>
+        <div class="card-org-sub">Pittsburgh, PA · Medical Research – Cancer Clinical Trials</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Pedro Barelli listed as Chief Financial Officer at NSABP Foundation Inc. on LinkedIn (recentlyChangedJobs filter — exact hire date unknown). NSABP (National Surgical Adjuvant Breast and Bowel Project) manages $97.9M in assets (IRS 990 · tax year 2023). Note: assets are primarily research grants and overhead; investable endowment may be a subset of total assets.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Pedro Barelli profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>Incoming CFO at a $98M organization — introduce Farther as a partner who understands complex institutional portfolios. CFO likely establishing advisor relationships in first 90 days. Verify if Pedro Barelli is a new external hire before outreach.</p>
+        <div class="action-window">Window: Move within 60–90 days of appointment — verify hire date first</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>251781357</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$97,902,542</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>H300</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$44,221,032</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$50M · institutional mandate</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">NSABP FOUNDATION INC</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">60–90 days from hire — verify date</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">97,902,542</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Pedro Barelli — Chief Financial Officer at NSABP Foundation Inc.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">International Tennis Hall of Fame</div>
+        <div class="card-org-sub">Newport, RI · Sports &amp; Recreation – Hall of Fame</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Mary L. Contadino CMA, CPA, CSCA listed as Vice President Finance at International Tennis Hall of Fame on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $94.1M in assets (IRS 990 · tax year 2023). VP Finance title (not CFO) — verify whether this is the top finance role.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Mary L. Contadino profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>Incoming VP Finance at a large ($94M) sports and cultural institution. If this is a new hire, introduce Farther in the context of institutional endowment management for complex organizations.</p>
+        <div class="action-window">Window: Move within 60–90 days of appointment — verify hire date and title seniority first</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>136144356</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$94,087,705</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>N660</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$32,687,895</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$50M · institutional mandate</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">INTERNATIONAL TENNIS HALL OF FAME</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">60–90 days from hire — verify date</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">94,087,705</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Mary L. Contadino CMA, CPA, CSCA — Vice President Finance at International Tennis Hall of Fame</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">Urban Edge Housing Corporation</div>
+        <div class="card-org-sub">Boston, MA · Housing – Nonprofit Developer</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Claire Sokolowski, CPA listed as Director of Finance at Urban Edge Housing Corporation on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $74.7M in assets per Farther contact data. Caution: housing nonprofits carry real estate as primary assets — investable endowment may differ substantially from total assets.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Claire Sokolowski profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>New finance director at a large housing nonprofit. Introduce Farther&#x27;s capability to manage complex institutional portfolios for mission-driven organizations. Verify whether the asset base includes investable endowment before outreach.</p>
+        <div class="action-window">Window: Move within 60–90 days of appointment — verify hire date and asset composition first</div>
+      </div>
+      
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">URBAN EDGE HOUSING CORPORATION</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">60–90 days from hire — verify date</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Claire Sokolowski, CPA — Director of Finance at Urban Edge Housing Corporation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">Boston Senior Home Care</div>
+        <div class="card-org-sub">Boston, MA · Health — Home Care Services</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Todd Spencer listed as Chief Financial Officer at Boston Senior Home Care on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $21.0M in assets (IRS 990 · tax year 2023). No NTEE code in ProPublica record — org may file under government or other category.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Todd Spencer profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>Incoming CFO at a $21M home care organization. New CFOs at organizations of this size frequently review the investment advisor relationship in their first 90 days. Early introduction establishes Farther before any formal review process.</p>
+        <div class="action-window">Window: Move within 60–90 days of appointment — verify hire date first</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>42546251</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$21,047,643</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>—</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$57,165,852</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$10M · institutional-grade advisor</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">BOSTON SENIOR HOME CARE INC</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">60–90 days from hire — verify date</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">21,047,643</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Todd Spencer — Chief Financial Officer at Boston Senior Home Care</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">Kids In Need Foundation</div>
+        <div class="card-org-sub">Little Canada, MN · Education — School Supply Fund Distribution</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Martin Christian Boye, MBA listed as Director of Finance And Accounting at Kids In Need Foundation on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $19.5M in assets (IRS 990 · tax year 2023). NTEE B12 — education fund raising and distribution.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Martin Christian Boye profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>New finance director at a $19.5M education foundation. At this asset level, a professional investment advisor is warranted. Frame Farther as a partner for growing endowments at mission-focused foundations.</p>
+        <div class="action-window">Window: Move within 60–90 days of appointment — verify hire date first</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>821078462</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$19,484,598</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>B12</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$46,433,388</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$10M · institutional-grade advisor</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">KIDS IN NEED FOUNDATION</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">60–90 days from hire — verify date</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">19,484,598</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Martin Christian  Boye, MBA — Director of Finance And Accounting at Kids In Need Foundation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">EFI Foundation</div>
+        <div class="card-org-sub">Washington, DC · Environmental Research</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Lin Yuan listed as Director, Energy Finance at EFI Foundation on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $2.7M in assets (IRS 990 · tax year 2023). Caution: &#x27;Energy Finance&#x27; title may be a program or grant role rather than the top organizational finance officer. Verify role scope before outreach.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Lin Yuan profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>Verify whether Lin Yuan is the organizational finance director or a program finance role. If organizational, introduce Farther for a $2.7M-asset foundation looking to professionalize.</p>
+        <div class="action-window">Window: Verify role scope before acting — may not be SIG-001 equivalent</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>873398574</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$2,715,958</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>C05</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$4,136,283</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$1M · AUM threshold met</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">EFI FOUNDATION</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">Verify first — role scope unclear</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">2,715,958</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Lin Yuan — Director, Energy Finance at EFI Foundation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-score-tag tag-score1">Score 1</span>
+      <div class="card-org">
+        <div class="card-org-name">DT Institute</div>
+        <div class="card-org-sub">Arlington, VA · International Peace &amp; Security</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="finding">
+        <div class="finding-badges">
+          <div class="cert-badge c-inferred">Inferred</div>
+          <div class="p-badge p-high">High</div>
+        </div>
+        <div class="finding-content">
+          <div class="finding-title">SIG-001 — New CFO / Finance Director</div>
+          <div class="finding-desc">Dicky Dooradi listed as Vice President of Finance And Operations at DT Institute on LinkedIn (recentlyChangedJobs filter — exact date unknown). Organization holds $2.5M in assets (IRS 990 · tax year 2023). NTEE Q40 — international peace and security think tank in Arlington, VA.</div>
+          <div class="finding-source">Source: <a href="">LinkedIn · Dicky Dooradi profile</a></div>
+        </div>
+      </div>
+      <div class="action-box">
+        <strong>Outreach angle</strong>
+        <p>New VP of Finance at a DC-area think tank. At $2.5M assets, the organization may be building toward first-time professional investment management. Soft introduction appropriate.</p>
+        <div class="action-window">Window: Soft outreach — verify hire date and whether assets are investable endowment</div>
+      </div>
+      
+      <div class="enrich-box">
+        <strong>Enrichment · ProPublica 990</strong>
+        <div class="enrich-grid">
+          <div class="enrich-item"><label>EIN</label><span>842494757</span></div>
+          <div class="enrich-item"><label>Total Assets</label><span>$2,453,862</span></div>
+          <div class="enrich-item"><label>990 Tax Year</label><span>2023</span></div>
+          <div class="enrich-item"><label>NTEE Code</label><span>Q40</span></div>
+          <div class="enrich-item"><label>Revenue</label><span>$12,299,567</span></div>
+          <div class="enrich-item"><label>AUM Range</label><span>&gt;$1M · AUM threshold met</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#5a5852;"><strong>AUM note:</strong> IRS 990 · tax year 2023</p>
+      </div>
+      
+      <div class="hubspot-box">
+        <strong>HubSpot write-back · STAGED (MCP key pending)</strong>
+        <div class="prop-row"><span class="prop-name">Org Name (CSV):</span> <span class="prop-val">DT INSTITUTE</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_type:</span> <span class="prop-val">SIG-001</span></div>
+        <div class="prop-row"><span class="prop-name">lark_signal_date:</span> <span class="prop-val"></span></div>
+        <div class="prop-row"><span class="prop-name">lark_compound_score:</span> <span class="prop-val">1</span></div>
+        <div class="prop-row"><span class="prop-name">lark_action_window:</span> <span class="prop-val">Soft outreach — verify first</span></div>
+        <div class="prop-row"><span class="prop-name">lark_contact_status:</span> <span class="prop-val">Signal Detected</span></div>
+        <div class="prop-row"><span class="prop-name">lark_aum_estimated:</span> <span class="prop-val">2,453,862</span></div>
+        <div class="prop-row"><span class="prop-name">lark_last_sweep:</span> <span class="prop-val">2026-06-17</span></div>
+        <div class="prop-row"><span class="prop-name">lark_notes:</span> <span class="prop-val">Dicky Dooradi — Vice President of Finance And Operations at DT Institute</span></div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  
+  <div class="section-header">
+    <span class="section-tag tag-ambig">Ambiguous</span>
+    <span class="section-title">Manual review required · Do not outreach without confirming match</span>
+  </div>
+  
+  <div class="ambig-card" style="border-left: 4px solid var(--green);">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 68</span>
+      <div class="ambig-org">Albuquerque Regional Economic Alliance:  State · Signal in window ✓</div>
+    </div>
+    <div class="ambig-signal">UNKNOWN — Signal type unclear · 2026-06-22</div>
+    <div class="review-box">
+      Fuzzy score 68 · Best match in pipeline: &#x27;ALBUQUERQUE REGIONAL ECONOMIC ALLIANCE&#x27;. Signal: Albuquerque Regional Economic Alliance:  State, City Back Spacecraft Manufacturer, Adding 152 Jobs. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card" style="border-left: 4px solid var(--green);">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 64</span>
+      <div class="ambig-org">Parkland Health Foundation</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 64 · Best match in pipeline: &#x27;PARKLAND HEALTH CENTER FOUNDATION&#x27;. Signal: Christopher Jones — Director of Finance at Parkland Health Foundation. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">American Brain Foundation</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;THE BRAIN FOUNDATION&#x27;. Signal: Gina Palma — Director, Finance &amp; Operations at American Brain Foundation. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">Saskatoon Community Foundation</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;COMMUNITY FOUNDATION INC&#x27;. Signal: Laurie Thomas, CPA, CMA, F.CIRI — Director of Finance And Administration at Saskatoon Community Foundation. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">Alliance for Tribal Clean Energy</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;SOUTHERN ALLIANCE FOR CLEAN ENERGY&#x27;. Signal: Cornelia Ogendo — Senior Director of Project Finance &amp; Structuring at Alliance for Tribal Clean Energy. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">Omaha Symphony</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;OMAHA SYMPHONY ASSOCIATION&#x27;. Signal: Matt Evans — Director of Finance at Omaha Symphony. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">Foundation Wellness</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;AMY WELLNESS FOUNDATION&#x27;. Signal: Carrie Vidlak — Chief Financial Officer at Foundation Wellness. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  <div class="ambig-card">
+    <div class="ambig-header">
+      <span class="ambig-score-tag">AMBIGUOUS · Score 57</span>
+      <div class="ambig-org">The OpenAI Foundation</div>
+    </div>
+    <div class="ambig-signal">SIG-001 — New CFO / Finance Director · </div>
+    <div class="review-box">
+      Fuzzy score 57 · Best match in pipeline: &#x27;OpenAI Foundation fka OpenAI Inc&#x27;. Signal: Robert Kaiden — Chief Financial Officer at The OpenAI Foundation. Confirm whether org name matches a contact in HubSpot before acting.
+    </div>
+  </div>
+
+  
+  <div class="section-header">
+    <span class="section-tag" style="background:#888;">Discarded</span>
+    <span class="section-title">False positives — confirmed wrong org · No pipeline match</span>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-bottom:20px;font-size:13px;">
+    <p><strong>Spectra Capital (matched to SC INC via acronym fallback)</strong> — Acronym fallback mismatch. Spectra Capital is a for-profit investment firm. SC INC (Los Lunas, NM, NTEE E92) is a different organization. Match rejected.</p>
+<p><strong>GlamourGals Foundation (Sehajpaul Walia, VP Finance — Laurier Chapter)</strong> — Signal is for a student chapter VP Finance position at Laurier University — not an organizational leadership hire. Chapter-level LinkedIn roles are not SIG-001 equivalents.</p>
+<p><strong>InTouch (Patrick François, CFO — Belgium-based)</strong> — LinkedIn signal is for Patrick François in Belgium. InTouch Inc in Farther&#x27;s contact list (Montgomery, AL, NTEE T22) is a different organization. Geographic mismatch — cross-border false positive.</p>
+  </div>
+
+  
+  <div class="section-header">
+    <span class="section-tag" style="background:var(--mid);">Channels</span>
+    <span class="section-title">Signal channel summary · Sweep 1</span>
+  </div>
+  <table class="channel-table">
+    <thead>
+      <tr><th>Channel</th><th>Signals</th><th>Status</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Layer A</td>
+        <td>SIG-001, SIG-002, SIG-005, SIG-008</td>
+        <td>Active</td>
+        <td class="ch-none">GlobeNewswire RSS — 40 entries reviewed · 1 signal found (M&amp;A, post-window) · 0 actionable</td>
+      </tr>
+      <tr>
+        <td>Layer B</td>
+        <td>SIG-001, SIG-002, SIG-003, SIG-004, SIG-006</td>
+        <td>FAILED</td>
+        <td class="ch-deferred">Currents API — 403 Cloudflare block on all 7 queries · 0 signals · COVERAGE GAP</td>
+      </tr>
+      <tr>
+        <td>Ch 5</td>
+        <td>SIG-001, SIG-002, SIG-005</td>
+        <td>Active</td>
+        <td class="ch-fire">LinkedIn/Apify — 6 queries · 75 profiles reviewed · 74 signals extracted · Queries 4–6 (SIG-002, SIG-005) returned 0 profiles — coverage gap for ED/CEO and IC Chair</td>
+      </tr></tbody>
+  </table>
+
+  
+  <div class="gap-section">
+    <h3>Coverage gaps — this sweep</h3>
+    <ul><li>Layer B (Currents API) blocked — 403 Cloudflare on all 7 queries · news coverage zero this run</li><li>LinkedIn Ch5 queries 4–6 returned 0 profiles — SIG-002 (ED/CEO) and SIG-005 (CIO) undetected</li><li>No web search channels run (Channels 3, 4, 6, 7, 8) — no press release or org site checks</li><li>LinkedIn Short mode — hire dates not available · all signals labeled Inferred</li></ul>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div>Lark · Prospect Intelligence Agent · Farther Institutional</div>
+  <div>Sweep 1 · Generated 2026-06-17</div>
+  <div>HubSpot write-back: STAGED — MCP key pending</div>
+</div>
+</body>
+</html>

@@ -14,7 +14,7 @@ PROFILE FILES:
 TEMPLATE:
     profiles/_template.md — blank profile, read-only
 
-USAGE — Phase 4:
+USAGE — Phase 4 (monthly sweep):
     from utilities.lark_profile import upsert_profile, ProfileUpdate
 
     update = ProfileUpdate(
@@ -25,6 +25,17 @@ USAGE — Phase 4:
         ...
     )
     path = upsert_profile(update, profiles_dir="profiles/")
+
+USAGE — Phase C (enrichment run):
+    from utilities.lark_profile import upsert_enrichment_profile, EnrichmentProfileUpdate
+
+    update = EnrichmentProfileUpdate(
+        org_name="Candid",
+        aum_estimated="$100M · IRS 990 · tax year 2023",
+        ein="13-1837418",
+        ...
+    )
+    path = upsert_enrichment_profile(update, profiles_dir="EnrichmentProfileUpdate/")
 """
 
 import os
@@ -101,6 +112,54 @@ class ProfileUpdate:
     def __post_init__(self):
         if not self.org_slug:
             self.org_slug = _slugify(self.org_name)
+
+
+@dataclass
+class EnrichmentProfileUpdate:
+    """
+    Data for an enrichment-run profile create/update.
+    Used by upsert_enrichment_profile() — never by upsert_profile().
+
+    Does NOT touch the signal timeline, compound score, action window,
+    or lark_contact_status. Enrichment is background intelligence only.
+    """
+    # Identity (required)
+    org_name:           str
+    org_slug:           str  = ""   # auto-generated from org_name if blank
+    enrichment_date:    str  = ""   # ISO date — defaults to today
+
+    # Identity fields
+    website:            str  = ""
+    hq:                 str  = ""   # City, State
+    org_type:           str  = ""
+
+    # Financial (from ProPublica 990)
+    ein:                str  = ""
+    aum_estimated:      str  = ""   # "$12.5M · IRS 990 · tax year 2023"
+    aum_source:         str  = ""   # "IRS 990 · tax year 2023"
+    endowment_status:   str  = ""   # Established / First-time / None known / Unknown
+    aum_threshold:      str  = ""   # "Yes — $10M+" etc.
+    ntee_code:          str  = ""
+
+    # Incumbent advisor (from web search)
+    current_advisor:    str  = ""   # firm name or "Unknown"
+    advisor_source:     str  = ""   # URL or method
+
+    # Leadership (from org website)
+    ceo_ed:             str  = ""   # "Name · Title · retrieved YYYY-MM-DD"
+    cfo:                str  = ""
+    board_chair:        str  = ""
+    ic_chair:           str  = ""
+
+    # Notes and gaps
+    enrichment_notes:   str  = ""   # summary of what was found
+    open_threads:       list[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        if not self.org_slug:
+            self.org_slug = _slugify(self.org_name)
+        if not self.enrichment_date:
+            self.enrichment_date = datetime.now().strftime("%Y-%m-%d")
 
 
 # ── TEMPLATE READER ───────────────────────────────────────────────────────────
@@ -361,6 +420,171 @@ def upsert_profile(
     return filepath
 
 
+def upsert_enrichment_profile(
+    update:        "EnrichmentProfileUpdate",
+    profiles_dir:  str = "EnrichmentProfileUpdate/",
+    template_path: str = "profiles/_template.md",
+    verbose:       bool = True,
+) -> str:
+    """
+    Create or update a prospect profile from an enrichment run.
+
+    Differs from upsert_profile() in three important ways:
+    1. Never writes to the signal timeline
+    2. Never touches compound_score, action_window, or lark_contact_status
+    3. Appends enrichment findings to "What Lark currently knows" with
+       an [ENRICHMENT RUN · date] label, not a signal label
+
+    If the profile already exists: updates Financial, Leadership, and
+    "What Lark currently knows" sections only.
+
+    If the profile doesn't exist: creates it from _template.md with
+    enrichment fields populated and signal sections left as placeholders.
+
+    Returns:
+        Path to the profile file (created or updated)
+    """
+    os.makedirs(profiles_dir, exist_ok=True)
+
+    filename = f"{update.org_slug}-profile.md"
+    filepath = os.path.join(profiles_dir, filename)
+    today    = update.enrichment_date
+
+    if os.path.exists(filepath):
+        # UPDATE existing profile — enrichment fields only
+        with open(filepath, "r", encoding="utf-8") as f:
+            profile = f.read()
+
+        # Update Last updated date
+        profile = re.sub(
+            r'Last updated:.*$',
+            f'Last updated: {today}',
+            profile,
+            flags=re.MULTILINE
+        )
+
+        # Financial fields — overwrite only if new data was found
+        if update.aum_estimated:
+            profile = _replace_field(profile, "EST. AUM:", update.aum_estimated)
+        if update.aum_source:
+            profile = _replace_field(profile, "AUM SOURCE:", update.aum_source)
+        if update.ein:
+            profile = _replace_field(profile, "EIN:", update.ein)
+        if update.endowment_status:
+            profile = _replace_field(profile, "ENDOWMENT STATUS:", update.endowment_status)
+        if update.aum_threshold:
+            profile = _replace_field(profile, "AUM THRESHOLD MET:", update.aum_threshold)
+        if update.current_advisor:
+            profile = _replace_field(profile, "CURRENT ADVISOR:", update.current_advisor)
+
+        # Leadership — overwrite only if new data was found
+        if update.ceo_ed:
+            profile = _replace_field(profile, "ED / CEO:", update.ceo_ed)
+        if update.cfo:
+            profile = _replace_field(profile, "CFO / FINANCE DIRECTOR:", update.cfo)
+        if update.board_chair:
+            profile = _replace_field(profile, "BOARD CHAIR:", update.board_chair)
+        if update.ic_chair:
+            profile = _replace_field(profile, "INVESTMENT COMMITTEE CHAIR:", update.ic_chair)
+
+        # Append enrichment notes to "What Lark currently knows"
+        # Never overwrites — always appends with dated enrichment label
+        if update.enrichment_notes:
+            notes_entry = f"[ENRICHMENT RUN · {today}] {update.enrichment_notes}"
+            if "[No sweep completed yet]" in profile:
+                profile = profile.replace("[No sweep completed yet]", notes_entry)
+            elif "## What Lark currently knows" in profile:
+                profile = re.sub(
+                    r'(## What Lark currently knows\n(?:>.*\n)*\n?)',
+                    rf'\1{notes_entry}\n',
+                    profile
+                )
+
+        action = "Updated (enrichment)"
+
+    else:
+        # CREATE new profile from template, enrichment fields only
+        template = _read_template(template_path)
+        profile  = _build_enrichment_profile(update, template)
+        action   = "Created (enrichment)"
+
+    # Write profile
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(profile)
+
+    if verbose:
+        print(f"[Profile] {action}: {filepath}")
+
+    return filepath
+
+
+def _build_enrichment_profile(update: "EnrichmentProfileUpdate", template: str) -> str:
+    """
+    Build a new profile from the template using enrichment data only.
+    Signal timeline, compound score, and action window are left as
+    template placeholders — they are set only by signal sweeps.
+    """
+    today   = update.enrichment_date
+    profile = template
+
+    # Header
+    profile = profile.replace("[ORG NAME]", update.org_name)
+    profile = profile.replace("[ISO date]", today)
+
+    # Identity
+    if update.website:
+        profile = _replace_field(profile, "WEBSITE:", update.website)
+    if update.hq:
+        profile = _replace_field(profile, "HQ:", update.hq)
+    if update.ein:
+        profile = _replace_field(profile, "EIN:", update.ein)
+    if update.org_type:
+        profile = _replace_field(profile, "ORG TYPE:", update.org_type)
+
+    # Financial
+    if update.aum_estimated:
+        profile = _replace_field(profile, "EST. AUM:", update.aum_estimated)
+    if update.aum_source:
+        profile = _replace_field(profile, "AUM SOURCE:", update.aum_source)
+    if update.endowment_status:
+        profile = _replace_field(profile, "ENDOWMENT STATUS:", update.endowment_status)
+    if update.aum_threshold:
+        profile = _replace_field(profile, "AUM THRESHOLD MET:", update.aum_threshold)
+    if update.current_advisor:
+        profile = _replace_field(profile, "CURRENT ADVISOR:", update.current_advisor)
+    if update.advisor_source:
+        profile = _replace_field(profile, "ADVISOR SINCE:", update.advisor_source)
+
+    # Leadership
+    if update.ceo_ed:
+        profile = _replace_field(profile, "ED / CEO:", update.ceo_ed)
+    if update.cfo:
+        profile = _replace_field(profile, "CFO / FINANCE DIRECTOR:", update.cfo)
+    if update.board_chair:
+        profile = _replace_field(profile, "BOARD CHAIR:", update.board_chair)
+    if update.ic_chair:
+        profile = _replace_field(profile, "INVESTMENT COMMITTEE CHAIR:", update.ic_chair)
+
+    # "What Lark currently knows" — enrichment notes with label
+    if update.enrichment_notes:
+        notes_entry = f"[ENRICHMENT RUN · {today}] {update.enrichment_notes}"
+        profile = profile.replace("[No sweep completed yet]", notes_entry)
+
+    # Open threads — replace defaults only if explicitly provided
+    if update.open_threads:
+        threads = "\n".join(f"- [ ] {t}" for t in update.open_threads)
+        profile = re.sub(
+            r'- \[ \] Pull most recent 990.*?- \[ \] Confirm AUM and endowment status\n?',
+            threads + "\n",
+            profile,
+            flags=re.DOTALL
+        )
+
+    # Signal timeline and compound score intentionally left as template placeholders
+
+    return profile
+
+
 def profile_exists(org_slug: str, profiles_dir: str = "profiles/") -> bool:
     """Check if a profile already exists for this org."""
     return os.path.exists(os.path.join(profiles_dir, f"{org_slug}-profile.md"))
@@ -409,6 +633,12 @@ CFO / FINANCE DIRECTOR:
 > Most recent first.
 [No signals fired yet]
 
+## What Lark currently knows
+> Confirmed facts only. Label each: Confirmed / Inferred / Speculative.
+> Do not add general knowledge — only findings from actual sweeps.
+
+[No sweep completed yet]
+
 ## Open threads
 - [ ] Pull most recent 990 from ProPublica
 - [ ] Confirm current investment advisor (990 Schedule D or press)
@@ -452,4 +682,51 @@ CFO / FINANCE DIRECTOR:
         print(f"\n  Profile excerpt:\n")
         print("\n".join(content.split("\n")[:20]))
 
-    print(f"\n✓ lark_profile.py self-test passed.\n")
+    print(f"\n✓ upsert_profile self-test passed.")
+
+    # ── EnrichmentProfileUpdate self-test ─────────────────────────────────────
+    print("\n🪶  Testing upsert_enrichment_profile...\n")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        template_path = os.path.join(tmpdir, "_template.md")
+        with open(template_path, "w") as f:
+            f.write(minimal_template)
+
+        enrich_update = EnrichmentProfileUpdate(
+            org_name         = "Anderson Family Foundation",
+            hq               = "Boston, MA",
+            ein              = "04-1234567",
+            enrichment_date  = "2026-06-22",
+            aum_estimated    = "$8.2M · IRS 990 · tax year 2023",
+            aum_source       = "IRS 990 · tax year 2023",
+            endowment_status = "Established",
+            aum_threshold    = "Yes — $5M+",
+            current_advisor  = "Unknown",
+            ceo_ed           = "Jane Smith · Executive Director · retrieved 2026-06-22",
+            enrichment_notes = "990 confirms $8.2M endowment. No incumbent advisor found publicly. "
+                               "Website lists Jane Smith as ED. CFO role not listed.",
+        )
+
+        path = upsert_enrichment_profile(
+            enrich_update,
+            profiles_dir  = tmpdir,
+            template_path = template_path,
+            verbose       = True,
+        )
+
+        with open(path) as f:
+            content = f.read()
+
+        # Confirm enrichment data written
+        assert "Anderson Family Foundation" in content
+        assert "ENRICHMENT RUN" in content
+        assert "8.2M" in content
+
+        # Confirm signal timeline NOT touched
+        assert "SIG-" not in content, "Signal data must not appear in enrichment profile"
+        assert "[No signals fired yet]" in content, "Signal timeline placeholder must remain intact"
+
+        print(f"\n  Profile excerpt:\n")
+        print("\n".join(content.split("\n")[:25]))
+
+    print(f"\n✓ upsert_enrichment_profile self-test passed.\n")

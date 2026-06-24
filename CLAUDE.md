@@ -17,6 +17,11 @@ Lark/
   CLAUDE.md                        ← you are here
   honesty.md                       ← read before every output
   memory.md                        ← Lark maintains this
+  lark_launch.py             ← monthly sweep launcher · run from terminal
+  lark_enrich.py             ← enrichment run launcher · on-demand only
+  preflight/
+    rss-YYYY-MM-DD.json      ← GlobeNewswire RSS · written by lark_launch.py
+    currents-YYYY-MM-DD.json ← Currents API · written by lark_launch.py
   .env                             ← credentials (never commit)
   .env.example                     ← safe to commit
 
@@ -27,6 +32,7 @@ Lark/
 
   skills/
     monthly-sweep.md                ← sweep protocol (monthly cadence)
+    enrichment-run.md               ← enrichment run protocol (on-demand)
     signal-classification.md       ← signal triage
     alert-writer.md                ← output formatting
     behavioral-flags.md            ← standing patterns
@@ -34,6 +40,9 @@ Lark/
   profiles/
     _template.md                   ← blank profile template
     [org-slug]-profile.md          ← created on first signal
+
+  EnrichmentProfileUpdate/
+    [org-slug]-profile.md          ← created by enrichment run · no signal data
 
   utilities/
     lark_fuzzy_matcher.py          ← contact matching — batch-first
@@ -55,6 +64,8 @@ Lark/
     YYYY-MM-DD-lark-monthly.html            ← HTML report
     YYYY-MM-DD-lark-hubspot-writeback.csv  ← staged write-back
     YYYY-MM-DD-lark-hubspot-sweep-only.csv ← lark_last_sweep only
+    YYYY-MM-DD-lark-enrichment.csv          ← enrichment write-back (no signal data)
+    YYYY-MM-DD-lark-enrichment-report.html  ← enrichment report
 ```
 
 ---
@@ -73,6 +84,28 @@ Never call the matcher after each individual search result.
 
 ---
 
+## Lark has two operating modes
+
+**MONTHLY SWEEP** (default · signal-first)
+Triggered by: `python3 lark_launch.py` or the monthly sweep prompt
+Protocol: `monthly-sweep.md`
+Lark scans the world for signals, matches them against the pipeline, enriches
+what fires, scores, and reports. Nothing happens without a signal.
+
+**ENRICHMENT RUN** (on-demand · list-first)
+Triggered by: `python3 lark_enrich.py --orgs orgs.txt` or a prompt with
+`MODE: ENRICHMENT RUN` explicitly stated
+Protocol: `enrichment-run.md`
+A list of orgs is provided. Lark skips signal search (Phase 1), runs matching
+to resolve canonical names, enriches, updates profiles, and outputs a write-back
+CSV and report. Does NOT score, does NOT set action windows, does NOT change
+lark_contact_status.
+
+These two modes are independent. They do not share prompts.
+If the trigger is ambiguous, ask which mode before starting.
+
+---
+
 ## How Lark sweeps — the correct model
 
 **There are exactly four phases. They run in strict order.
@@ -83,8 +116,13 @@ Do NOT start the next phase until the current one is fully complete.**
 ║  PHASE 1 — SEARCH (all channels, all signals)                ║
 ║                                                              ║
 ║  Run every active channel search query.                      ║
-║  For each result, extract (org_name, domain) and append      ║
+║  For each result, extract full signal metadata and append    ║
 ║  to a single master list: all_signals = []                   ║
+║  Each entry must be a dict — not a tuple:                    ║
+║  {"org_name": "...", "domain": "...",                        ║
+║   "signal_type": "SIG-001", "channel": "Ch1",                ║
+║   "source_url": "...", "finding_text": "...",                ║
+║   "signal_date": "YYYY-MM-DD", "confidence": "Confirmed"}    ║
 ║                                                              ║
 ║  ⛔ Do NOT call the matcher yet.                             ║
 ║  ⛔ Do NOT enrich yet.                                       ║
@@ -98,12 +136,25 @@ Do NOT start the next phase until the current one is fully complete.**
 ╔══════════════════════════════════════════════════════════════╗
 ║  PHASE 2 — MATCH (one batch call, after ALL searches done)   ║
 ║                                                              ║
-║  from utilities.lark_fuzzy_matcher import LarkMatcher        ║
-║  matcher = LarkMatcher("contact_data/contacts.csv")          ║
-║  results = matcher.match_batch(all_signals)                  ║
+║  # Write signals then run the standalone script:             ║
+║  import json                                                 ║
+║  with open('/tmp/lark_signals.json', 'w') as f:              ║
+║      json.dump(all_signals, f)                               ║
 ║                                                              ║
-║  This is ONE call. Not one call per signal. Not one call     ║
-║  per channel. One call for the entire collected list.        ║
+║  python3 utilities/lark_run_matcher.py                       ║
+║                                                              ║
+║  # Script may be backgrounded automatically — that is fine.  ║
+║  # Poll for the completion flag instead of waiting on stdout:║
+║                                                              ║
+║  python3 -c "                                                ║
+║  import time, os                                             ║
+║  print('Waiting for matcher...')                             ║
+║  while not os.path.exists('/tmp/lark_match_complete.flag'):  ║
+║      time.sleep(30); print('Still running...')              ║
+║  print(open('/tmp/lark_match_complete.flag').read())"        ║
+║                                                              ║
+║  # Do NOT proceed to Phase 3 until flag file exists.         ║
+║  # This is ONE call. Not one per signal. Not one per channel.║
 ║                                                              ║
 ║  ⛔ Do NOT enrich yet.                                       ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -171,8 +222,7 @@ The matcher processes 190K records against every signal in one pass.
 Interrupting it or running it multiple times wastes 3–6 minutes per call.
 
 The matcher prints progress to stdout. Claude Code reads stdout directly.
-Just run it and wait — it will complete. At 190K records this takes
-3–6 minutes. That is normal. Do not interrupt it.
+Just run it and wait — it will complete. At 190K records this takes 15–25 minutes in Claude Code. That is normal. Do not interrupt it. Do not background it.
 
 ---
 
@@ -240,9 +290,18 @@ from utilities.lark_dedup import dedup_signals
 
 matcher = LarkMatcher("contact_data/contacts.csv")
 
-all_signals = [("Boston Foundation", "tbf.org"), ("MADD", "")]
-all_signals = dedup_signals(all_signals)   # always dedup before match
-results     = matcher.match_batch(all_signals)
+all_signals = [
+    {"org_name": "Boston Foundation", "domain": "tbf.org",
+     "signal_type": "SIG-001", "channel": "Ch1",
+     "source_url": "https://tbf.org/news", "finding_text": "New CFO Jane Smith",
+     "signal_date": "2026-06-01", "confidence": "Confirmed"},
+]
+# Write to file and run matcher
+import json
+with open('/tmp/lark_signals.json', 'w') as f:
+    json.dump(all_signals, f)
+# python3 utilities/lark_run_matcher.py
+# Wait for MATCH_BATCH_COMPLETE
 
 for r in results:
     if r.is_match and r.meets_aum_threshold:
@@ -400,6 +459,27 @@ path   = upsert_profile(update, profiles_dir="profiles/")
 ```
 
 Self-test: `python utilities/lark_profile.py`
+
+---
+
+### enrichment-run.md
+On-demand enrichment run protocol. Read this instead of `monthly-sweep.md`
+when `MODE: ENRICHMENT RUN` is set in the prompt.
+
+Key differences from the monthly sweep:
+- No Phase 1 (no signal search)
+- Matching uses the provided org list instead of signal-discovered names
+- Enrichment runs ProPublica + website check + advisor search per org
+- Profiles updated via `upsert_enrichment_profile(EnrichmentProfileUpdate(...))` —
+  never `upsert_profile()`. Signal timeline, compound score, and action window
+  are not touched. Findings land in "What Lark currently knows" with an
+  `[ENRICHMENT RUN · date]` label.
+- HubSpot CSV writes enrichment fields only — does NOT write
+  `lark_signal_type`, `lark_compound_score`, `lark_action_window`, or `lark_contact_status`
+- Output files use `-enrichment-` suffix, not `-monthly-`
+
+Never use this protocol during a monthly sweep.
+Never use the sweep protocol during an enrichment run.
 
 ---
 

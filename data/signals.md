@@ -56,7 +56,15 @@ inherited.
 - Is there a capital campaign or AUM event in the same window? (Score-2 or 3)
 
 **New iterations logged:**
-[None yet — log confirmed fires here with date, org, and source]
+- 2026-02-11 · MADD (Irving TX) · Kevin Byrne as CFO · Source: madd.org · ACTION WINDOW EXPIRED May 12, 2026
+- 2026-06-17 (validation) · Historic Macon Foundation (Macon GA) · Stefanie Joyner Director of Finance And Operations · Source: LinkedIn Ch5 · Inferred · Compound with SIG-002 (Emily Hopkins ED) → Score-2 · window through Aug 1 2026
+- 2026-06-17 (validation) · NSABP Foundation Inc (Pittsburgh PA) · Pedro Barelli CFO · Source: LinkedIn Ch5 · Inferred · ACTIVE — verify hire date · AUM $97.9M
+- 2026-06-17 (validation) · International Tennis Hall of Fame (Newport RI) · Mary L. Contadino VP Finance · Source: LinkedIn Ch5 · Inferred · verify hire date and whether VP is top finance role · AUM $94.1M
+- 2026-06-17 (validation) · Urban Edge Housing Corporation (Boston MA) · Claire Sokolowski Director of Finance · Source: LinkedIn Ch5 · Inferred · verify hire date and investable assets vs. real estate · AUM $74.7M CSV
+- 2026-06-17 (validation) · Boston Senior Home Care Inc (Boston MA) · Todd Spencer CFO · Source: LinkedIn Ch5 · Inferred · verify hire date · AUM $21.0M
+- 2026-06-17 (validation) · Kids In Need Foundation (Little Canada MN) · Martin Christian Boye Director Finance And Accounting · Source: LinkedIn Ch5 · Inferred · verify hire date · AUM $19.5M
+- 2026-06-17 (validation) · DT Institute (Arlington VA) · Dicky Dooradi VP Finance And Operations · Source: LinkedIn Ch5 · Inferred · verify hire date · AUM $2.5M
+- 2026-06-17 (validation) · EFI Foundation (Washington DC) · Lin Yuan Director Energy Finance · Source: LinkedIn Ch5 · Inferred · verify whether role is org finance vs. program finance · AUM $2.7M
 
 ---
 
@@ -92,7 +100,11 @@ incentive to validate or replace it.
 - Is there a CFO change in the same window? (Score-3 if both)
 
 **New iterations logged:**
-[None yet — log confirmed fires here with date, org, and source]
+- 2026-05-29 · Unleashing Potential (St. Louis MO) · Darlene Sowell retired (17-yr tenure) · Bridget Jones interim Jun 4 · ACTIVE — window open through ~Nov 25, 2026
+- 2026-02-02 · Historic Macon Foundation (Macon GA) · Emily Hopkins named ED · Source: maconchamber.com · ACTIVE — window closes Aug 1, 2026
+- 2025-09-16 · ActionAid USA (Washington DC) · Niranjali Amerasinghe new ED · ACTION WINDOW EXPIRED Mar 14, 2026
+- 2025-02-05 · Joni and Friends (Agoura Hills CA) · Pastor Shawn Thornton new President · ACTION WINDOW EXPIRED Aug 4, 2025
+- 2025-02-19 · Teen Cancer America (Santa Monica CA) · Shannon Sullivan new CEO · ACTION WINDOW EXPIRED Aug 18, 2025
 
 ---
 
@@ -163,7 +175,7 @@ by weeks or months — that gap is the outreach window. The org is in the
 - Is the org in a capital campaign? (Gift may be campaign-related)
 
 **New iterations logged:**
-[None yet — log confirmed fires here with date, org, and source]
+- 2026-05-14 · Fiver Children's Foundation (New York NY) · Annual benefit raised $1.5M vs. $1.2M goal (25% over) · Source: GlobeNewswire Jun 18, 2026 · ACTIVE — window closes ~Jul 22, 2026
 
 ---
 

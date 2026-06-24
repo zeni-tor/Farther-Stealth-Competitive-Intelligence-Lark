@@ -8,7 +8,8 @@ LinkedIn / Apify is deferred — see note at bottom.
 ## 1. Relevant?
 
 Discard if none apply:
-- Relates to a US nonprofit, foundation, endowment, or similar org
+- Relates to a US-based nonprofit, foundation, endowment, or similar org
+- Org is headquartered in the United States — discard Canadian, UK, or other non-US orgs
 - Event type matches a leadership change, financial event, governance
   change, or strategic event (one of the 10 signals in data/signals.md)
 - Source is credible — press release, news outlet, org website, or 990
@@ -58,7 +59,11 @@ If spans multiple → classify by primary signal, note secondary.
 - New strategic plan without explicit investment language
 - Conference presence (Phase 2)
 
-**Discard** — not a US nonprofit event, or not one of the 10 signals
+**Discard** — any of:
+- Not a US nonprofit event
+- Org is based outside the United States (Canada, UK, etc.)
+- Not one of the 10 signals
+- Jobs announcement or economic development news (not a nonprofit signal)
 
 ---
 
@@ -89,19 +94,14 @@ Fuzzy matcher determines whether org is in the pipeline — not this file.
 - Small orgs ($1M–$5M, community-based) → CFO/finance director hires
   may appear on LinkedIn only and will be missed until Apify activates
 
-**Coverage gap note — include in every report:**
-"LinkedIn not scanned this sweep. Small org leadership changes
-announced exclusively on LinkedIn are outside current coverage.
-Apify integration deferred pending financial justification."
+**Channel 5 is ACTIVE — Apify Starter plan approved · ~$1.20/sweep**
 
-**When LinkedIn URL appears in web search results:**
+Channel 5 signals are always Inferred — LinkedIn is self-reported.
+Confirm via org website or press release before labeling Confirmed
+or recommending outreach.
+
+**When LinkedIn URL appears in web search results (other channels):**
 - Do not attempt to scrape
 - Log the URL as a coverage note
 - Mark the signal Speculative if LinkedIn is the only source
 - Confirmed or Inferred requires a non-LinkedIn source
-
-**To activate LinkedIn scanning:**
-1. Confirm Apify Starter plan ($29/mo) is justified by signal volume
-2. Add Apify credentials to utilities/
-3. Update this file: remove DEFERRED status
-4. Update monthly-sweep.md Channel 5: remove DEFERRED status

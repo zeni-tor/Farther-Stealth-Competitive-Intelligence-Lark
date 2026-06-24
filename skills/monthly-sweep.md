@@ -19,7 +19,7 @@ If nothing fires on a channel, one line: "No activity detected."
 The report reflects what actually changed in the market this month —
 not a status update on what organizations are generally up to.
 
-A quiet week is short. That is correct.
+A quiet month is short. That is correct.
 
 ```
 SIGNAL SCAN (broad) → ORG EXTRACTION → FUZZY MATCH → ENRICH → SCORE → REPORT
@@ -36,10 +36,20 @@ Include today's date and lookback window in every sweep prompt.
 **Standard monthly sweep prompt:**
 ```
 Run a full signal sweep. All channels active including Channel 5 (LinkedIn/Apify).
+
 Today's date: [DATE]
-Lookback window: past 7 days ([DATE-7] – [DATE])
+
+Lookback window: past 30 days ([DATE-30] – [DATE])
+
 Use contact_data/contacts.csv. Load the fuzzy matcher once, run all
-searches first, then call match_batch() once after all searches complete.
+searches first (including LinkedIn via Apify), then run Phase 2 by
+writing all_signals to /tmp/lark_signals.json and running
+python3 utilities/lark_run_matcher.py as a standalone script.
+Wait for MATCH_BATCH_COMPLETE to print before proceeding to Phase 3.
+Do not use inline python3 -c for match_batch().
+Each signal in all_signals[] must be a dict with keys: org_name, domain,
+signal_type, channel, source_url, finding_text, signal_date, confidence.
+Deduplicate all_signals[] before calling match_batch().
 Do not read the contact list directly.
 Ask if anything is unclear before starting.
 ```
@@ -47,10 +57,18 @@ Ask if anything is unclear before starting.
 **First sweep / catch-up sweeps:**
 ```
 Run a full signal sweep. All channels active including Channel 5 (LinkedIn/Apify).
+
 Today's date: [DATE]
 Lookback window: past 30 days ([DATE-30] – [DATE])
 Use contact_data/contacts.csv. Load the fuzzy matcher once, run all
-searches first, then call match_batch() once after all searches complete.
+searches first (including LinkedIn via Apify), then run Phase 2 by
+writing all_signals to /tmp/lark_signals.json and running
+python3 utilities/lark_run_matcher.py as a standalone script.
+Wait for MATCH_BATCH_COMPLETE to print before proceeding to Phase 3.
+Do not use inline python3 -c for match_batch().
+Each signal in all_signals[] must be a dict with keys: org_name, domain,
+signal_type, channel, source_url, finding_text, signal_date, confidence.
+Deduplicate all_signals[] before calling match_batch().
 Do not read the contact list directly.
 Ask if anything is unclear before starting.
 ```
@@ -80,7 +98,7 @@ result  = matcher.match(org_name, domain=domain)
 Fuzzy matcher thresholds (validated 2026-06-16):
 - HIGH ≥ 80     → confirmed match → proceed to enrichment
 - AMBIGUOUS 50–79 → flag for manual review
-- NO_MATCH < 50  → discard, log
+- - NO_MATCH < 50  → AMBIGUOUS (flagged for human review — never silently discarded)
 
 ---
 
@@ -262,11 +280,27 @@ Step 1 · ProPublica API (free · every HIGH match)
   Write: lark_aum_estimated · lark_aum_source · lark_propublica_ein
   If no result: log as gap — do not estimate
 
-Step 2 · Web fetch org site (gap fill)
-  Check: leadership page · news · strategic plan · campaign pages
-  Fill: hire confirmation · endowment status · campaign status
+Step 2 · Org website (mission, leadership, board, campaigns)
+  Fetch the org's website. Look for:
+  - About page: mission statement, programs, communities served
+  - Leadership page: current CFO, CEO, board chair, IC chair
+  - Board page: full board list — flag any recognizable names
+  - News / press releases: campaigns, gifts, strategic plans, new programs,
+    new facilities, annual reports
+  Fill: hire confirmation · endowment status · campaign status · board list
 
-Step 3 · Google Drive 990s (Phase 2 · via MCP when live)
+Step 3 · Recent news search (talking points)
+  Search: "[org name]" recent news [year]
+  Also search:
+    "[org name]" "capital campaign" OR "campaign goal"
+    "[org name]" "strategic plan"
+    "[org name]" "new" "director" OR "president" OR "CEO"
+    "[org name]" "new building" OR "renovation" OR "expansion"
+  Prioritize results from the past 6 months.
+  If nothing recent, go back 12 months and note the age.
+  If nothing meaningful found: log explicitly — do not fabricate a hook.
+
+Step 4 · Google Drive 990s (Phase 2 · via MCP when live)
   Activate when MCP key is configured.
 ```
 
@@ -400,6 +434,53 @@ COVERAGE: [list any active gaps this sweep]
 [Channels with no activity]
 [Coverage gaps]
 [HubSpot write-back log — staged]
+```
+
+Each finding card includes a **call-prep section** beneath the signal summary.
+The goal of the first call is a second meeting:
+"I would love to set up time to visit and learn more about the work you all are doing."
+
+**Finding card format:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ORG NAME] · Score-[N] · [signal type]
+[City, State] · AUM: $[X]M (IRS 990 · tax year [year]) · EIN: [number]
+Incumbent advisor: [firm or Unknown]
+Signal: [finding text] · [date] · [Confirmed / Inferred] · [source URL]
+Action window: [window] · HubSpot: STAGED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MISSION
+  [1–2 sentences on what this org is focused on and who they serve.
+   Source: org website About page. Label: Confirmed / Inferred.]
+
+FUNDRAISING
+  Capital campaigns:  [active / recent / none known · name · goal · status]
+  Recent major gifts: [if found — amount, purpose, source]
+
+FINANCIAL HEALTH (IRS 990 · tax year [year])
+  Revenue:    $[X]M   YoY: [+X% / -X% / flat / unknown]
+  Expenses:   $[X]M   Budget: [balanced / surplus / deficit]
+  Net assets: $[X]M   Trend: [growing / flat / declining]
+
+BOARD (from org website · retrieved [date])
+  [Board member list with titles]
+  Notable: [Name · Title · why worth referencing on the call, if applicable]
+
+TALKING POINTS — why reach out today
+  [2–3 items. Each: what happened · when · source · Confirmed/Inferred/Speculative.
+   If nothing recent found: state explicitly — do not fabricate a hook.]
+  1. [Hook] — [date] — [source] — [confidence]
+  2. [Hook] — [date] — [source] — [confidence]
+
+CALL CONTACT
+  ED / CEO:  [name · title · source]
+  CFO:       [name · title · source]
+  IC Chair:  [name · title · source]
+
+OPEN THREADS
+  - [anything unresolved before outreach]
 ```
 
 ---

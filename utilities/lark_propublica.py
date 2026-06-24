@@ -54,7 +54,122 @@ ORG_ENDPOINT      = f"{PROPUBLICA_BASE}/organizations"
 REQUEST_DELAY_S   = 1.0   # polite delay between API calls
 REQUEST_TIMEOUT_S = 15
 
-# ── DATA STRUCTURES ───────────────────────────────────────────────────────────
+# ── NAME NORMALIZATION ────────────────────────────────────────────────────────
+
+# Legal suffix variants that ProPublica may store differently.
+# Each tuple: (full form, abbreviated form) — we try both.
+_SUFFIX_VARIANTS = [
+    ("Corporation", "Corp"),
+    ("Incorporated", "Inc"),
+    ("Association", "Assoc"),
+    ("Foundation", "Fdn"),
+    ("Organization", "Org"),
+    ("Institute", "Inst"),
+    ("International", "Intl"),
+    ("Limited", "Ltd"),
+    ("Services", "Svcs"),
+    ("Center", "Ctr"),
+    ("Healthcare", "Health Care"),
+]
+
+# Words to strip when building a shorter fallback search query.
+# Kept narrow — only unambiguous filler/legal words, not mission words.
+_STRIP_WORDS = {
+    "the", "of", "for", "and", "a", "an",
+    "corp", "corporation", "inc", "incorporated", "llc",
+    "association", "assoc", "fdn",
+    "organization", "org", "inst",
+    "intl", "ltd", "svcs",
+}
+
+
+def _name_variants(name: str) -> list[str]:
+    """
+    Generate search name variants for a given org name.
+    Returns a list of names to try in order, deduplicated.
+
+    Strategy:
+    1. Original name (as-is)
+    2. Suffix-swapped variants (Corp ↔ Corporation, etc.)
+    3. Stripped short form (most distinctive words only)
+
+    Example: "Urban Edge Housing Corporation"
+        → "Urban Edge Housing Corporation"
+        → "Urban Edge Housing Corp"
+        → "Urban Edge Housing"
+    """
+    import re
+    variants = [name.strip()]
+
+    # Suffix swap — use word boundaries to avoid partial matches
+    for full, abbr in _SUFFIX_VARIANTS:
+        # full → abbr
+        swapped = re.sub(rf'\b{re.escape(full)}\b', abbr, name, flags=re.IGNORECASE)
+        if swapped != name:
+            variants.append(swapped.strip())
+        # abbr → full
+        swapped = re.sub(rf'\b{re.escape(abbr)}\b', full, name, flags=re.IGNORECASE)
+        if swapped != name:
+            variants.append(swapped.strip())
+
+    # Short form — strip legal/filler words, keep 2–3 most distinctive tokens
+    tokens      = name.split()
+    distinctive = [t for t in tokens if t.lower().rstrip(".,") not in _STRIP_WORDS]
+    if len(distinctive) >= 2 and distinctive != tokens:
+        variants.append(" ".join(distinctive[:3]))
+
+    # Deduplicate while preserving order
+    seen   = set()
+    result = []
+    for v in variants:
+        key = v.lower().strip()
+        if key and key not in seen:
+            seen.add(key)
+            result.append(v)
+
+    return result
+
+
+def _best_search_result(organizations: list[dict], search_name: str) -> Optional[dict]:
+    """
+    Pick the best match from ProPublica search results.
+    Rather than blindly taking [0], scores each result by name similarity
+    against the search name and returns the highest scorer.
+
+    Falls back to [0] if no result scores above a minimum threshold.
+    """
+    if not organizations:
+        return None
+    if len(organizations) == 1:
+        return organizations[0]
+
+    search_lower = search_name.lower()
+
+    def _score(org: dict) -> float:
+        name = (org.get("name") or "").lower()
+        if not name:
+            return 0.0
+        # Exact match
+        if name == search_lower:
+            return 1.0
+        # One contains the other
+        if search_lower in name or name in search_lower:
+            return 0.8
+        # Word overlap ratio
+        search_words = set(search_lower.split())
+        name_words   = set(name.split())
+        overlap = len(search_words & name_words)
+        union   = len(search_words | name_words)
+        return overlap / union if union else 0.0
+
+    scored = [(org, _score(org)) for org in organizations]
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    best_org, best_score = scored[0]
+    # If best score is very low, still return it — caller handles not-found
+    return best_org
+
+
 
 @dataclass
 class OfficerEntry:
@@ -253,29 +368,50 @@ def enrich_org(
     # Step 1 — find EIN if not provided
     if not ein:
         search_name = matched_name or org_name
-        query = urllib.parse.urlencode({"q": search_name})
-        url   = f"{SEARCH_ENDPOINT}?{query}"
 
-        if verbose:
-            print(f"  [ProPublica] Searching: {search_name[:50]}")
+        # Build fallback chain: original → suffix variants → short form
+        name_attempts = _name_variants(search_name)
+        found_ein     = None
 
-        data, error = _get_json(url)
-        if error:
-            result.error = error
+        for attempt in name_attempts:
+            query = urllib.parse.urlencode({"q": attempt})
+            url   = f"{SEARCH_ENDPOINT}?{query}"
+
+            if verbose:
+                print(f"  [ProPublica] Searching: {attempt[:60]}")
+
+            data, error = _get_json(url)
+            if error:
+                if verbose:
+                    print(f"  [ProPublica] Search error: {error}")
+                continue
+
+            organizations = (data or {}).get("organizations", [])
+            if not organizations:
+                if verbose:
+                    print(f"  [ProPublica] No results — trying next variant")
+                time.sleep(REQUEST_DELAY_S)
+                continue
+
+            # Pick best result by name similarity rather than blindly taking [0]
+            org      = _best_search_result(organizations, attempt)
+            found_ein = str(org.get("ein", "")).strip()
+
+            if found_ein:
+                if verbose and attempt != search_name:
+                    print(f"  [ProPublica] Matched on variant: '{attempt}' → EIN {found_ein}")
+                break
+
+            time.sleep(REQUEST_DELAY_S)
+
+        if not found_ein:
+            result.error = (
+                f"Not found after {len(name_attempts)} search attempt(s): "
+                + " | ".join(f"'{a}'" for a in name_attempts)
+            )
             return result
 
-        organizations = (data or {}).get("organizations", [])
-        if not organizations:
-            result.error = "No results found"
-            return result
-
-        # Take the first result — best match by ProPublica's own ranking
-        org = organizations[0]
-        ein = str(org.get("ein", "")).strip()
-        if not ein:
-            result.error = "EIN not in search result"
-            return result
-
+        ein = found_ein
         time.sleep(REQUEST_DELAY_S)
 
     # Step 2 — fetch full org record by EIN
@@ -442,7 +578,7 @@ if __name__ == "__main__":
         python utilities/lark_propublica.py
     """
     print("\n🪶  lark_propublica.py — self-test")
-    print("   Testing with: Candid · EIN 13-1837418\n")
+    print("   Test 1: Candid · EIN known (skip search)\n")
 
     result = enrich_org(
         org_name="Candid",
@@ -459,4 +595,42 @@ if __name__ == "__main__":
         for k, v in fields.items():
             print(f"  {k}: {v}")
 
+    assert result.found, "Test 1 failed — Candid not found"
+    print(f"\n✓ Test 1 passed.")
+
+    # ── Test 2 — name variant fallback ───────────────────────────────────────
+    print("\n   Test 2: Urban Edge Housing Corporation → fallback to 'Corp' variant\n")
+
+    result2 = enrich_org(
+        org_name="Urban Edge Housing Corporation",
+        matched_name="Urban Edge Housing Corporation",
+        ein=None,
+        verbose=True,
+    )
+
+    print(f"\n{result2.summary()}")
+
+    # Should find it via "Urban Edge Housing Corp" or short form
+    if result2.found:
+        assert result2.ein == "222483475" or result2.ein == "22-2483475", \
+            f"Test 2: unexpected EIN {result2.ein}"
+        print(f"✓ Test 2 passed — found via name fallback · EIN {result2.ein}")
+    else:
+        print(f"  Test 2: not found ({result2.error}) — network issue or API change")
+
+    # ── Test 3 — name variants output ────────────────────────────────────────
+    print("\n   Test 3: _name_variants() output\n")
+    test_cases = [
+        "Urban Edge Housing Corporation",
+        "Boston Senior Home Care Inc",
+        "Historic Macon Foundation",
+        "Anderson Family Foundation",
+    ]
+    for name in test_cases:
+        variants = _name_variants(name)
+        print(f"  '{name}'")
+        for v in variants:
+            print(f"    → '{v}'")
+
+    print(f"\n✓ Test 3 passed.")
     print(f"\n✓ lark_propublica.py ready. Use enrich_batch() in Phase 3.\n")

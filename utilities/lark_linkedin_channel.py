@@ -96,14 +96,21 @@ SCRAPER_MODE = "Short"
 HEADCOUNT_FILTER = ["B", "C", "D"]
 
 # Function IDs for nonprofit finance and leadership roles.
-# 1=Accounting, 10=Finance, 5=Community and Social Services, 18=Operations
+# 1=Accounting, 10=Finance (for SIG-001)
+# 4=Business Development, 9=Entrepreneurship, 20=Program & Project Mgmt (for SIG-002)
 FINANCE_FUNCTION_IDS   = ["1", "10"]
-LEADERSHIP_FUNCTION_IDS = ["5", "10", "18"]
+LEADERSHIP_FUNCTION_IDS = ["4", "9", "20"]
+# 4=Business Development (CEO/ED/Managing Director)
+# 9=Entrepreneurship (some ED-founders self-classify here)
+# 20=Program and Project Management (common for small org EDs)
 
 # Seniority level IDs.
-# 220=Director, 300=Vice President, 310=CXO, 130=Strategic
-DIRECTOR_SENIORITY = ["220", "300", "310", "130"]
-CXO_SENIORITY      = ["310", "130"]
+# 220=Director, 300=Vice President, 310=CXO, 320=Owner/Partner
+# Note: 130=Strategic exists in taxonomy but is rarely user-populated — excluded
+DIRECTOR_SENIORITY = ["220", "300", "310", "320"]
+CXO_SENIORITY      = ["310", "320"]
+# 320=Owner/Partner — small nonprofit EDs often self-classify here
+# Removed 130=Strategic — rarely populated by LinkedIn users in practice
 
 
 # ── DATA STRUCTURES ───────────────────────────────────────────────────────────
