@@ -57,8 +57,13 @@ Lark/
     lark_signal_grouper.py         ← Phase 4 · groups signals by org for Lark to score
     lark_profile.py                ← Phase 4 · profile create/update from _template.md
 
+  inputs/
+    [advisor]-pilot.xlsx           ← HubSpot export · source file for enrichment runs
+    [advisor]-pilot.csv            ← CSV variant · same purpose
+    orgs.txt                       ← plain text org list · one per line
+
   contact_data/
-    contacts.csv                   ← full contacts list (190K)
+    contacts.csv                   ← full contacts list (190K) · matcher only · never read directly
 
   outputs/
     YYYY-MM-DD-lark-monthly.html            ← HTML report
@@ -93,13 +98,21 @@ Lark scans the world for signals, matches them against the pipeline, enriches
 what fires, scores, and reports. Nothing happens without a signal.
 
 **ENRICHMENT RUN** (on-demand · list-first)
-Triggered by: `python3 lark_enrich.py --orgs orgs.txt` or a prompt with
-`MODE: ENRICHMENT RUN` explicitly stated
+Triggered by:
+- `python3 lark_enrich.py --orgs orgs.txt` (via terminal — generates and pastes prompt)
+- A prompt with `MODE: ENRICHMENT RUN` explicitly stated (prompt-embedded org list)
+- "Run an enrichment run on inputs/[filename]" (clean start — Lark reads the file directly)
+
 Protocol: `enrichment-run.md`
+When a file path is given, Lark opens the file herself, parses the org list,
+extracts all available context (contacts, GS figures, email domains, campaign
+history), and proceeds. See enrichment-run.md Input format for full parsing
+instructions including HubSpot column alignment handling.
+
 A list of orgs is provided. Lark skips signal search (Phase 1), runs matching
 to resolve canonical names, enriches, updates profiles, and outputs a write-back
-CSV and report. Does NOT score, does NOT set action windows, does NOT change
-lark_contact_status.
+CSV and call-prep report. Does NOT score, does NOT set action windows, does NOT
+change lark_contact_status.
 
 These two modes are independent. They do not share prompts.
 If the trigger is ambiguous, ask which mode before starting.
@@ -464,7 +477,16 @@ Self-test: `python utilities/lark_profile.py`
 
 ### enrichment-run.md
 On-demand enrichment run protocol. Read this instead of `monthly-sweep.md`
-when `MODE: ENRICHMENT RUN` is set in the prompt.
+when triggered by any of:
+- `MODE: ENRICHMENT RUN` in the prompt
+- "Run an enrichment run on inputs/[filename]"
+- Any explicit request to enrich a provided list of orgs
+
+Two input paths are supported — see enrichment-run.md Input format:
+- **Path 1 (clean start):** a file in `inputs/` — Lark reads and parses it directly,
+  handling HubSpot column alignment, GS fields, and contact grouping herself
+- **Path 2 (prompt-embedded):** org list already extracted and formatted in the prompt
+  by `lark_enrich.py` — skip file reading, begin Phase A directly
 
 Key differences from the monthly sweep:
 - No Phase 1 (no signal search)
