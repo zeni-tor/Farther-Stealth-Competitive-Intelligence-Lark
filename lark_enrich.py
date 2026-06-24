@@ -168,7 +168,7 @@ def _clean_val(v) -> str:
 
 # ── SPREADSHEET PARSER (CSV + XLSX) ───────────────────────────────────────────
 
-def _parse_spreadsheet(df_raw_fn, path: str, advisor_filter: str | None) -> list[dict]:
+def _parse_spreadsheet(df_raw_fn, path: str, advisor_filter: Optional[str]) -> list:
     """
     Shared parsing logic for CSV and Excel inputs.
 
@@ -279,7 +279,7 @@ def _parse_spreadsheet(df_raw_fn, path: str, advisor_filter: str | None) -> list
     return list(orgs.values())
 
 
-def parse_excel_file(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
+def parse_excel_file(path: str, advisor_filter: Optional[str] = None) -> list:
     try:
         import pandas as pd
     except ImportError:
@@ -295,7 +295,7 @@ def parse_excel_file(path: str, advisor_filter: Optional[str] = None) -> list[di
     return _parse_spreadsheet(loader, path, advisor_filter)
 
 
-def parse_csv_file(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
+def parse_csv_file(path: str, advisor_filter: Optional[str] = None) -> list:
     try:
         import pandas as pd
     except ImportError:
@@ -313,7 +313,7 @@ def parse_csv_file(path: str, advisor_filter: Optional[str] = None) -> list[dict
 
 # ── PLAIN TEXT PARSER ─────────────────────────────────────────────────────────
 
-def parse_org_file(path: str) -> list[dict]:
+def parse_org_file(path: str) -> list:
     """
     Parse a plain-text org list. Returns list of minimal org dicts
     (org_name only — no pre-existing context).
@@ -353,7 +353,7 @@ def parse_org_file(path: str) -> list[dict]:
 
 # ── INPUT ROUTER ──────────────────────────────────────────────────────────────
 
-def parse_input(path: str, advisor_filter: Optional[str] = None) -> list[dict]:
+def parse_input(path: str, advisor_filter: Optional[str] = None) -> list:
     ext = path.lower()
     if ext.endswith(".xlsx") or ext.endswith(".xls"):
         return parse_excel_file(path, advisor_filter)
@@ -400,7 +400,7 @@ def _fmt_org_block(org: dict) -> str:
 
 # ── BUILD ENRICHMENT PROMPT ───────────────────────────────────────────────────
 
-def build_enrichment_prompt(orgs: list[dict], today: str) -> str:
+def build_enrichment_prompt(orgs: list, today: str) -> str:
     org_blocks = "\n\n".join(_fmt_org_block(o) for o in orgs)
 
     has_gs = any(
