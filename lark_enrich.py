@@ -445,36 +445,28 @@ Org list ({len(orgs)} orgs):
 
 Instructions:
 
-Phase A — Match
-  Build enrichment_signals[] from the org list above.
-  Each entry: org_name, domain (use email domain if available),
-  signal_type="ENRICH", channel="Enrichment Run",
-  source_url="", finding_text="Manual enrichment request",
-  signal_date="{today}", confidence="N/A"
-  Write to /tmp/lark_signals.json.
-  Run python3 utilities/lark_run_matcher.py.
-  Wait for MATCH_BATCH_COMPLETE before continuing.
-
-Phase B — Research (answer the five advisor questions per org)
-  See skills/enrichment-run.md Phase B for full instructions.
+Phase A — Research (answer the five advisor questions per org)
+  Do NOT run the fuzzy matcher. Do NOT write to /tmp/lark_signals.json.
+  Do NOT run lark_run_matcher.py. These are known contacts — trust the list.
+  See skills/enrichment-run.md Phase A for full instructions.
   Use the pre-existing context above as a starting point for each org.
   Pull TWO years of 990 data from ProPublica where available.
   Fetch each org's website. Run all six targeted news searches.
   Add anything relevant you find beyond the five questions.
 
-Phase C — Profile
-  Call upsert_enrichment_profile() for each enriched org.
+Phase B — Profile
+  Call upsert_enrichment_profile() for each org.
   Do NOT overwrite existing signal timeline or compound score.
 
-Phase D — HubSpot CSV
+Phase C — HubSpot CSV
   Write enrichment fields only to outputs/{today}-lark-enrichment.csv.
   Do NOT write lark_signal_type, lark_compound_score, lark_action_window,
   or lark_contact_status.
 
-Phase E — Report
+Phase D — Report
   Generate outputs/{today}-lark-enrichment-report.html.
   One call-prep card per org. Plain English. Human voice.
-  See skills/enrichment-run.md Phase E for card format.
+  See skills/enrichment-run.md Phase D for card format.
 
 Do NOT read contact_data/contacts.csv directly.
 Do NOT run a monthly sweep.

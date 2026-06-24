@@ -109,10 +109,10 @@ extracts all available context (contacts, GS figures, email domains, campaign
 history), and proceeds. See enrichment-run.md Input format for full parsing
 instructions including HubSpot column alignment handling.
 
-A list of orgs is provided. Lark skips signal search (Phase 1), runs matching
-to resolve canonical names, enriches, updates profiles, and outputs a write-back
-CSV and call-prep report. Does NOT score, does NOT set action windows, does NOT
-change lark_contact_status.
+A list of orgs is provided. These are known contacts — the advisor already
+confirmed them. Do NOT run the fuzzy matcher. Do NOT write to lark_signals.json.
+Do NOT run lark_run_matcher.py. Trust the list and enrich every org in it.
+Does NOT score, does NOT set action windows, does NOT change lark_contact_status.
 
 These two modes are independent. They do not share prompts.
 If the trigger is ambiguous, ask which mode before starting.
@@ -487,6 +487,10 @@ Two input paths are supported — see enrichment-run.md Input format:
   handling HubSpot column alignment, GS fields, and contact grouping herself
 - **Path 2 (prompt-embedded):** org list already extracted and formatted in the prompt
   by `lark_enrich.py` — skip file reading, begin Phase A directly
+
+There is NO matching phase in an enrichment run. Do NOT run the fuzzy matcher.
+Do NOT write to /tmp/lark_signals.json. Do NOT run lark_run_matcher.py.
+These are known contacts. Trust the list. Enrich every org in it.
 
 Key differences from the monthly sweep:
 - No Phase 1 (no signal search)

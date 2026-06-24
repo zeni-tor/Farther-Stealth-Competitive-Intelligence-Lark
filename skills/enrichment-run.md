@@ -18,7 +18,7 @@ The monthly sweep finds orgs worth paying attention to.
 The Enrichment Run fills in the intelligence on orgs we already decided matter.
 
 ```
-PROVIDED LIST → MATCH (CSV) → ENRICH → PROFILE → HUBSPOT CSV → REPORT
+PROVIDED LIST → RESEARCH → PROFILE → HUBSPOT CSV → REPORT
 ```
 
 ---
@@ -179,50 +179,16 @@ Never read `contact_data/contacts.csv` directly. The matcher reads it.
 
 ---
 
-## Phase A — Match (mandatory, even for known orgs)
+## Phase A — Research (answer the five advisor questions)
 
-Even though we already decided these orgs are in our pipeline, we still need
-the canonical CSV name for HubSpot write-back. Run the matcher.
-
-```python
-# Build signal dicts — one per org, with a placeholder signal type
-enrichment_signals = [
-    {
-        "org_name":     org_name,
-        "domain":       domain,          # empty string if not available
-        "signal_type":  "ENRICH",        # placeholder — not a real signal
-        "channel":      "Enrichment Run",
-        "source_url":   "",
-        "finding_text": "Manual enrichment request",
-        "signal_date":  today,
-        "confidence":   "N/A",
-    }
-    for org_name, domain in org_list
-]
-
-import json
-with open('/tmp/lark_signals.json', 'w') as f:
-    json.dump(enrichment_signals, f)
-
-# Then run:
-# python3 utilities/lark_run_matcher.py
-```
-
-Wait for MATCH_BATCH_COMPLETE before continuing.
-
-Matching rules in this mode:
-- HIGH → proceed to enrichment
-- AMBIGUOUS → flag for manual review, include in output, do NOT enrich
-- NO_MATCH → flag, request human review — the org name may be wrong or not in CSV
-- An AMBIGUOUS or NO_MATCH is NOT a reason to skip the report entry; include it
-
----
-
-## Phase B — Research (answer the five advisor questions)
-
-This is the core of the enrichment run. For each HIGH match, you are
+This is the core of the enrichment run. For every org in the list, you are
 answering five specific questions an advisor needs before a cold call.
 Run all five research steps. Log what you find and what you don't.
+
+There is no matching phase. Do not run the fuzzy matcher. Do not write
+to /tmp/lark_signals.json. Do not run lark_run_matcher.py. These orgs
+are known contacts — the advisor already confirmed them. Trust the list
+and enrich every org in it.
 
 The goal is not a data dump — it is a briefing. Write as if you are a
 smart colleague who did the research and is telling the advisor what they
@@ -414,7 +380,7 @@ If not found: log as unknown. Do not estimate or guess.
 
 ---
 
-## Phase C — Profile update
+## Phase B — Profile update
 
 For each enriched org, call `upsert_enrichment_profile()` to create or update the profile.
 Do NOT use `upsert_profile()` — that function is for signal sweeps only and will
@@ -448,7 +414,7 @@ The signal timeline and compound score are left exactly as they were.
 
 ---
 
-## Phase D — HubSpot CSV
+## Phase C — HubSpot CSV
 
 Write a single enrichment write-back CSV. Use the standard `write_hubspot_csv()`
 from `utilities/lark_hubspot_csv.py`.
@@ -460,7 +426,7 @@ already had those values (they were set by a signal sweep).
 Fields to write per org:
 
 ```
-Org Name                    ← canonical CSV name from matcher
+Org Name                    ← org name from the input file
 lark_aum_estimated          ← if ProPublica returned data
 lark_aum_source             ← "IRS 990 · tax year [year]"
 lark_propublica_ein         ← if found
@@ -481,7 +447,7 @@ This is separate from the sweep write-back CSV to avoid overwriting signal data.
 
 ---
 
-## Phase E — Report
+## Phase D — Report
 
 Output a call-prep report. One card per enriched org, structured around
 the five advisor questions. The advisor should be able to pick this up
