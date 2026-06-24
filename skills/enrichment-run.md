@@ -67,6 +67,17 @@ If GS fields are present, use them as the starting AUM estimate and cross-refere
 against ProPublica — do not ignore them. If no domain is provided, proceed without
 one — the fuzzy matcher can match on name alone.
 
+**HubSpot export column alignment:** When the input comes from a HubSpot Excel
+or CSV export, the header row and data rows may not be perfectly aligned. A blank
+leading row, merged cell, or export artefact can shift all data values one or more
+columns left or right of their header. Do not assume the value under the
+"Associated Company (Primary)" header is always the org name. Use the full row
+context to identify each field correctly — email domains, phone number format,
+GS asset figures, and title strings are all recognisable regardless of which
+column they land in. If a value under the company column looks like a person name,
+job title, city, or phone number, check adjacent columns for the actual org name
+before skipping the row.
+
 ---
 
 ## Phase A — Match (mandatory, even for known orgs)
