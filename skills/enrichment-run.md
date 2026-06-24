@@ -41,42 +41,141 @@ enrichment data is background intelligence, not an outreach trigger.
 
 ## Input format
 
-The enrichment list arrives as one org name per line, passed in the prompt:
+An enrichment run can be triggered in two ways. Read the trigger to know
+which input path to follow.
 
+---
+
+### Path 1 — File in inputs/ (clean start from Claude Code)
+
+When someone opens Claude Code and says something like:
+
+> "Run an enrichment run on inputs/Jay_Chang_Pilot.xlsx"
+> "Enrich the orgs in inputs/pilot.csv"
+> "Run enrichment on inputs/orgs.txt"
+
+This is a clean start. There is no pre-built prompt. You read the file
+yourself and extract everything you need before beginning Phase A.
+
+**Step 1 — Read the file**
+
+```python
+import pandas as pd
+
+# For Excel
+df_raw = pd.read_excel("inputs/[filename]", header=None, dtype=str)
+
+# For CSV
+df_raw = pd.read_csv("inputs/[filename]", header=None, dtype=str)
+
+# For plain text
+with open("inputs/[filename]") as f:
+    lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
 ```
-Anderson Family Foundation
-Boston Senior Home Care
-Candid
-Historic Macon Foundation
+
+Plain text files are one org name per line. Skip to Step 3.
+
+**Step 2 — Parse Excel/CSV (HubSpot export format)**
+
+HubSpot exports have a specific structure, but it is not always clean.
+Follow these rules carefully:
+
+*Find the header row:*
+Row 0 is sometimes blank. Scan the first 5 rows for the row that contains
+"Associated Company (Primary)" or "Associated Company" — that is the header
+row. Do not assume it is row 0 or row 1.
+
+*Find the company column:*
+Look for a column whose header is (case-insensitive):
+  - "Associated Company (Primary)" ← preferred
+  - "Associated Company"
+  - "Company"
+  - "Organization"
+
+*Column alignment may be off — this is expected:*
+HubSpot exports sometimes have a blank leading row or a merged-cell artefact
+that shifts all data values one or more columns left or right of the header.
+Do not assume the value directly under the company column header is the org name.
+
+Use the full row context to identify fields correctly. Each field type is
+recognisable regardless of which column it lands in:
+  - Email: contains @
+  - Phone: mostly digits, dashes, parentheses
+  - GS - Total Assets / GS_Investments_Securities_Sync: large integers
+  - City/State: short, one or two words, no @ or digits
+  - Title / Job role: "Executive Director", "CDO", "CEO", "Development Coordinator"
+  - Org name: multi-word proper noun, often contains "Foundation", "Health",
+    "Center", "School", "Museum", "Inc", etc. — but not always. Use judgment.
+
+If a value under the company column looks like a person name, job title,
+city, or phone number, check adjacent columns for the actual org name.
+
+*Extract the org list:*
+For each data row, identify:
+  - org_name (the actual org, not a title or person name)
+  - domain (derive from the email column if present: "mim.org" from "brittany.bell@mim.org")
+  - All other fields: contact name, title, phone, decision maker flag,
+    campaign history, tier, city, state, GS asset figures, HubSpot Company ID
+
+Group rows by org — if two contacts are at the same org, they belong to
+the same enrichment record. Do not create duplicate records.
+
+Filter out rows where the org value is:
+  - A person's name (first + last, title-cased, no org indicator words)
+  - A job title ("CEO", "Director", "Philanthropy Officer")
+  - A city name or state abbreviation
+  - A phone number, email address, or numeric ID
+  - The advisor's own name (e.g. "Aaron Sheklin")
+  - A consulting firm or for-profit company clearly not in the nonprofit space
+
+When uncertain whether an org qualifies (healthcare systems, utilities,
+sports teams), include it and flag it for human review rather than dropping it.
+
+**Step 3 — Build the enrichment context**
+
+For each org, you now have a structured record:
+```
+org_name:     Musical Instrument Museum
+domain:       mim.org
+city:         Surprise, AZ
+gs_total_assets:    199605235  (Farther internal estimate)
+gs_investments:     129837498  (Farther internal estimate)
+hubspot_company_id: 42703849514
+contacts:
+  - Brittany Bell | Philanthropy Officer | brittany.bell@mim.org
+    Campaign: [ATTENDED] May Webinar | Tier: Tier 1 | Decision Maker: No
 ```
 
-Optionally with domains (if lark_enrich.py resolves them from a CSV):
+If GS fields are present, use them as the starting AUM estimate. Cross-reference
+against ProPublica — do not ignore them. Label them "Farther internal estimate"
+in all output. Note any divergence from the 990 figure.
 
-```
-Anderson Family Foundation | andersonfamilyfoundation.org
-Boston Senior Home Care | bostonseniorhomecare.org
-```
+Proceed to Phase A with the full org list.
 
-Optionally with pre-existing GS fields from a HubSpot export:
+---
 
-```
-Anderson Family Foundation | gs_total_assets=1426346 | gs_investments=523135
-```
+### Path 2 — Prompt-embedded org list (via lark_enrich.py)
 
-If GS fields are present, use them as the starting AUM estimate and cross-reference
-against ProPublica — do not ignore them. If no domain is provided, proceed without
-one — the fuzzy matcher can match on name alone.
+When the prompt already contains the org list in structured text — generated
+by `lark_enrich.py` — skip the file reading step. The context is already
+extracted and formatted. Begin Phase A directly.
 
-**HubSpot export column alignment:** When the input comes from a HubSpot Excel
-or CSV export, the header row and data rows may not be perfectly aligned. A blank
-leading row, merged cell, or export artefact can shift all data values one or more
-columns left or right of their header. Do not assume the value under the
-"Associated Company (Primary)" header is always the org name. Use the full row
-context to identify each field correctly — email domains, phone number format,
-GS asset figures, and title strings are all recognisable regardless of which
-column they land in. If a value under the company column looks like a person name,
-job title, city, or phone number, check adjacent columns for the actual org name
-before skipping the row.
+Recognise this path by the presence of `MODE: ENRICHMENT RUN` at the top
+of the prompt and an explicit org list with contact details embedded.
+
+---
+
+### inputs/ folder convention
+
+Pilot files, advisor lists, and any other source files for enrichment runs
+live in `inputs/`. This folder is separate from:
+  - `contact_data/` — the 190K contacts.csv for the fuzzy matcher (do not touch)
+  - `outputs/` — enrichment CSVs, reports, and HubSpot write-backs
+  - `EnrichmentProfileUpdate/` — profile files created by enrichment runs
+
+Never read `contact_data/contacts.csv` directly. The matcher reads it.
+
+---
 
 ---
 
