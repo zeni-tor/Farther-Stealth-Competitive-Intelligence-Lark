@@ -22,7 +22,10 @@ APIFY ACTOR:
     No cookies required.
 
 ENVIRONMENT:
-    APIFY_TOKEN — required, set before running any sweep
+    APIFY_TOKEN   — required, set before running any sweep
+    APIFY_TASK_ID — required, saved task ID from Apify console
+                    Get it from: console.apify.com/actors/tasks/{ID}/input
+                    Add to .env: APIFY_TASK_ID=6L80aaMcrBmVrFflP
     export APIFY_TOKEN=your_token_here
 
 SIGNAL SCOPE:
@@ -68,12 +71,12 @@ except ImportError:
 APIFY_BASE_URL = "https://api.apify.com/v2"
 ACTOR_ID       = "harvestapi~linkedin-profile-search"
 
-# Sync endpoint — waits for completion, returns dataset items directly.
-# Max wait is 300s (Apify default). LinkedIn searches at 2 pages complete
-# in ~30–60s typically.
-RUN_SYNC_ENDPOINT = (
-    f"{APIFY_BASE_URL}/acts/{ACTOR_ID}/run-sync-get-dataset-items"
-)
+def _build_endpoint() -> str:
+    """Build the correct API endpoint at call time so env vars are current."""
+    task_id = os.getenv("APIFY_TASK_ID", "").strip()
+    if task_id:
+        return f"{APIFY_BASE_URL}/actor-tasks/{task_id}/run-sync-get-dataset-items"
+    return f"{APIFY_BASE_URL}/acts/{ACTOR_ID}/run-sync-get-dataset-items"
 
 # Pages per query. Each page = 25 profiles = $0.10.
 # 2 pages = 50 profiles = $0.20 per query.
@@ -273,7 +276,7 @@ def _call_apify(payload: dict, token: str, timeout: int = 300) -> list[dict]:
     send_payload = {k: v for k, v in payload.items()
                     if not k.startswith("_")}
 
-    url      = f"{RUN_SYNC_ENDPOINT}?token={token}"
+    url      = f"{_build_endpoint()}?token={token}"
     body     = json.dumps(send_payload).encode("utf-8")
     headers  = {"Content-Type": "application/json"}
     req      = urllib.request.Request(url, data=body, headers=headers,
@@ -566,7 +569,13 @@ if __name__ == "__main__":
     import sys
 
     print("\n🪶  lark_linkedin_channel.py — self-test")
-    print("   Actor: harvestapi/linkedin-profile-search")
+    endpoint = _build_endpoint()
+    task_id = os.getenv("APIFY_TASK_ID", "").strip()
+    if task_id:
+        print(f"   Task endpoint: actor-tasks/{task_id}")
+    else:
+        print("   Actor endpoint: harvestapi/linkedin-profile-search")
+        print("   ⚠  APIFY_TASK_ID not set — may return 403")
     print("   Mode: Short · 1 page (25 profiles) · ~$0.10\n")
 
     token = os.environ.get("APIFY_TOKEN", "")
