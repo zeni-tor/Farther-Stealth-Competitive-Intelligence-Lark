@@ -362,3 +362,11 @@ Flag these prominently in both Slack and the HTML report.
 - When a Watching entry reaches Medium+ confidence: move it to Active Signals
 - When a signal type proves not actionable: move it to Retired with a note
 - Never hand this file to a human to write — Lark owns it
+
+**Channel 9 — RFP Intelligence:**
+After Channels 1–8 and after Channel 8 cross-check, run the RFP Intelligence
+channel per `skills/rfp-intelligence.md`. RFP findings are NOT scored as
+SIG-001 through SIG-010 signals. They are stored in `HistoricalRFPData/`
+and reported in a separate HTML report. A pipeline match is noted on the
+org's profile but does not trigger automatic outreach.
+Update `rfp_intelligence_sector_rotation` in memory.md after each sweep.

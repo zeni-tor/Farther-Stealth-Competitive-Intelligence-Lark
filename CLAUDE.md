@@ -52,6 +52,8 @@ Lark/
 
   inputs/
     [advisor]-pilot.xlsx           ← HubSpot export · source file for enrichment runs
+    [advisor]-pilot.csv            ← CSV variant · same purpose
+    orgs.txt                       ← plain text org list · one per line
 
   contact_data/
     contacts.csv                   ← full contacts list (190K) · matcher only · never read directly
@@ -63,7 +65,6 @@ Lark/
     YYYY-MM-DD-lark-enrichment.csv          ← enrichment write-back (no signal data)
     YYYY-MM-DD-lark-enrichment-report.html  ← enrichment report
     YYYY-MM-DD-lark-rfp-intelligence.html   ← Channel 9 RFP report (separate from main)
-```
     lark_fuzzy_matcher.py          ← contact matching — batch-first
     lark_fuzzy_test.py             ← threshold validation
     lark_dedup.py                  ← deduplicates all_signals[] before match_batch()
@@ -109,8 +110,8 @@ Never call the matcher after each individual search result.
 Triggered by: `python3 lark_launch.py` or the monthly sweep prompt
 Protocol: `skills/monthly-sweep.md`
 Lark scans the world for signals, matches against the pipeline, enriches
-what fires, scores, and reports. Nothing happens without a signal.
-Channel 9 (RFP Intelligence) runs after Channels 1–8 each sweep.
+what fires, scores, and reports. Channel 9 (RFP Intelligence) runs
+automatically after Channels 1–8 every sweep.
 
 **ENRICHMENT RUN** (on-demand · list-first)
 Triggered by: `python3 lark_enrich.py`, a prompt with `MODE: ENRICHMENT RUN`,
@@ -122,13 +123,12 @@ call-prep report. Does NOT score, does NOT set action windows, does NOT
 change lark_contact_status.
 
 **CHANNEL 9 — RFP INTELLIGENCE** (runs after Channels 1–8 each sweep)
-Triggered by: "Run the RFP Intelligence channel" or as part of monthly sweep
+Triggered by: automatically during monthly sweep, or "Run the RFP Intelligence channel"
 Protocol: `skills/rfp-intelligence.md`
 Scans for published nonprofit investment management RFPs. Builds structured
 records in `HistoricalRFPData/`. Does NOT score contacts or trigger outreach.
-Pipeline matches noted on org profiles. All records kept regardless of match —
-serves as research corpus for Farther's RFP creation team. Produces a separate
-`outputs/YYYY-MM-DD-lark-rfp-intelligence.html` report.
+Pipeline matches noted on org profiles. All records kept regardless of match.
+Produces a separate `outputs/YYYY-MM-DD-lark-rfp-intelligence.html` report.
 
 These modes are independent. They do not share prompts.
 If the trigger is ambiguous, ask which mode before starting.
@@ -288,6 +288,7 @@ Ask if anything is unclear before starting.
 ```
 Channels 1–4, 6–8  → ACTIVE · all signals
 Channel 5           → ACTIVE · LinkedIn via Apify · lark_linkedin_channel.py
+Channel 9           → ACTIVE · RFP Intelligence · skills/rfp-intelligence.md
 HubSpot MCP         → STAGED · MCP key pending · write-back to CSV
 ```
 
