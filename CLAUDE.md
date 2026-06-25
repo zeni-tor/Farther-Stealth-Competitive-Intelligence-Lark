@@ -50,7 +50,20 @@ Lark/
     [org-slug]-[year]-rfp.pdf      ← raw RFP document (if fetchable)
     [org-slug]-[year]-rfp-record.md ← full structured RFP record
 
-  utilities/
+  inputs/
+    [advisor]-pilot.xlsx           ← HubSpot export · source file for enrichment runs
+
+  contact_data/
+    contacts.csv                   ← full contacts list (190K) · matcher only · never read directly
+
+  outputs/
+    YYYY-MM-DD-lark-monthly.html            ← HTML report
+    YYYY-MM-DD-lark-hubspot-writeback.csv  ← staged write-back
+    YYYY-MM-DD-lark-hubspot-sweep-only.csv ← lark_last_sweep only
+    YYYY-MM-DD-lark-enrichment.csv          ← enrichment write-back (no signal data)
+    YYYY-MM-DD-lark-enrichment-report.html  ← enrichment report
+    YYYY-MM-DD-lark-rfp-intelligence.html   ← Channel 9 RFP report (separate from main)
+```
     lark_fuzzy_matcher.py          ← contact matching — batch-first
     lark_fuzzy_test.py             ← threshold validation
     lark_dedup.py                  ← deduplicates all_signals[] before match_batch()
@@ -63,13 +76,8 @@ Lark/
     lark_signal_grouper.py         ← Phase 4 · groups signals by org for Lark to score
     lark_profile.py                ← Phase 4 · profile create/update from _template.md
 
-  inputs/
-    [advisor]-pilot.xlsx           ← HubSpot export · source file for enrichment runs
-    [advisor]-pilot.csv            ← CSV variant · same purpose
-    orgs.txt                       ← plain text org list · one per line
-
   contact_data/
-    contacts.csv                   ← full contacts list (190K) · matcher only · never read directly
+    contacts.csv                   ← full contacts list (190K)
 
   outputs/
     YYYY-MM-DD-lark-monthly.html            ← HTML report
@@ -95,42 +103,35 @@ Never call the matcher after each individual search result.
 
 ---
 
-## Lark has two operating modes
+## Lark has three operating modes
 
 **MONTHLY SWEEP** (default · signal-first)
 Triggered by: `python3 lark_launch.py` or the monthly sweep prompt
-Protocol: `monthly-sweep.md`
-Lark scans the world for signals, matches them against the pipeline, enriches
+Protocol: `skills/monthly-sweep.md`
+Lark scans the world for signals, matches against the pipeline, enriches
 what fires, scores, and reports. Nothing happens without a signal.
+Channel 9 (RFP Intelligence) runs after Channels 1–8 each sweep.
 
 **ENRICHMENT RUN** (on-demand · list-first)
-Triggered by:
-- `python3 lark_enrich.py --orgs orgs.txt` (via terminal — generates and pastes prompt)
-- A prompt with `MODE: ENRICHMENT RUN` explicitly stated (prompt-embedded org list)
-- "Run an enrichment run on inputs/[filename]" (clean start — Lark reads the file directly)
-
-Protocol: `enrichment-run.md`
-When a file path is given, Lark opens the file herself, parses the org list,
-extracts all available context (contacts, GS figures, email domains, campaign
-history), and proceeds. See enrichment-run.md Input format for full parsing
-instructions including HubSpot column alignment handling.
-
-A list of orgs is provided. These are known contacts — the advisor already
-confirmed them. Do NOT run the fuzzy matcher. Do NOT write to lark_signals.json.
-Do NOT run lark_run_matcher.py. Trust the list and enrich every org in it.
-Does NOT score, does NOT set action windows, does NOT change lark_contact_status.
-
-These two modes are independent. They do not share prompts.
-If the trigger is ambiguous, ask which mode before starting.
+Triggered by: `python3 lark_enrich.py`, a prompt with `MODE: ENRICHMENT RUN`,
+or "Run an enrichment run on inputs/[filename]"
+Protocol: `skills/enrichment-run.md`
+A list of known contacts is provided. Do NOT run the fuzzy matcher. Do NOT
+search for signals. Enrich every org in the list directly and produce a
+call-prep report. Does NOT score, does NOT set action windows, does NOT
+change lark_contact_status.
 
 **CHANNEL 9 — RFP INTELLIGENCE** (runs after Channels 1–8 each sweep)
+Triggered by: "Run the RFP Intelligence channel" or as part of monthly sweep
 Protocol: `skills/rfp-intelligence.md`
-Scans for published nonprofit investment management RFPs — past and present.
-Builds structured records stored in `HistoricalRFPData/`. Does NOT score
-contacts or trigger outreach. If a pipeline match is found, notes it on the
-org's profile and in a dedicated report section. All records kept regardless
-of pipeline match — serves as research corpus for Farther's RFP creation team.
-Reports in a separate "Historical RFPs" section in the HTML report.
+Scans for published nonprofit investment management RFPs. Builds structured
+records in `HistoricalRFPData/`. Does NOT score contacts or trigger outreach.
+Pipeline matches noted on org profiles. All records kept regardless of match —
+serves as research corpus for Farther's RFP creation team. Produces a separate
+`outputs/YYYY-MM-DD-lark-rfp-intelligence.html` report.
+
+These modes are independent. They do not share prompts.
+If the trigger is ambiguous, ask which mode before starting.
 
 ---
 
@@ -492,20 +493,7 @@ Self-test: `python utilities/lark_profile.py`
 
 ### enrichment-run.md
 On-demand enrichment run protocol. Read this instead of `monthly-sweep.md`
-when triggered by any of:
-- `MODE: ENRICHMENT RUN` in the prompt
-- "Run an enrichment run on inputs/[filename]"
-- Any explicit request to enrich a provided list of orgs
-
-Two input paths are supported — see enrichment-run.md Input format:
-- **Path 1 (clean start):** a file in `inputs/` — Lark reads and parses it directly,
-  handling HubSpot column alignment, GS fields, and contact grouping herself
-- **Path 2 (prompt-embedded):** org list already extracted and formatted in the prompt
-  by `lark_enrich.py` — skip file reading, begin Phase A directly
-
-There is NO matching phase in an enrichment run. Do NOT run the fuzzy matcher.
-Do NOT write to /tmp/lark_signals.json. Do NOT run lark_run_matcher.py.
-These are known contacts. Trust the list. Enrich every org in it.
+when `MODE: ENRICHMENT RUN` is set in the prompt.
 
 Key differences from the monthly sweep:
 - No Phase 1 (no signal search)
