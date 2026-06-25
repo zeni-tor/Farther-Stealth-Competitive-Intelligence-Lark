@@ -176,19 +176,43 @@ def _parse_aum(raw: str) -> Optional[float]:
 
 # ── NORMALIZATION ─────────────────────────────────────────────────────────────
 
+# ── POSSESSIVE NORMALIZATION MAP ─────────────────────────────────────────────
+# Maps bare-S variants (common in CSV entries typed without apostrophes)
+# to their possessive roots, so "WOMENS" and "WOMEN'S" normalize identically.
+# The apostrophe-S form is handled by re.sub(r"'S\b", '') in _normalize().
+POSSESSIVE_ROOTS = {
+    'CHILDRENS': 'CHILDREN',
+    'WOMENS':    'WOMEN',
+    'MENS':      'MEN',
+    'PEOPLES':   'PEOPLE',
+}
+
+
 def _normalize(text: str) -> str:
     """
     Uppercase, strip legal suffixes and pure filler.
     Normalizes & → AND.
+    Handles possessives symmetrically so incoming signals and CSV entries
+    with different apostrophe conventions normalize to the same token set:
+      CHILDREN'S → CHILDREN  (apostrophe-s stripped)
+      CHILDRENS  → CHILDREN  (bare-s variant mapped via POSSESSIVE_ROOTS)
+      WOMEN'S    → WOMEN
+      WOMENS     → WOMEN
     """
     if not text: return ""
     text = text.upper().strip()
     text = text.replace('&', 'AND')
+    # Strip apostrophe-s possessives: CHILDREN'S → CHILDREN, WOMEN'S → WOMEN
+    text = re.sub(r"'S\b", '', text)
+    # Strip any remaining apostrophes
+    text = re.sub(r"'", '', text)
     for s in [r'\bINC\.?\b', r'\bLLC\.?\b', r'\bCORP\.?\b', r'\bLTD\.?\b',
               r'\bTHE\b', r'\bA\b', r'\bAN\b', r'\bOF\b', r'\bAND\b']:
         text = re.sub(s, '', text)
     text = re.sub(r'[^A-Z0-9\s]', '', text)
-    return re.sub(r'\s+', ' ', text).strip()
+    # Apply known possessive root mappings for CSV entries without apostrophes
+    words = [POSSESSIVE_ROOTS.get(w, w) for w in text.split()]
+    return re.sub(r'\s+', ' ', ' '.join(words)).strip()
 
 
 def _significant_words(org_name: str, min_len: int = 3) -> list[str]:
