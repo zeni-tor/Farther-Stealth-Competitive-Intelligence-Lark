@@ -33,6 +33,7 @@ Lark/
   skills/
     monthly-sweep.md                ← sweep protocol (monthly cadence)
     enrichment-run.md               ← enrichment run protocol (on-demand)
+    rfp-intelligence.md             ← Channel 9 · RFP research corpus protocol
     signal-classification.md       ← signal triage
     alert-writer.md                ← output formatting
     behavioral-flags.md            ← standing patterns
@@ -43,6 +44,11 @@ Lark/
 
   EnrichmentProfileUpdate/
     [org-slug]-profile.md          ← created by enrichment run · no signal data
+
+  HistoricalRFPData/
+    _index.md                      ← running index · Lark maintains
+    [org-slug]-[year]-rfp.pdf      ← raw RFP document (if fetchable)
+    [org-slug]-[year]-rfp-record.md ← full structured RFP record
 
   utilities/
     lark_fuzzy_matcher.py          ← contact matching — batch-first
@@ -116,6 +122,15 @@ Does NOT score, does NOT set action windows, does NOT change lark_contact_status
 
 These two modes are independent. They do not share prompts.
 If the trigger is ambiguous, ask which mode before starting.
+
+**CHANNEL 9 — RFP INTELLIGENCE** (runs after Channels 1–8 each sweep)
+Protocol: `skills/rfp-intelligence.md`
+Scans for published nonprofit investment management RFPs — past and present.
+Builds structured records stored in `HistoricalRFPData/`. Does NOT score
+contacts or trigger outreach. If a pipeline match is found, notes it on the
+org's profile and in a dedicated report section. All records kept regardless
+of pipeline match — serves as research corpus for Farther's RFP creation team.
+Reports in a separate "Historical RFPs" section in the HTML report.
 
 ---
 

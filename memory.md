@@ -15,6 +15,15 @@
 
 ---
 
+## RFP Intelligence (Channel 9)
+Sector rotation: NOT YET RUN · start with Month 1 (Social services / transitional housing · $1M–$20M)
+Last RFP scan: never
+Records in corpus: 0
+Pipeline matches found: 0
+HistoricalRFPData/_index.md: not yet created — Lark creates on first run
+
+---
+
 ## Last run
 Date: 2026-06-17 · Sweep #1 validation re-run
 Signals batched: 75 · Lookback: 2026-05-17 – 2026-06-17
