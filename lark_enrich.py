@@ -475,21 +475,22 @@ Ask if anything is unclear before starting."""
 
 # ── LAUNCH CLAUDE CODE ────────────────────────────────────────────────────────
 
-def launch_claude(prompt: str):
+def launch_claude(prompt: str, prompt_file: str):
     print("\n" + "─" * 72)
     print("🪶  Lark · Enrichment Run Launcher")
     print("─" * 72)
-    print("\nEnrichment prompt (copy and paste into Claude Code):\n")
+    print(f"\n✓ Full enrichment prompt written to: {prompt_file}")
+    print("\nPaste this into Claude Code:\n")
     print("─" * 72)
-    print(prompt)
+    print(f"Read {prompt_file} and follow the instructions.")
     print("─" * 72 + "\n")
     try:
         subprocess.Popen(["claude"], cwd=os.getcwd())
         print("✓ Claude Code launched.")
-        print("  Paste the prompt above into the Claude Code terminal.")
+        print("  Paste the one-liner above — Lark reads the rest from the prompt file.")
     except FileNotFoundError:
         print("  'claude' command not found — open Claude Code manually")
-        print("  and paste the prompt above.")
+        print(f"  and paste: Read {prompt_file} and follow the instructions.")
 
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
@@ -622,12 +623,22 @@ def main():
 
     prompt = build_enrichment_prompt(orgs, today)
 
+    # Write prompt to inputs/ so Lark can read it directly
+    os.makedirs("inputs", exist_ok=True)
+    input_slug = os.path.splitext(os.path.basename(args.orgs))[0].lower()
+    input_slug = input_slug.replace(" ", "-")
+    prompt_file = os.path.join("inputs", f"enrichment-prompt-{today}-{input_slug}.txt")
+    with open(prompt_file, "w") as f:
+        f.write(prompt)
+
     if args.no_launch:
         print("─" * 72)
-        print(prompt)
+        print(f"✓ Prompt written to: {prompt_file}")
+        print(f"\nWhen ready, open Claude Code and paste:")
+        print(f"  Read {prompt_file} and follow the instructions.")
         print("─" * 72)
     else:
-        launch_claude(prompt)
+        launch_claude(prompt, prompt_file)
 
 
 if __name__ == "__main__":
