@@ -74,11 +74,13 @@ Ask if anything is unclear before starting.
 ```
 
 All channels 1–8 active. Channel 5 runs via Apify — confirm APIFY_TOKEN is set.
+Channel 9 (RFP Intelligence) runs automatically after Channels 1–8 — no extra prompt needed.
 Full signal sweep — all 10 signals active.
 
 ```
 All sweeps    → All channels 1–8 active (SIG-001 through SIG-010)
 Channel 5     → LinkedIn/Apify · requires APIFY_TOKEN env var
+Channel 9     → RFP Intelligence · runs after Channels 1–8 · see skills/rfp-intelligence.md
 Phase 2       → HubSpot MCP live                 ← separate milestone
 ```
 
@@ -306,7 +308,26 @@ Step 4 · Google Drive 990s (Phase 2 · via MCP when live)
 
 ---
 
-## Compound scoring
+### Channel 9 — RFP Intelligence · ACTIVE
+**Protocol:** `skills/rfp-intelligence.md`
+**Runs:** After Channels 1–8 complete — every sweep, automatically.
+
+Scans for published nonprofit investment management RFPs — past and present.
+Builds structured records in `HistoricalRFPData/`. Does NOT score contacts
+or trigger outreach. Produces a separate HTML report.
+
+**Each sweep:**
+1. Run the primary RFP searches from rfp-intelligence.md
+2. Run the current month's sector rotation search (check memory.md for current sector)
+3. For any HIGH match orgs from this sweep, run a targeted historical RFP search
+4. Fetch any real RFPs found, build structured records, save to HistoricalRFPData/
+5. Update HistoricalRFPData/_index.md
+6. Generate outputs/YYYY-MM-DD-lark-rfp-intelligence.html
+7. Update memory.md: rfp_intelligence_sector_rotation · last RFP scan · corpus count
+
+**Monthly report:** Add one line to the main report summary only:
+"Channel 9: [N] RFP records found · [N] pipeline matches · see outputs/YYYY-MM-DD-lark-rfp-intelligence.html"
+No RFP card content in the main report.
 
 Compound scoring is Lark's judgment call — not a script. After all channels
 run, reason through each matched org's signal stack and assign a score.
@@ -421,10 +442,11 @@ angle tied to the exact signal combination — not a generic opener.
 Lark · Monthly Brief · [DATE]
 
 SWEEP: [N] · PHASE: 1
-CHANNELS ACTIVE: 1–8 · CHANNEL 5: LinkedIn/Apify (requires APIFY_TOKEN)
+CHANNELS ACTIVE: 1–9 · CHANNEL 5: LinkedIn/Apify (requires APIFY_TOKEN)
 SIGNALS: [N] raw hits · HIGH: [N] · AMBIGUOUS: [N] · DISCARDED: [N]
 SCORES: Score-3: [N] · Score-2: [N] · Score-1: [N]
 HUBSPOT: STAGED — MCP key pending · [N] records queued
+CHANNEL 9: [N] RFP records found · [N] pipeline matches · see outputs/YYYY-MM-DD-lark-rfp-intelligence.html
 COVERAGE: [list any active gaps this sweep]
 
 [Score-3 finding cards]
