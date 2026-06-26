@@ -52,6 +52,33 @@ Signals are scored. A single SIG-001 is a Score-1. A new CFO *and* a new Executi
 
 ---
 
+## RFP Intelligence (Channel 9)
+
+In addition to the 10 signals above, Lark runs a separate research operation called the RFP Intelligence channel. This is not an outreach trigger — it is a research corpus that builds over time.
+
+**What it does:**
+Lark scans for published nonprofit investment management RFPs — requests for proposal where an org is going to market for an investment advisor or OCIO. When she finds one, she builds a structured record containing:
+
+- Who published it, their AUM, and why they issued it
+- Every question they asked, verbatim
+- Their evaluation criteria and weights (if stated)
+- A critique of what the RFP got right and what it missed
+- What the RFP tells Farther about how to position with similar orgs
+
+**Two uses:**
+
+1. **Pipeline match** — if the org that published the RFP is in Farther's contact list, the record is flagged as call-prep intelligence. Knowing what questions an org asked three years ago, and how they weighted their criteria, is a significant advantage before a call.
+
+2. **Research corpus** — all records are kept regardless of pipeline match. Over time `HistoricalRFPData/` becomes a pattern library: what do $5–15M transitional housing nonprofits ask for? What do college foundations weight most heavily? This intelligence informs how Farther positions its offering and writes its own RFP responses.
+
+**Sector rotation:**
+Each sweep, Channel 9 runs a broad search focused on a different nonprofit sector and AUM band, cycling through six sectors over six months. This builds the corpus systematically rather than randomly.
+
+**Output:**
+A separate HTML report (`outputs/YYYY-MM-DD-lark-rfp-intelligence.html`) — not included in the main monthly report, which only gets a one-line summary. The RFP report is intended for the RFP creation team and for advisors doing deep prep on specific orgs.
+
+---
+
 ## Lark's three modes
 
 ### Mode 1 — Monthly Sweep (default)
