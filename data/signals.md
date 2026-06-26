@@ -4,7 +4,7 @@
 > (signal cross-check).
 > Lark writes to this file when a signal pattern is confirmed, refined, or retired.
 > Humans may review but should not overwrite confirmed entries.
-> Last updated: 2026-06-09
+> Last updated: 2026-06-24
 
 ---
 
@@ -100,8 +100,10 @@ incentive to validate or replace it.
 - Is there a CFO change in the same window? (Score-3 if both)
 
 **New iterations logged:**
-- 2026-05-29 · Unleashing Potential (St. Louis MO) · Darlene Sowell retired (17-yr tenure) · Bridget Jones interim Jun 4 · ACTIVE — window open through ~Nov 25, 2026
-- 2026-02-02 · Historic Macon Foundation (Macon GA) · Emily Hopkins named ED · Source: maconchamber.com · ACTIVE — window closes Aug 1, 2026
+- 2026-06-01 · The Autism Community in Action / TACA (Irvine CA) · Mike Le ED (external hire, JD/MBA) · Source: PRNewswire Jun 1, 2026 · Confirmed · AUM $1.95M (near floor) · ACTIVE — window through ~Dec 1, 2026
+- 2026-06-01 · Candid (New York NY) · John Brothers Interim P&CEO · board member transition · Source: candid.org May 27, 2026 · Confirmed · AUM $106.9M · ACTIVE — window through ~Nov 28, 2026 · monitor for permanent hire
+- 2026-05-29 · Unleashing Potential (St. Louis MO) · Darlene Sowell retired (17-yr tenure) · Bridget Jones interim Jun 4 · ACTIVE — window open through ~Nov 25, 2026 · monitor for permanent hire
+- 2026-02-02 · Historic Macon Foundation (Macon GA) · Emily Hopkins named ED · Source: maconchamber.com · ACTIVE — window closes Aug 1, 2026 · URGENT — Score-2 compound with SIG-001 (Stefanie Joyner Dir Finance)
 - 2025-09-16 · ActionAid USA (Washington DC) · Niranjali Amerasinghe new ED · ACTION WINDOW EXPIRED Mar 14, 2026
 - 2025-02-05 · Joni and Friends (Agoura Hills CA) · Pastor Shawn Thornton new President · ACTION WINDOW EXPIRED Aug 4, 2025
 - 2025-02-19 · Teen Cancer America (Santa Monica CA) · Shannon Sullivan new CEO · ACTION WINDOW EXPIRED Aug 18, 2025
