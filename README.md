@@ -48,6 +48,26 @@ A signal is a change at a nonprofit org that suggests an investment management c
 | SIG-009 | New strategic plan with endowment language | Org formalizing investment policy |
 | SIG-010 | First-time endowment established | Brand new endowment — greenfield opportunity |
 
+## What is a channel?
+
+A channel is a data source or search method Lark uses to look for signals. Channels are *where* Lark looks; signals are *what* she is looking for.
+
+| Channel | Source | Signals it can detect |
+|---|---|---|
+| Ch 1 | General web search | SIG-001 through SIG-010 |
+| Ch 2 | Nonprofit news and press release sites | SIG-003, SIG-004, SIG-006, SIG-007 |
+| Ch 3 | GuideStar / Candid database | SIG-007, SIG-010 |
+| Ch 4 | Org websites directly | SIG-001, SIG-002, SIG-009 |
+| Ch 5 | LinkedIn via Apify | SIG-001, SIG-002, SIG-005 |
+| Ch 6 | Conference monitoring | Conference presence as signal amplifier |
+| Ch 7 | ProPublica 990 data | SIG-007, SIG-010 |
+| Ch 8 | Signal cross-check | Reviews all channels for compound scoring |
+| Ch 9 | RFP Intelligence | Investment management RFPs (research corpus) |
+
+The relationship is many-to-many — one channel can detect multiple signal types, and one signal type can surface through multiple channels. A new CFO (SIG-001) might appear in a press release (Ch 2), on LinkedIn (Ch 5), and on the org's leadership page (Ch 4). When it does, that cross-channel confirmation raises Lark's confidence in the finding.
+
+**A simple way to remember it: channels are the fishing spots, signals are what you're fishing for.**
+
 Signals are scored. A single SIG-001 is a Score-1. A new CFO *and* a new Executive Director at the same org in the same sweep is a Score-2 — much higher priority. Score-3 is rare and represents the highest-urgency contacts.
 
 ---
@@ -130,7 +150,7 @@ This script:
 
 ### Step 2 — Paste into Claude Code
 ```
-Read preflight/sweep-prompt-2026-06-24.txt and follow the instructions.
+Read preflight/sweep-prompt-YYYY-MM-DD.txt and follow the instructions.
 ```
 
 Lark reads the prompt file, runs the sweep, and produces all outputs. A full sweep takes 15–45 minutes depending on how many signals fire.
@@ -166,15 +186,18 @@ The script lists Excel/CSV/text files it finds, you select one, optionally filte
    Select file (number or path): 1
    Filter by advisor name? (press Enter to include all):
 
-   ✓ Prompt written to: preflight/enrichment-prompt-2026-06-24-jay_chang_pilot.txt
+   ✓ Prompt written to: preflight/enrichment-prompt-YYYY-MM-DD-[advisor-slug].txt
 ```
 
 ### Step 3 — Paste into Claude Code
+
+The launcher writes the full enrichment prompt to `preflight/` and prints a one-liner:
+
 ```
-Read preflight/enrichment-prompt-2026-06-24-jay_chang_pilot.txt and follow the instructions.
+Read preflight/enrichment-prompt-YYYY-MM-DD-[advisor-slug].txt and follow the instructions.
 ```
 
-Lark enriches every org in the list and produces the call-prep report.
+Paste that into Claude Code. Lark reads the prompt file — which contains the full org list with all contact data, GS figures, and instructions — and runs the enrichment.
 
 ---
 
