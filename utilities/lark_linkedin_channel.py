@@ -23,9 +23,10 @@ APIFY ACTOR:
 
 ENVIRONMENT:
     APIFY_TOKEN   — required, set before running any sweep
-    APIFY_TASK_ID — required, saved task ID from Apify console
-                    Get it from: console.apify.com/actors/tasks/{ID}/input
-                    Add to .env: APIFY_TASK_ID=6L80aaMcrBmVrFflP
+    APIFY_TASK_ID — optional, saved task ID from Apify console
+                    Only needed if using a saved task instead of the actor directly.
+                    If not set, calls the actor endpoint (requires paid Apify plan).
+                    Add to .env: APIFY_TASK_ID=your_task_id
     export APIFY_TOKEN=your_token_here
 
 SIGNAL SCOPE:
@@ -569,13 +570,12 @@ if __name__ == "__main__":
     import sys
 
     print("\n🪶  lark_linkedin_channel.py — self-test")
-    endpoint = _build_endpoint()
     task_id = os.getenv("APIFY_TASK_ID", "").strip()
     if task_id:
         print(f"   Task endpoint: actor-tasks/{task_id}")
     else:
         print("   Actor endpoint: harvestapi/linkedin-profile-search")
-        print("   ⚠  APIFY_TASK_ID not set — may return 403")
+        print("   (APIFY_TASK_ID not set — using actor directly, requires paid plan)")
     print("   Mode: Short · 1 page (25 profiles) · ~$0.10\n")
 
     token = os.environ.get("APIFY_TOKEN", "")
