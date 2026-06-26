@@ -1,6 +1,6 @@
 .env
 /contacts
-
+/inputs
 # Make these invisible later: Offical Production
 # /profiles
 # memory.md
