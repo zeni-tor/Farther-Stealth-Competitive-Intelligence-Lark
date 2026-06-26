@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lark · Enrichment Run · Jay Chang Pilot · 2026-06-24</title>
+<style>
+  :root {
+    --bg: #f5f4ef; --surface: #ffffff; --dark: #1a1916;
+    --mid: #5a5852; --light: #a8a49e; --border: #e2e0d8;
+    --green: #3d6b4f; --amber: #c8861a; --alert-red: #8b2222;
+    --info-blue: #2b5278; --flag-orange: #b85a00;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--dark); line-height: 1.55; font-size: 14px; }
+  .masthead { background: var(--dark); color: var(--bg); padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--green); }
+  .masthead-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--light); margin-bottom: 6px; }
+  .masthead-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .masthead-sub { font-size: 13px; color: var(--light); }
+  .stats-bar { background: var(--dark); border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 40px; display: flex; gap: 32px; flex-wrap: wrap; }
+  .stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); }
+  .stat-value { font-size: 18px; font-weight: 700; color: var(--bg); }
+  .stat-value.green { color: #6bcf8f; }
+  .stat-value.amber { color: #f0b84a; }
+  .stat-value.red { color: #e08080; }
+  .stat-value.dim { color: var(--light); }
+  .lark-note { background: #edf7f0; border-left: 4px solid var(--green); margin: 24px 40px 0;
+    padding: 14px 18px; font-size: 12.5px; color: #2d4a38; border-radius: 0 4px 4px 0; }
+  .lark-note strong { font-weight: 600; }
+  .main { max-width: 920px; margin: 0 auto; padding: 24px 40px 60px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin: 36px 0 16px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .section-tag { padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+  .tag-primary { background: var(--green); }
+  .tag-secondary { background: var(--info-blue); }
+  .tag-flag { background: var(--flag-orange); }
+  .tag-hold { background: var(--mid); }
+  .section-title { font-size: 16px; font-weight: 600; color: var(--dark); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    margin-bottom: 28px; overflow: hidden; }
+  .card-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+  .card-org-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .card-org-sub { font-size: 12.5px; color: var(--mid); margin-bottom: 10px; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+  .meta-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; }
+  .pill-aum { background: #e8f0ea; color: #2d5038; }
+  .pill-incumbent { background: #fde8e8; color: #8b2222; }
+  .pill-greenfield { background: #e8f0ea; color: #2d5038; }
+  .pill-unknown { background: #f0f0ec; color: var(--mid); }
+  .pill-flag { background: #fff0e0; color: #7a3a00; }
+  .pill-occupied { background: #fde8e8; color: #8b2222; }
+  .pill-hold { background: #f0f0ec; color: var(--mid); }
+  .pill-timing { background: #e8f0f8; color: #1a4060; }
+
+  .card-body { padding: 0; }
+  .card-section { padding: 16px 22px; border-bottom: 1px solid var(--border); }
+  .card-section:last-child { border-bottom: none; }
+  .cs-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--mid); margin-bottom: 6px; }
+  .cs-content { font-size: 13.5px; line-height: 1.65; color: var(--dark); }
+  .cs-content p { margin-bottom: 8px; }
+  .cs-content p:last-child { margin-bottom: 0; }
+  .cs-source { font-size: 11.5px; color: var(--mid); font-style: italic; margin-top: 6px; }
+  .cs-source a { color: var(--info-blue); text-decoration: none; }
+
+  .fin-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-top: 10px; }
+  .fin-row { display: contents; }
+  .fin-cell { padding: 6px 10px; font-size: 12.5px; border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border); }
+  .fin-cell:last-child { border-right: none; }
+  .fin-cell.header { background: #f5f4ef; font-weight: 600; font-size: 11px;
+    color: var(--mid); text-transform: uppercase; letter-spacing: 0.05em; }
+  .fin-cell.surplus { color: #2d5038; font-weight: 600; }
+  .fin-cell.deficit { color: #8b2222; font-weight: 600; }
+
+  .board-list { margin-top: 8px; }
+  .board-member { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .board-member:last-child { border-bottom: none; }
+  .board-member-name { font-weight: 600; min-width: 200px; }
+  .board-member-role { color: var(--mid); }
+  .board-notable { background: #fff8e6; border: 1px solid #e8c870; border-radius: 4px;
+    padding: 10px 14px; margin-top: 10px; font-size: 13px; }
+  .board-notable strong { color: #7a5010; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+
+  .hooks { margin-top: 6px; }
+  .hook { padding: 10px 14px; margin-bottom: 8px; border-left: 3px solid var(--green);
+    background: #f8fbf9; border-radius: 0 4px 4px 0; }
+  .hook-text { font-size: 13.5px; line-height: 1.6; }
+  .hook-source { font-size: 11.5px; color: var(--mid); margin-top: 4px; font-style: italic; }
+  .hook.no-hook { border-left-color: var(--border); background: #fafaf7; color: var(--mid); }
+
+  .call-contact { background: #f5f4ef; border-radius: 4px; padding: 12px 16px; margin-top: 8px; }
+  .contact-row { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+  .contact-row:last-child { margin-bottom: 0; }
+  .contact-label { font-weight: 600; min-width: 120px; font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid); }
+  .contact-note { font-size: 12.5px; color: var(--mid); font-style: italic; margin-top: 4px; }
+
+  .open-threads { margin-top: 8px; }
+  .thread { padding: 5px 0; font-size: 13px; color: var(--mid); display: flex; gap: 8px; }
+  .thread::before { content: '○'; color: var(--amber); flex-shrink: 0; }
+
+  .flag-box { background: #fff8f0; border: 1px solid #e8b870; border-radius: 4px;
+    padding: 14px 18px; margin: 16px 22px; font-size: 13px; line-height: 1.65; }
+  .flag-box strong { color: #7a3a00; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; display: block; margin-bottom: 6px; }
+
+  .skip-note { background: #f5f4ef; border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 18px; margin-bottom: 12px; font-size: 13px; color: var(--mid); }
+  .skip-note strong { color: var(--dark); }
+
+  .badge-confirmed { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.06em; background: #d4edda; color: #1a5c30; }
+  .badge-inferred { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.06em; background: #fff3cd; color: #7a5010; }
+  .badge-notfound { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.06em; background: #f0f0ec; color: var(--mid); }
+  .badge-speculative { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.06em; background: #f8d7da; color: #6b1a1a; }
+
+  .hubspot-line { font-size: 11.5px; color: var(--mid); padding: 10px 22px;
+    border-top: 1px solid var(--border); background: #fafaf7; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-eyebrow">Lark · Enrichment Run · Jay Chang Pilot</div>
+  <div class="masthead-title">Call-Prep Brief — June 24, 2026</div>
+  <div class="masthead-sub">11 orgs researched · Source file: inputs/Jay Chang Pilot.xlsx · ProPublica + Web research · 2026-06-24</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-label">Orgs researched</div>
+    <div class="stat-value green">11</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">High-priority prospects</div>
+    <div class="stat-value green">4</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Incumbent occupied</div>
+    <div class="stat-value amber">2</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Flags / Hold</div>
+    <div class="stat-value red">3</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Skipped (not nonprofit)</div>
+    <div class="stat-value dim">2</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Profiles written</div>
+    <div class="stat-value green">11</div>
+  </div>
+</div>
+
+<div class="lark-note">
+  <strong>Enrichment run — not a signal sweep.</strong> No signals were searched in this run. These are known contacts confirmed by the advisor. No compound scores set. No action windows assigned. All findings labeled Confirmed / Inferred / Not found. Two orgs skipped as non-nonprofit: Larkfield Consulting (consulting firm) and SRP (utility). HubSpot write-back staged to CSV — MCP key pending.
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION: HIGH-PRIORITY PROSPECTS
+═══════════════════════════════════════════════════════ -->
+
+<div class="section-header">
+  <span class="section-tag tag-primary">High Priority</span>
+  <span class="section-title">Strong prospects — no incumbent identified, AUM confirmed</span>
+</div>
+
+<!-- ─── CARD: MUSICAL INSTRUMENT MUSEUM ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Musical Instrument Museum (MIM)</div>
+    <div class="card-org-sub">Surprise / Phoenix, AZ &nbsp;·&nbsp; EIN: 16-1743588 &nbsp;·&nbsp; Arts &amp; Culture (NTEE A50)</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $199.6M (GS estimate · FY2024)</span>
+      <span class="meta-pill pill-greenfield">Incumbent: Unknown — greenfield</span>
+      <span class="meta-pill pill-timing">Contact: Philanthropy Officer (Tier 1 · Attended May Webinar)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">MIM is the world's largest musical instrument museum — 15,000+ instruments from nearly 200 countries, housed in a 200,000 sq ft Phoenix facility that cost over $250M to construct, with a 299-seat live performance venue. Founded in 2010 by Robert J. Ulrich (former CEO/Chairman of Target Corporation). It is simultaneously a world-class research museum and an active live music destination.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> Wikipedia; mim.org · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Capital Campaigns &amp; Fundraising</div>
+      <div class="cs-content">No active campaign found. With $26.6M in annual contributions (64.8% of revenue in FY2024), MIM is in a strong philanthropic position — major donor cultivation appears ongoing but no publicized campaign goal has been announced. A future campaign is plausible given the founder-driven culture. Ask Brittany Bell directly: "Is MIM in campaign mode or a quiet phase?"</div>
+      <div class="cs-source"><span class="badge-notfound">Not found</span> Web search 2026-06-24 · <span class="badge-inferred">Inferred</span> scale of annual giving</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(GS estimate + Instrumentl FY2024 — ProPublica data stale since 2015)</small></div>
+      <div class="cs-content">
+        <p>MIM is financially exceptional. Net income of $20M on $21M in expenses (FY2024) — running at nearly 2x expense coverage. Investment income of $3.76M implies an investable portfolio of approximately $75M–$130M at institutional return assumptions, fully consistent with the GS estimate of $129.8M. The ProPublica 990 is severely stale (only through 2015, $117.7M in assets at that date) — use GS and Instrumentl figures as the operating estimates.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Metric</div><div class="fin-cell header">FY2024</div><div class="fin-cell header">Note</div>
+          <div class="fin-cell">Total Assets</div><div class="fin-cell">$199.6M</div><div class="fin-cell">GS estimate / Instrumentl 990</div>
+          <div class="fin-cell">Investments</div><div class="fin-cell">~$129.8M</div><div class="fin-cell">GS internal estimate</div>
+          <div class="fin-cell">Revenue</div><div class="fin-cell">$41.1M</div><div class="fin-cell">Instrumentl FY2024</div>
+          <div class="fin-cell">Contributions</div><div class="fin-cell">$26.6M</div><div class="fin-cell">64.8% of revenue</div>
+          <div class="fin-cell">Investment Income</div><div class="fin-cell">$3.76M</div><div class="fin-cell">Instrumentl FY2024</div>
+          <div class="fin-cell">Expenses</div><div class="fin-cell">$21.0M</div><div class="fin-cell">Instrumentl FY2024</div>
+          <div class="fin-cell surplus">Net Income</div><div class="fin-cell surplus">+$20.1M</div><div class="fin-cell">Exceptional — 2x expense coverage</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> Instrumentl 990 Report FY2024; Farther internal estimate (GS) · <span class="badge-inferred">Inferred</span> investable pool from investment income · ProPublica gap noted</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Board</div>
+      <div class="cs-content">
+        <div class="board-list">
+          <div class="board-member"><span class="board-member-name">Robert G. Weston Jr.</span><span class="board-member-role">Chairman · Managing Director, Alliance Residential (former SunTrust real estate)</span></div>
+          <div class="board-member"><span class="board-member-name">Richard T. Burke</span><span class="board-member-role">Vice Chairman · Founder of UnitedHealth Group; former UHG board chair 2006–2022</span></div>
+          <div class="board-member"><span class="board-member-name">Robert J. Ulrich</span><span class="board-member-role">Director · Founder; former CEO/Chairman, Target Corporation — museum's originating donor</span></div>
+          <div class="board-member"><span class="board-member-name">Marc L. Felix</span><span class="board-member-role">Director · Co-founded MIM with Ulrich; African art collector and scholar</span></div>
+          <div class="board-member"><span class="board-member-name">Gail J. Dorn, and 6 others</span><span class="board-member-role">Secretary + 6 additional directors (backgrounds not fully public)</span></div>
+        </div>
+        <div class="board-notable">
+          <strong>Worth noting on the call</strong>
+          Richard T. Burke (Vice Chairman) — founder of UnitedHealth Group, former Fortune 50 board chair. Single most notable institutional-wealth board presence. Robert J. Ulrich (Founder) — Target Corp CEO; likely the museum's largest patron and originating philanthropist.
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> Instrumentl FY2024 990 data · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. Summer 2026 Concert Series just launched — 70+ shows.</strong> Artists include Mavis Staples, Stewart Copeland (The Police), Corinne Bailey Rae. Tickets went on sale April 30. Opener: "I saw MIM dropped the Summer 2026 lineup — 70-plus shows. How is the Music Theater performing as a revenue driver for the institution?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> mim.org/news/mim-music-theater-announces-summer-2026-concert-series · April 2026</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. $3.76M in investment income in FY2024</strong> implies a substantial managed pool (~$75M–$130M). No public incumbent identified. This is an open investment management conversation — use the Brittany Bell relationship to surface who oversees investments and whether there's a formal committee.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> Instrumentl FY2024 · <span class="badge-inferred">Inferred</span> investable pool estimate</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. Phoenix Symphony artist residency program</strong> (May 2024) — MIM partnered with PSO for school-group residencies. Shows MIM is deepening its Arizona community education footprint. Good opener to show market awareness.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> phoenixsymphony.org · May 2, 2024</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>CFO / Investment Committee contact (not yet confirmed — ask Brittany Bell to route)</div>
+        <div class="contact-row"><span class="contact-label">Contact on file</span>Brittany Bell · Philanthropy Officer · brittany.bell@mim.org · Tier 1 · Decision Maker: No</div>
+        <div class="contact-row"><span class="contact-label">Board</span>Richard T. Burke (Vice Chair) · Robert G. Weston Jr. (Chair)</div>
+      </div>
+      <div class="contact-note">Contact on file is in development/philanthropy, not finance. Use the webinar relationship to build rapport and ask who leads investment oversight. Weston (real estate finance) and Burke (Fortune 50 CEO) are the most relevant board members for an investment conversation.</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Identify CFO and investment committee chair (not confirmed from this run)</div>
+        <div class="thread">Ask Brittany Bell who manages MIM's endowment/investment portfolio</div>
+        <div class="thread">ProPublica data stale since 2015 — note internally; do not cite to prospect</div>
+        <div class="thread">Is a capital campaign in planning? Ask directly.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 42703849514 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: THE AMERICAN BOARD OF RADIOLOGY ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">The American Board of Radiology (ABR)</div>
+    <div class="card-org-sub">Tucson, AZ &nbsp;·&nbsp; EIN: 41-0773787 &nbsp;·&nbsp; 501(c)(6) · Professional Certification Board</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $51.9M (IRS 990 · FY2024)</span>
+      <span class="meta-pill pill-greenfield">Incumbent: Unknown</span>
+      <span class="meta-pill pill-timing">Contact: President-elect &amp; Governor (May Newsletter)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">ABR is the certifying body for diagnostic radiologists, interventional radiologists, radiation oncologists, and medical physicists. Founded 1934, headquartered in Tucson. It writes and administers the board exams that physicians and physicists in radiology must pass to be recognized as qualified specialists. Revenue comes primarily from exam fees (~85% of revenue) plus investment income. Does not provide patient care — it sets and enforces professional standards.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> theabr.org/about · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Capital Campaigns &amp; Fundraising</div>
+      <div class="cs-content">No capital campaign. The largest current program initiative is a new Diagnostic Radiology Oral Certifying Exam launching in 2028 — a major format shift from computer-based to remote videoconference, one-on-one exams across seven clinical categories. ABR begins accepting volunteer examiners in July 2026. Technology and infrastructure investment is implied for the 2025–2028 period.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> theabr.org/announcements/new-diagnostic-radiology-oral-exam · 2026</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · FY2021–FY2024)</small></div>
+      <div class="cs-content">
+        <p>ABR is healthy and at an all-time asset high. A ~$1.1M deficit in FY2021 (likely COVID-era exam volume impact) has been fully resolved — the org returned to surplus in FY2023 and FY2024, and total assets grew to $51.9M (FY2024 all-time high) from a $43M low in FY2022. Revenue has grown 24% over three years. Investment income of ~$1.2M annually (5.5% of revenue) confirms an actively managed investment portfolio.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Tax Year</div><div class="fin-cell header">Assets</div><div class="fin-cell header">Net</div>
+          <div class="fin-cell">FY2021</div><div class="fin-cell">$49.3M</div><div class="fin-cell deficit">-$1.1M deficit</div>
+          <div class="fin-cell">FY2022</div><div class="fin-cell">$43.0M</div><div class="fin-cell">~$0 breakeven</div>
+          <div class="fin-cell">FY2023</div><div class="fin-cell">$48.6M</div><div class="fin-cell surplus">+$475K surplus</div>
+          <div class="fin-cell">FY2024</div><div class="fin-cell">$51.9M</div><div class="fin-cell surplus">+$100K surplus</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 41-0773787 · FY2021–FY2024</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Board</div>
+      <div class="cs-content">
+        <div class="board-list">
+          <div class="board-member"><span class="board-member-name">Cheri L. Canon, MD</span><span class="board-member-role">President, Board of Governors</span></div>
+          <div class="board-member"><span class="board-member-name">John A. Kaufman, MD, MS</span><span class="board-member-role">President-elect · OHSU endowed professor; former SIR president · <em>our contact</em></span></div>
+          <div class="board-member"><span class="board-member-name">James C. Anderson, MD</span><span class="board-member-role">Governor · OHSU vice-chair education · <em>our contact</em></span></div>
+          <div class="board-member"><span class="board-member-name">Marina I. Feldman, MD, MBA</span><span class="board-member-role">Secretary-Treasurer</span></div>
+          <div class="board-member"><span class="board-member-name">Brent Wagner, MD, MBA</span><span class="board-member-role">Executive Director (staff) · comp $770K</span></div>
+          <div class="board-member"><span class="board-member-name">Karyn Howard</span><span class="board-member-role">Managing Director (staff) · comp $222K · likely finance/operations lead</span></div>
+        </div>
+        <div class="board-notable">
+          <strong>Worth noting</strong>
+          John Kaufman (President-elect) holds an OHSU endowed professorship and has an MPH in Healthcare Management from Harvard — he understands institutional governance and finance. Both Kaufman and Anderson are at OHSU in Portland (academic colleagues serving ABR in a governance capacity). Operational path: Executive Director Brent Wagner and Managing Director Karyn Howard.
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> theabr.org/about/leadership-governance · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. John Kaufman is ABR President-elect</strong> — he will become the top elected officer. This is an extraordinarily senior contact for a cold newsletter. A substantive, peer-level financial conversation is appropriate. Lead with institutional respect for the role.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> theabr.org/blogs/kaufman-named-president-elect · 2024</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. ABR Foundation (EIN 20-1354373)</strong> exists as a separate entity — it may hold endowment assets apart from the operating entity. Pull ProPublica data before the call to understand the full picture and open with an informed question about the Foundation's investment structure.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> ProPublica · separate entity exists</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. New oral exam format (2028 launch)</strong> means ABR is mid-way through its largest programmatic change in decades — technology and operational investment increasing through 2028. Natural conversation: "As you navigate this transition, how is ABR thinking about long-term reserve management?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> theabr.org/announcements · 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Brent Wagner, MD, MBA — Executive Director (operational decision-maker)</div>
+        <div class="contact-row"><span class="contact-label">Warm entry</span>John A. Kaufman, MD, MS — President-elect · jkaufman@theabr.org</div>
+        <div class="contact-row"><span class="contact-label">Also on file</span>James C. Anderson, MD — Governor · janderson@theabr.org</div>
+        <div class="contact-row"><span class="contact-label">Finance path</span>Karyn Howard — Managing Director (finance/operations)</div>
+      </div>
+      <div class="contact-note">Both contacts are physician-volunteers at ABR, not staff — acknowledge the governance role distinction. Outreach through Kaufman is appropriate as a peer-level open; route to Brent Wagner or Karyn Howard for operational follow-through.</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Pull ProPublica data on ABR Foundation (EIN 20-1354373) before the call — may hold additional endowment assets</div>
+        <div class="thread">Confirm whether Karyn Howard or a separate CFO leads investment policy</div>
+        <div class="thread">ABR does not disclose investment manager publicly — direct probe recommended</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 54770655887 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: CATHOLIC EDUCATION ARIZONA ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Catholic Education Arizona (CEA)</div>
+    <div class="card-org-sub">Phoenix, AZ &nbsp;·&nbsp; EIN: 86-0937587 &nbsp;·&nbsp; K–12 School Tuition Organization (NTEE B82)</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $37.7M (IRS 990 · TY2023)</span>
+      <span class="meta-pill pill-greenfield">Incumbent: Unknown — no disclosure found</span>
+      <span class="meta-pill pill-timing">Contact: President &amp; CEO (Decision Maker · April Newsletter)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">CEA is Arizona's largest Catholic School Tuition Organization — it channels Arizona state tax credits (individual and corporate) into K–12 scholarships for underserved, disabled, and foster-care students attending Diocese of Phoenix Catholic schools. Since 1998 it has raised $383M+ and awarded 161,000+ scholarships across 38 schools. A newer arm, "Changing Lives with Legacy," accepts traditional charitable gifts (bequests, IRA rollovers, DAF grants, stock) directed to an Education Growth Fund and an endowment for future scholarships.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> catholiceducationarizona.org; catholicsun.org · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Capital Campaigns &amp; Fundraising</div>
+      <div class="cs-content">No named capital campaign with a public dollar goal. "Changing Lives with Legacy" (launched March 2023) is an ongoing planned giving and endowment program — not a time-bounded campaign. A dedicated endowment sub-fund exists for "scholarship assistance for future generations." Joel Boucher (CFRE) was hired in October 2024 as the first dedicated development director for this program — a strong signal that the endowment infrastructure is being actively built. The key probe: ask Nancy what the current corpus size is and who manages it.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> catholiceducationarizona.org/press Oct 2024; catholicsun.org 2023-03-28</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · TY2021–TY2023)</small></div>
+      <div class="cs-content">
+        <p>Strong and improving. Assets have grown 45% in three years — consistent reserve-building aligned with the endowment program launch. Revenue growing ~5% annually, consistently outpacing expenses, surplus widening. No deficits. No drawdowns.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Tax Year</div><div class="fin-cell header">Assets</div><div class="fin-cell header">Surplus</div>
+          <div class="fin-cell">TY2021</div><div class="fin-cell">$25.9M</div><div class="fin-cell surplus">+$400K</div>
+          <div class="fin-cell">TY2022</div><div class="fin-cell">$32.4M</div><div class="fin-cell surplus">+$600K</div>
+          <div class="fin-cell">TY2023</div><div class="fin-cell">$37.7M</div><div class="fin-cell surplus">+$1.5M</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 86-0937587 · TY2021–TY2023</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Board</div>
+      <div class="cs-content">
+        <div class="board-list">
+          <div class="board-member"><span class="board-member-name">Todd Bankofier</span><span class="board-member-role">Board Chairman</span></div>
+          <div class="board-member"><span class="board-member-name">Bryan Brady</span><span class="board-member-role">Director · Retired Corporate VP Fortune 150; former ASU MBA faculty — likely investment committee candidate</span></div>
+          <div class="board-member"><span class="board-member-name">Kelley Tucker</span><span class="board-member-role">Director · CFO, Baker Bros Flooring</span></div>
+          <div class="board-member"><span class="board-member-name">Erin Monnin</span><span class="board-member-role">Director · Development Officer, St. Vincent de Paul</span></div>
+        </div>
+        <div class="board-notable">
+          <strong>Worth noting</strong>
+          Bryan Brady (Fortune 150 CFO background, former ASU MBA faculty) and Kelley Tucker (CFO, Baker Bros) suggest institutional finance sophistication on the investment committee. Full current board roster not publicly listed — ask Nancy who chairs the investment committee.
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> prnewswire.com 2022-08-09 · note: partial board only (2022 announcement)</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. Nancy Padberg named AZ Most Influential Women 2025</strong> (AZ Big Media) — drove 60% revenue growth in her tenure; publishing a leadership book in fall 2025 (<em>How to Build a Healthy Culture with Trust, Respect and Avocados</em>). Opener: "Congratulations on the Most Influential Women recognition — I saw the 60% revenue growth figure. That's a remarkable run."</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> azbigmedia.com · 2025</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. Joel Boucher (CFRE) hired Oct 2024</strong> as dedicated Director of Development for Changing Lives with Legacy. First dedicated hire for the endowment arm — this is a clear signal that the endowment program is moving from concept to infrastructure. "I saw you brought on a dedicated planned giving director — is the Changing Lives with Legacy program getting traction?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> catholiceducationarizona.org · Oct 2024</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. 4,100 scholarships awarded September 2025</strong> — largest single award cycle on record. Includes disability and foster-care set-asides. Shows momentum and strong philanthropic flow.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> catholicsun.org · 2025-10-03</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Nancy Padberg, MBA — President &amp; CEO · npadberg@ceaz.org</div>
+        <div class="contact-row"><span class="contact-label">Decision Maker</span>Yes — flagged in HubSpot</div>
+        <div class="contact-row"><span class="contact-label">Also notable</span>Ask Nancy who chairs the investment committee (Bryan Brady suspected)</div>
+      </div>
+      <div class="contact-note">Nancy is a high-profile CEO with business/marketing background — not a lifelong nonprofit lifer. She may be more receptive to institutional investment framing than a typical nonprofit ED. No incumbent identified — open door.</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Ask Nancy: who currently manages the endowment corpus and what is the current size?</div>
+        <div class="thread">Ask about investment policy statement and committee structure</div>
+        <div class="thread">Check whether assets are pooled with Diocese of Phoenix investment vehicles</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 42709851043 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: CRITICAL PATH INSTITUTE ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Critical Path Institute (C-Path)</div>
+    <div class="card-org-sub">Tucson, AZ &nbsp;·&nbsp; EIN: 20-1991334 &nbsp;·&nbsp; Medical Research Nonprofit (NTEE H99)</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $26.7M (IRS 990 · TY2023)</span>
+      <span class="meta-pill pill-greenfield">Incumbent: Unknown — likely greenfield</span>
+      <span class="meta-pill pill-timing">Contact: TRxA Division ED + VP Neurology (May Newsletter)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">C-Path is a Tucson-based nonprofit founded 2005 as a public-private partnership with the FDA. It acts as a neutral convener — bringing together competing drug companies, regulators (FDA, EMA), academic researchers, and patient advocates to collectively solve shared drug development bottlenecks before competitive dynamics apply. It gets competing pharma companies to share pre-competitive data and tools so new treatments reach patients faster. Notable outcomes: first tuberculosis drug in 50 years; FDA-endorsed Alzheimer's clinical trial simulation tools; imaging biomarkers for polycystic kidney disease.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> c-path.org/about · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Capital Campaigns &amp; Fundraising</div>
+      <div class="cs-content">No traditional capital campaign. Revenue model is consortium-based: pharma membership fees, NIH/FDA grants, foundation program funding. "One to Millions" (launched March 2026) is a major new global initiative for individualized gene/RNA therapies — not a donor campaign but represents a significant new program commitment. Translational Therapeutics Accelerator (TRxA) awarded a record $2.48M in BRIDGe grants in 2025 (20th anniversary year).</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> c-path.org/critical-path-institute-launches-one-to-millions · March 2026</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · TY2021–TY2023)</small></div>
+      <div class="cs-content">
+        <p>Strong and accelerating. Revenue grew 45% in two years. Surplus doubled from TY2022 to TY2023. Assets grew 44%, unusual for a program-driven org — suggests deliberate reserve-building. At $26.7M in assets (TY2023), C-Path is approaching the range where institutional investment management becomes meaningful. 990 data lags ~18 months; current assets may be approaching $30M+.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Tax Year</div><div class="fin-cell header">Assets</div><div class="fin-cell header">Surplus</div>
+          <div class="fin-cell">TY2021</div><div class="fin-cell">$18.5M</div><div class="fin-cell surplus">+$1.4M</div>
+          <div class="fin-cell">TY2022</div><div class="fin-cell">$20.0M</div><div class="fin-cell surplus">+$1.6M</div>
+          <div class="fin-cell">TY2023</div><div class="fin-cell">$26.7M</div><div class="fin-cell surplus">+$3.3M</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 20-1991334 · TY2021–TY2023</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Board</div>
+      <div class="cs-content">
+        <div class="board-list">
+          <div class="board-member"><span class="board-member-name">M. Wainwright Fishburn, Jr.</span><span class="board-member-role">Chairman · Global Chair, Digital Health Practice, Cooley LLP</span></div>
+          <div class="board-member"><span class="board-member-name">Alan G. Levin, CPA</span><span class="board-member-role">Board · Former CFO Endo Health Solutions; 20-year Pfizer career — finance/investment committee candidate</span></div>
+          <div class="board-member"><span class="board-member-name">James W. Newman, CPA</span><span class="board-member-role">Board · Pharma founder (Victory Pharma, DJ Pharma); CPA background</span></div>
+          <div class="board-member"><span class="board-member-name">Janet Woodcock, MD</span><span class="board-member-role">Board Advisor · Former FDA CDER Director — regulatory credibility signal</span></div>
+          <div class="board-member"><span class="board-member-name">Multiple pharma/biotech operators</span><span class="board-member-role">Mara Aspinall (Illumina Ventures), Aoife Brennan (Climb Bio), Colin Hill (Aitia Bio), and others</span></div>
+        </div>
+        <div class="board-notable">
+          <strong>Finance board members worth noting</strong>
+          Alan Levin (CFO background, Pfizer) and James Newman (CPA, pharma founder) are the most likely investment committee members. Neither is the operational decision-maker — operational path runs through CFO Paul Edmeier and COO Kristen Swingle.
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> c-path.org/about/people · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. 20th anniversary in 2025</strong> — Global Impact Conference in Washington D.C. (Sept 9–11, 2025). Anniversary milestones at mission-driven orgs often precede strategic planning and endowment conversations. Good opener: "The 20th anniversary conference in D.C. looked like a milestone moment — what are the priorities for C-Path's next chapter?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> PR Newswire 2025</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. One to Millions initiative launched March 2026</strong> — major new global program for individualized medicine. Signals C-Path is growing in scope and likely financial scale. "I saw the One to Millions announcement — that's a significant commitment. How is C-Path thinking about the financial infrastructure to support an initiative of that scope?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> c-path.org · March 2026</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. $26.7M in assets with no visible endowment structure</strong> — natural inflection point. Assets growing 44% in two years without a formal reserve management program is an open door for an institutional advisory conversation.</div>
+          <div class="hook-source"><span class="badge-inferred">Inferred</span> from ProPublica data and absence of public investment program</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Paul Edmeier — CFO (operational decision-maker)</div>
+        <div class="contact-row"><span class="contact-label">Warm entry</span>Maaike Everts — Executive Director, TRxA · meverts@c-path.org (our contact, funder-facing)</div>
+        <div class="contact-row"><span class="contact-label">Also on file</span>Diane Stephenson — VP Neurology (promoted Nov 2024; 15-year veteran) · dstephenson@c-path.org</div>
+        <div class="contact-row"><span class="contact-label">Note</span>Klaus Romero, MD is the overall CEO (appointed Jan 2024) — not in HubSpot</div>
+      </div>
+      <div class="contact-note">⚠️ HubSpot title correction needed: Maaike Everts is listed as "executive director" but she is ED of the TRxA division only — not CEO of C-Path. Overall CEO is Klaus Romero. Do not address Everts as the head of the organization. Use her as a warm entry to route to CFO Paul Edmeier.</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Correct HubSpot: Maaike Everts title = "Executive Director, TRxA" (not C-Path overall)</div>
+        <div class="thread">Ask: does C-Path have a formal investment policy or reserve management program?</div>
+        <div class="thread">Route to CFO Paul Edmeier via Everts for investment conversation</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 54785571477 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION: MEDIUM-PRIORITY PROSPECTS
+═══════════════════════════════════════════════════════ -->
+
+<div class="section-header">
+  <span class="section-tag tag-secondary">Medium Priority</span>
+  <span class="section-title">Solid contacts — timing signal or relationship call warranted</span>
+</div>
+
+<!-- ─── CARD: CATHOLIC FOUNDATION FOR DIOCESE OF TUCSON ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Catholic Foundation for the Diocese of Tucson</div>
+    <div class="card-org-sub">Tucson, AZ &nbsp;·&nbsp; EIN: 86-0408580 &nbsp;·&nbsp; Faith-based diocese foundation &nbsp;·&nbsp; <strong style="color:var(--amber)">HubSpot record: Update org name from "Catholic Outlook"</strong></div>
+    <div class="card-meta">
+      <span class="meta-pill pill-flag">AUM: 90+ endowment funds — total unknown</span>
+      <span class="meta-pill pill-unknown">Incumbent: Unknown — invests per Catholic values</span>
+      <span class="meta-pill pill-timing">⏰ New Bishop installed Feb 2026 — strong timing</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="flag-box">
+      <strong>⚠️ HubSpot record correction required</strong>
+      "Catholic Outlook" is/was the Diocese of Tucson's print newspaper (now rebranded "New Outlook" at news.diocesetucson.org). It is not a legal entity. The correct prospect org is the <strong>Catholic Foundation for the Diocese of Tucson</strong> (EIN 86-0408580, cathfnd.org). Update the HubSpot company record. Suzanne Hopkins (Annual Giving and Stewardship Manager) works in this Foundation's development office.
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">The Catholic Foundation for the Diocese of Tucson (est. 1981) inspires and stewards Catholic generosity for the Diocese of Tucson across Southern Arizona. It manages 90+ named endowment funds, raises $4M+ annually through the Annual Catholic Appeal for diocesan ministries and programs, and offers planned giving and charitable gift annuities. The Foundation is an independent 501(c)(3) governed by its own board, with the bishop as ex-officio chair.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> cathfnd.org · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health</div>
+      <div class="cs-content">ProPublica data is significantly limited — church affiliates are largely exempt from annual 990 filing requirements. Most recent IRS filing: 2013 ($19.8M total assets, $11.8M net assets). Self-reported 2024 website figures: ~$4.3M net assets (likely reflects accounting reclassification of restricted vs. pass-through funds vs. 2013 presentation). Actual AUM across 90+ funds is genuinely unclear. Key probe: ask Elizabeth Bollinger what the current corpus total is.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 86-0408580 (2013 filing only) · cathfnd.org 2024 self-reported · gap noted</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. Bishop James Misko installed February 20, 2026</strong> — only four months ago. First bishop ordained in Tucson in 73 years. New bishops commonly prompt strategic reviews of development priorities, giving programs, and vendor relationships. This is the strongest timing signal for this org. Four months in is still the right window — priorities are being set, not locked.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> KOLD; AZPM · February 2026</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. Invests "according to Catholic values"</strong> — language consistent with ESG/SRI-screened strategies and possibly a pooled diocesan Catholic Investment Trust. Farther's pitch must address faith-consistent investment alignment. This is a differentiation opportunity if Farther can credibly serve values-aligned portfolios.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> cathfnd.org language · retrieved 2026-06-24</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. Suzanne Hopkins no-showed the May webinar</strong> — warm re-engagement appropriate. Reference the new bishop as a natural opener: "I know the Diocese has been navigating a transition with the new bishop's installation — how is the Foundation setting priorities for the year ahead?"</div>
+          <div class="hook-source"><span class="badge-inferred">Inferred</span> re-engagement strategy · HubSpot no-show flag</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Elizabeth Bollinger — Executive Director, Catholic Foundation · cathfnd.org/staff</div>
+        <div class="contact-row"><span class="contact-label">Contact on file</span>Suzanne Hopkins — Annual Giving and Stewardship Manager · svhopkins@diocesetucson.org · No-show May Webinar</div>
+        <div class="contact-row"><span class="contact-label">Board chair</span>Most Rev. James Misko — Bishop of Tucson (ex officio, installed Feb 20, 2026)</div>
+        <div class="contact-row"><span class="contact-label">Note</span>Katheryn Hutchinson (Legacy Giving and Grants Manager) is closest to the endowment conversation</div>
+      </div>
+      <div class="contact-note">Suzanne manages annual giving — she is the door, not the decision. Route to Elizabeth Bollinger (ED) for investment conversation. The investment/endowment decision likely also involves the board's finance committee (not publicly named).</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Update HubSpot company from "Catholic Outlook" to "Catholic Foundation for Diocese of Tucson"</div>
+        <div class="thread">Warm re-engage Suzanne Hopkins — reference new bishop, ask about Foundation priorities</div>
+        <div class="thread">Route to Elizabeth Bollinger (ED) for endowment conversation</div>
+        <div class="thread">Research faith-aligned investment strategies before the call — must address Catholic values alignment</div>
+        <div class="thread">Determine actual corpus AUM across 90+ funds</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 9687310209 · Fields queued: lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep · Note: org name update recommended</div>
+</div>
+
+<!-- ─── CARD: OPPORTUNITY TREE ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Opportunity Tree</div>
+    <div class="card-org-sub">Phoenix, AZ &nbsp;·&nbsp; EIN: 86-0180419 &nbsp;·&nbsp; IDD Services (formerly Arizona Foundation for the Handicapped) &nbsp;·&nbsp; <strong style="color:var(--amber)">EIN correction required in HubSpot</strong></div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $10.1M total assets (IRS 990 · FY2025)</span>
+      <span class="meta-pill pill-unknown">Incumbent: Unknown</span>
+      <span class="meta-pill pill-timing">Contact: COO (Decision Maker · Attended May Webinar)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="flag-box">
+      <strong>⚠️ EIN correction required</strong>
+      HubSpot records EIN 45-3714671 — this belongs to a small Colorado entity. Correct EIN for Opportunity Tree (Phoenix AZ): <strong>86-0180419</strong>. Update before any write-back.
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">Opportunity Tree provides individualized day programs, supported employment, residential group homes, youth services, and Special Olympics athletics for people with intellectual and developmental disabilities (IDD) across four Arizona campuses (Phoenix, Avondale, Casa Grande, Maricopa). Founded 1963, renamed from Arizona Foundation for the Handicapped in 2017. Currently serves 250+ members.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> theopportunitytree.org/about · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · FY2022–FY2025)</small></div>
+      <div class="cs-content">
+        <p>Stable and growing. Revenue ~$16–17M annually (88.6% government program service fees — important: this is a government-dependent org). FY2024 was the only recent loss year; FY2025 returned to surplus. Assets growing. No dedicated endowment identified — investable balance likely modest ($1–3M Inferred after property and equipment).</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Fiscal Year</div><div class="fin-cell header">Total Assets</div><div class="fin-cell header">Net Assets</div>
+          <div class="fin-cell">FY2022</div><div class="fin-cell">$8.6M</div><div class="fin-cell">$6.5M</div>
+          <div class="fin-cell">FY2023</div><div class="fin-cell">$10.0M</div><div class="fin-cell">$8.1M</div>
+          <div class="fin-cell">FY2024</div><div class="fin-cell">$10.1M</div><div class="fin-cell deficit">$8.1M (loss yr)</div>
+          <div class="fin-cell">FY2025</div><div class="fin-cell">$10.1M</div><div class="fin-cell surplus">$8.6M (+$375K)</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 86-0180419 · FY2025 filing May 15, 2026</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. Phoenix Suns and Mercury Foundation donated a multi-sport complex</strong> (basketball, volleyball, pickleball) to the Casa Grande campus in May 2026. Neal Hallihan was quoted in media calling it "the most impactful addition the Opportunity Tree has seen in a long while." Perfect natural opener referencing a recent and public gift.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> azfamily.com · May 2026</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. Neal Hallihan attended the May webinar</strong> — he is warm and engaged. A relationship follow-up call is appropriate. The goal: map the org, understand financial decision-making, and identify whether any investable reserves exist beyond operational needs.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> HubSpot · May 2026</div>
+        </div>
+        <div class="hook class="no-hook"">
+          <div class="hook-text"><strong>No strong investment hook yet.</strong> No endowment, no capital campaign, 89% government revenue dependence. This is a relationship-building call — investment pitch is premature. The opportunity is future-oriented: if the org grows its philanthropy or formalizes reserves, Farther should already be the relationship in place.</div>
+          <div class="hook-source"><span class="badge-inferred">Inferred</span> from financial profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Rachel Johnson — CFO (financial decision-maker)</div>
+        <div class="contact-row"><span class="contact-label">Warm entry</span>Neal Hallihan — COO · nhallihan@theopportunitytree.org · Decision Maker · Attended May Webinar</div>
+        <div class="contact-row"><span class="contact-label">Board (Treasurer)</span>Erna Dubravic — Keystone Risk Partners</div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Update HubSpot EIN from 45-3714671 to 86-0180419</div>
+        <div class="thread">Clarify Jo Ellen McNamara's "Equity Fund" board affiliation — may have investment background</div>
+        <div class="thread">Confirm whether any investable endowment balance exists above operational reserves</div>
+        <div class="thread">Monitor for CFO change, formal endowment announcement, or capital campaign</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 53245310271 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein (corrected), lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: HOUSE OF REFUGE ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">House of Refuge</div>
+    <div class="card-org-sub">Mesa, AZ &nbsp;·&nbsp; EIN: 86-0662244 &nbsp;·&nbsp; Transitional Housing (NTEE L400) &nbsp;·&nbsp; <strong style="color:var(--amber)">EIN corrected from ProPublica mismatch</strong></div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $6.2M total assets (IRS 990 · FY2025)</span>
+      <span class="meta-pill pill-flag">BMO Private Bank on board — incumbent-adjacent</span>
+      <span class="meta-pill pill-timing">Contact: CDO (Attended May Webinar)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">House of Refuge operates an 88-home transitional housing campus on 20 acres in southeast Mesa (est. 1996), providing families experiencing homelessness up to 12 months of subsidized housing alongside wraparound services — employment coaching, trauma recovery, financial literacy, food access, and youth programs — with a goal of transitioning families to permanent housing and self-sufficiency. Self-reported: ~250 people served daily; 89% transition to stable housing. Faith-based. Charity Navigator 4-star, 93% overall.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> houseofrefuge.org/about · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · FY2023–FY2025)</small></div>
+      <div class="cs-content">
+        <p>Healthy and consistently generating surpluses. Three consecutive positive years. Investment income of $107,770 (FY2025) implies an actively managed pool of approximately $2–3M at typical institutional rates. No dedicated endowment identified, but org is building reserves rapidly. Elected in Nov 2025 to remain 100% privately funded — declined new HUD funding. Strong donor-first culture.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Fiscal Year</div><div class="fin-cell header">Total Assets</div><div class="fin-cell header">Surplus</div>
+          <div class="fin-cell">FY2023</div><div class="fin-cell">~$4.7M</div><div class="fin-cell surplus">+$842K</div>
+          <div class="fin-cell">FY2024</div><div class="fin-cell">~$5.1M</div><div class="fin-cell surplus">+$378K</div>
+          <div class="fin-cell">FY2025</div><div class="fin-cell">$6.2M</div><div class="fin-cell surplus">+$848K</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 86-0662244 · FY2025 filing</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. HUD funding decision (Nov 2025)</strong> — House of Refuge announced it will NOT apply for new HUD transitional housing funding, electing to stay 100% privately funded. CEO Kayla Kolar was quoted in Axios Phoenix. Opener: "I saw the Axios piece about your decision to stay privately funded — that's a meaningful statement about how you want to operate. What's driving that for you?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> axios.com/local/phoenix · November 2025</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. Investment income of $107,770 (FY2025)</strong> confirms an active investment pool. No named advisor — the pool is being managed somewhere. Approaching size ($2–3M investable) where institutional advisory becomes relevant. Org is building reserves rapidly with consistent surpluses.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 86-0662244 · FY2025 · <span class="badge-inferred">Inferred</span> investable pool estimate</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>3. Megan Ruffentine (BMO Private Bank) is a voting board member</strong> — this is the closest public signal to an incumbent banking/investment relationship. Acknowledge this internally; ask about it on the call without naming the board member directly.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> houseofrefuge.org/our-board · retrieved 2026-06-24 · <span class="badge-inferred">Inferred</span> incumbent-adjacent flag</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Kayla Kolar — President &amp; CEO (key decision-maker; quoted in HUD story)</div>
+        <div class="contact-row"><span class="contact-label">Contact on file</span>Jacqueline Cruz — CDO · jacqueline@houseofrefuge.org · Attended May Webinar</div>
+        <div class="contact-row"><span class="contact-label">Finance</span>Ana Monzon — CFO (comp $90K FY2025)</div>
+        <div class="contact-row"><span class="contact-label">Board (Chair)</span>Brian Heath — SRP · 30th anniversary gala 2026</div>
+      </div>
+      <div class="contact-note">Jacqueline Cruz (CDO) is the right seat for a relationship conversation — but the investment decision runs through Ana Monzon (CFO) and ultimately Kolar (CEO). Board flag: BMO Private Bank presence — ask about banking/investment relationships indirectly.</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Open Threads</div>
+      <div class="open-threads">
+        <div class="thread">Note BMO Private Bank board presence — ask about investment management relationships on call</div>
+        <div class="thread">The prior HubSpot EIN (311798420) matched a Montana org — confirm EIN 86-0662244 in HubSpot record</div>
+        <div class="thread">30th anniversary milestone in 2026 — legacy/endowment conversation angle</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 53245773678 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein (corrected), lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: HARVEST FOUNDATION ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Harvest Foundation</div>
+    <div class="card-org-sub">Phoenix, AZ &nbsp;·&nbsp; EIN: 95-3236330 &nbsp;·&nbsp; Faith-based Global Training (NTEE X20Z) &nbsp;·&nbsp; <strong style="color:var(--amber)">EIN corrected — Seattle org was wrong match</strong></div>
+    <div class="card-meta">
+      <span class="meta-pill pill-aum">AUM: $2.41M total assets (IRS 990 · FY2025, declining)</span>
+      <span class="meta-pill pill-flag">4 of 5 years in deficit — asset drawdown $832K</span>
+      <span class="meta-pill pill-timing">Contact: Manager (Attended May Webinar)</span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="card-section">
+      <div class="cs-label">What They Do</div>
+      <div class="cs-content">Harvest Foundation equips local churches in developing-world countries to serve their communities through indigenous rather than foreign resources, operating in 30+ countries through its flagship Samaritan Strategy training curriculum. Founded 1981 by Bob Moffitt. Very small U.S. staff; operations run through ~83 national volunteer trainers globally. Also provides donor-advised funding for certified church projects.</div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> harvestfoundation.org · retrieved 2026-06-24</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Financial Health &nbsp; <small style="font-weight:400;font-style:italic;color:var(--mid)">(IRS 990 · FY2021–FY2025)</small></div>
+      <div class="cs-content">
+        <p>Worth flagging. Revenue declined 43% from FY2021 to FY2025. Four consecutive deficit years. Assets declining from $3.24M to $2.41M — $832K drawdown over four years. The investment pool (~$2.2M as of FY2023) is the core of the balance sheet. Investment income grew from $39K to $77K over the period (3.2% yield FY2025) — the investment program is active but no named advisor is confirmed. The conversation here is asset preservation and sustainable endowment management during a revenue contraction, not growth.</p>
+        <div class="fin-grid">
+          <div class="fin-cell header">Fiscal Year</div><div class="fin-cell header">Revenue</div><div class="fin-cell header">Net</div>
+          <div class="fin-cell">FY2021</div><div class="fin-cell">$1.36M</div><div class="fin-cell surplus">+$275K</div>
+          <div class="fin-cell">FY2022</div><div class="fin-cell">$958K</div><div class="fin-cell deficit">-$185K</div>
+          <div class="fin-cell">FY2023</div><div class="fin-cell">$1.04M</div><div class="fin-cell deficit">-$81K</div>
+          <div class="fin-cell">FY2024</div><div class="fin-cell">$915K</div><div class="fin-cell deficit">-$160K</div>
+          <div class="fin-cell">FY2025</div><div class="fin-cell">$771K</div><div class="fin-cell deficit">-$251K</div>
+        </div>
+      </div>
+      <div class="cs-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 95-3236330 · FY2021–FY2025 (filed April 20, 2026) · EIN corrected from Seattle entity</div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Why Reach Out Now</div>
+      <div class="hooks">
+        <div class="hook">
+          <div class="hook-text"><strong>1. $77K investment income on $2.4M assets (3.2% yield)</strong> — investment fees of $11,115 in prior 990 years confirm an advisor relationship exists. Name not disclosed. A better-performing managed portfolio could meaningfully extend the org's runway. Angle: "Your investment pool is the core of your balance sheet — how is it currently managed?"</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> IRS 990 · FY2023–FY2025</div>
+        </div>
+        <div class="hook">
+          <div class="hook-text"><strong>2. Four consecutive deficits drawing down assets</strong> — the asset preservation conversation is urgent and real. This is not a growth story, but it is an authentic advisory opening: improving returns and reducing fees could slow the drawdown materially.</div>
+          <div class="hook-source"><span class="badge-confirmed">Confirmed</span> ProPublica EIN 95-3236330 · FY2022–FY2025</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="cs-label">Call Contact</div>
+      <div class="call-contact">
+        <div class="contact-row"><span class="contact-label">Who to ask for</span>Julian Gibb — Executive Director (financial decision-maker)</div>
+        <div class="contact-row"><span class="contact-label">Also key</span>Bob Moffitt — President &amp; Founder (likely ultimate decision authority)</div>
+        <div class="contact-row"><span class="contact-label">Contact on file</span>Joseph Thomas — Manager · jthomas@harvestfoundation.org · Attended May Webinar</div>
+      </div>
+      <div class="contact-note">Joseph Thomas's "Manager" title is ambiguous — clarify his scope before the call. Financial decision authority sits with Julian Gibb (ED) and Bob Moffitt (Founder/President). Note: Schedule L conflict-of-interest transaction disclosed on FY2025 990 — nature not specified in public summary; do not raise on first call.</div>
+    </div>
+
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 53242294028 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein (corrected), lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION: FLAG / REVIEW
+═══════════════════════════════════════════════════════ -->
+
+<div class="section-header">
+  <span class="section-tag tag-flag">Flag / Review</span>
+  <span class="section-title">Incumbent occupied · Too large · AUM unconfirmed</span>
+</div>
+
+<!-- ─── CARD: GATEWAY CC FOUNDATION ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Gateway Community College Foundation / MCCF</div>
+    <div class="card-org-sub">Phoenix / Tempe, AZ &nbsp;·&nbsp; EIN: 86-0327449 (MCCF) &nbsp;·&nbsp; Community College District Foundation</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-occupied">⛔ Incumbent: Russell Investments (OCIO since Jan 2023)</span>
+      <span class="meta-pill pill-aum">MCCF total: $78.9M · GateWay sub-fund: ~$3.6M (GS est.)</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="flag-box">
+      <strong>⚠️ Occupied — Russell Investments is OCIO</strong>
+      Russell Investments was selected as MCCF's Outsourced Chief Investment Officer in January 2023 following a formal RFP process by the board Finance Committee. Portfolio was $52M at selection; now $78.9M (FY2025). This is a live, 3.5-year-old mandate. Do NOT lead with an investment pitch. GateWay Community College Foundation is not a standalone 501(c)(3) — it is a program identity within MCCF. Investment decisions sit at the district level (Tempe), not at GateWay. Contact Ann Blatte is a college-level development director.
+    </div>
+    <div class="card-section">
+      <div class="cs-label">Timing Watch</div>
+      <div class="cs-content">New MCCF CEO Julie Dunnigan started May 2025 — now approximately 13 months in. New CEOs sometimes revisit incumbents at the 1-year mark. Arnold Ventures granted MCCF $16M (largest district gift in history) in 2026, growing the portfolio materially. EmpowerED for Student Success campaign approaching its 2026 deadline ($9.3M raised toward $20M goal). Monitor for vendor review signals. Build the Ann Blatte relationship and ask about a path to district finance leadership (Finance Chair Bradley Martorana).</div>
+    </div>
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 42711709269 · Fields queued: lark_incumbent_advisor, lark_incumbent_source, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: BANNER HEALTH ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Banner Health</div>
+    <div class="card-org-sub">Phoenix, AZ &nbsp;·&nbsp; EIN: 45-0233470 &nbsp;·&nbsp; Nonprofit Hospital System (NTEE E210)</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-flag">⚠️ Scale flag: $15B assets — wrong contact on file</span>
+      <span class="meta-pill pill-aum">AUM: $15.05B (IRS 990 · TY2023)</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="flag-box">
+      <strong>⚠️ Qualification flag — read before any outreach</strong>
+      Banner Health is one of the largest nonprofit health systems in the US — $15.05B in total assets, $16B revenue in FY2025, ~$1B net investment income annually. At this scale, Banner almost certainly operates either an in-house investment team, a dedicated investment committee, and/or a major OCIO/consultant relationship. Contact on file: Marjorie Bessel, MD — she is Chief Clinical Officer (physician executive), NOT finance/investment. Finance leadership: Staci Dickerson (CFO/EVP), Shelby Arveson (SVP Finance, joined Jan 26, 2026). Open with a qualification question: "Who manages your investment program today?" before pitching. Consider whether this is within Farther Institutional's target market — this is a sophisticated institutional investor at Fortune 500 scale.
+    </div>
+    <div class="card-section">
+      <div class="cs-label">Notable context</div>
+      <div class="cs-content">Multiple active capital projects: $400M Scottsdale hospital/cancer center, $35M Estrella expansion (completed Oct 2025), Banner Gateway tower expansion, East Mesa clinic expansion (completed Feb 2026). $80.5M research enterprise. Improving margins: 2.8% operating margin in FY2025, up from 2.3% in FY2024. Banner Health Foundation (EIN 94-2545356) is a separate entity — may be a smaller, more accessible entry point. Shelby Arveson (SVP Finance, joined Jan 26, 2026) is new in role — a potential inbound timing signal if a warm path exists.</div>
+    </div>
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 43935833467 · Fields queued: lark_aum_estimated, lark_aum_source, lark_propublica_ein, lark_notes, lark_last_sweep</div>
+</div>
+
+<!-- ─── CARD: HARVEST COMPASSION CENTER ─── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-org-name">Harvest Compassion Center</div>
+    <div class="card-org-sub">Phoenix, AZ &nbsp;·&nbsp; EIN: 27-0250769 (Mitchell Swaback Charities, Inc.) &nbsp;·&nbsp; Food bank / social services</div>
+    <div class="card-meta">
+      <span class="meta-pill pill-hold">⚠️ HOLD — AUM unconfirmed, likely below $1M</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="flag-box">
+      <strong>⚠️ HOLD — verify AUM before any prioritization</strong>
+      Harvest Compassion Center (legal entity: Mitchell Swaback Charities, Inc., EIN 27-0250769) has no ProPublica record. This likely means the org files a 990-N (e-Postcard), applicable to orgs with gross receipts below $50,000/year — which would put total assets well below the $1M AUM threshold. Verify via direct IRS EIN lookup before prioritizing. Contact on file Jenni Torres is a Development Coordinator (mid-level fundraising role). If AUM is confirmed below threshold, flag as long-term cultivation only. If AUM is confirmed above threshold, reassess and research further.
+    </div>
+    <div class="card-section">
+      <div class="cs-label">What they do (for context)</div>
+      <div class="cs-content">Four retail-style food bank locations across Phoenix (North Phoenix, West Phoenix, Maryvale, Tolleson). Founded 2011 in memory of Mitchell Swaback; 100% privately funded (no government funding). Flagship FEED1 program: $28/month subscription, ~700+ sponsors. 150,000+ families served. Charity Navigator 4-star.</div>
+    </div>
+  </div>
+  <div class="hubspot-line">HubSpot write-back: STAGED · Company ID 53241054253 · Fields queued: lark_propublica_ein, lark_notes, lark_last_sweep · Note: lark_aum_estimated NOT written — unconfirmed</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION: SKIPPED
+═══════════════════════════════════════════════════════ -->
+
+<div class="section-header">
+  <span class="section-tag tag-hold">Skipped</span>
+  <span class="section-title">Not in nonprofit target market — excluded from enrichment</span>
+</div>
+
+<div class="skip-note">
+  <strong>Larkfield Consulting</strong> (larkfieldconsult.com, Tempe AZ) — Consulting/for-profit firm. Kate Gunn (CEO) appears twice in the input file (rows 3 and 8 — duplicate). Excluded from enrichment. Contact may still be worth relationship-building; not a prospect for endowment management.
+</div>
+<div class="skip-note">
+  <strong>SRP (Salt River Project)</strong> (srpnet.com, Phoenix AZ) — Quasi-governmental utility (not a nonprofit). Three contacts in input file: Bill Patchett, Jodie Broderick, Jon Beauregard. Excluded from enrichment. Note: SRP board chair Brian Heath also chairs House of Refuge's board — that's the more relevant connection.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════ -->
+
+<div style="margin-top:48px; padding-top:20px; border-top:1px solid var(--border); font-size:11.5px; color:var(--light);">
+  <p>Lark · Enrichment Run · Jay Chang Pilot · 2026-06-24 &nbsp;·&nbsp; Source: inputs/Jay Chang Pilot.xlsx</p>
+  <p style="margin-top:4px;">Research sources: ProPublica Nonprofit Explorer · org websites · web search · Instrumentl (FY2024 990 data) · GS internal estimates (Farther)</p>
+  <p style="margin-top:4px;">HubSpot write-back: STAGED in outputs/2026-06-24-lark-enrichment.csv · MCP key pending</p>
+  <p style="margin-top:4px;">Profiles written to: EnrichmentProfileUpdate/ (11 files) · Next sweep: per monthly cadence</p>
+  <p style="margin-top:8px;"><em>All claims labeled Confirmed / Inferred / Not found per honesty.md. 990 data lags 12–18 months — always state tax year when citing financial figures. Never present as current.</em></p>
+</div>
+
+</div><!-- /main -->
+</body>
+</html>
