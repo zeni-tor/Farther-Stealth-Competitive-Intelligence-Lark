@@ -330,6 +330,121 @@ Each answer is labeled Confirmed, Inferred, or Speculative so you know how much 
 
 ---
 
-## Questions?
+## Maintaining Lark
+
+Lark needs periodic human upkeep to stay accurate. Here's what to maintain, when, and how.
+
+---
+
+### conferences.md — update before each sweep
+
+**What it is:** The nonprofit conference calendar Lark reads when running Channel 6. It tells Lark which conferences are coming up, who the audience is, and when monitoring and outreach windows open.
+
+**What needs updating:**
+- Add upcoming conferences for the next 6 months when you become aware of them
+- Mark conferences as PASSED once they've occurred
+- Update the "Farther attending?" column when Farther confirms attendance at an event — this changes the outreach angle from cold to "see you there"
+- Add any new regional associations or conferences Lark surfaces during sweeps
+
+**How often:** Annually — update dates for the coming year's conferences, typically in Q4 when organizations publish their schedules. Also update as needed when: a conference is confirmed as PASSED, Farther confirms attendance, or a new relevant conference is discovered. Lark reads the monitoring window dates from this file automatically — if the dates are current, you don't need to touch it between sweeps.
+
+**Format:** Follow the existing table structure in the file. Every conference needs at minimum: dates, location, audience, and monitoring window open/close dates.
+
+---
+
+### contacts.csv — refresh quarterly
+
+**What it is:** The full Farther contact list (~190K contacts) that Lark matches signals against. Every signal Lark finds gets fuzzy-matched against this file to determine whether it's a Farther pipeline org.
+
+**What needs updating:** Export a fresh copy from HubSpot and replace the existing `contacts.csv` in the project root. If new contacts are added to HubSpot between sweeps, Lark won't find matches for them until the CSV is refreshed.
+
+**How often:** At minimum quarterly. Ideally before each sweep if the contact list changes frequently.
+
+**How to export from HubSpot:** Contacts → Export → All contacts → CSV. Make sure the export includes at minimum: Company Name, Associated Company (Primary), Email, City, State.
+
+---
+
+### signals.md — update when signal definitions change
+
+**What it is:** The definitions, scoring rules, and action windows for all 10 signal types. Lark reads this during every sweep to know what counts as a signal, how to score it, and how long the action window lasts.
+
+**What needs updating:**
+- Action window durations if Farther's sales process changes
+- Signal tier assignments if certain signals prove more or less valuable over time
+- New signal types if Lark starts monitoring for something new
+- Retired signal types — mark as retired with a note rather than deleting
+
+**How often:** Only when something structural changes. Not a routine maintenance item.
+
+**Important:** Lark also maintains a running iteration log in `signals.md` — she adds entries when a signal pattern is confirmed, refined, or retired. Don't overwrite her entries.
+
+---
+
+### memory.md — Lark maintains this, but review monthly
+
+**What it is:** Lark's operational state file. She updates it after every sweep — recording what ran, what was found, open threads, bugs encountered, and what needs follow-up.
+
+**What you should do:** Read it after each sweep to understand what Lark flagged as needing human attention. Look for:
+- Open threads (things Lark couldn't resolve herself)
+- Bug fixes she applied and whether they need to be reflected in a skill file
+- RFP corpus state — sector rotation, records count
+
+**What you should NOT do:** Hand-edit memory.md except to add the `APIFY_TASK_ID` or similar operational notes Lark can't set herself. Lark owns this file.
+
+---
+
+### rfp-intelligence.md — update sector rotation monthly
+
+**What it is:** The Channel 9 protocol. Includes a 6-month sector rotation schedule — each sweep focuses the broad RFP search on a different sector and AUM band.
+
+**What needs updating:** After each sweep, check `memory.md` to see which sector ran and advance the rotation. Lark does this herself, but if memory.md is reset or the rotation gets out of sync, you may need to set it manually.
+
+**Sector rotation schedule:**
+| Month | Sector | AUM band |
+|---|---|---|
+| 1 | Social services / transitional housing | $1M–$20M |
+| 2 | Arts & culture / museums | $5M–$50M |
+| 3 | Community foundations | $5M–$25M |
+| 4 | College / university foundations | $5M–$50M |
+| 5 | Healthcare nonprofits | $5M–$100M |
+| 6 | Environmental / conservation | $1M–$25M |
+
+---
+
+### profiles/ — review periodically, never hand-edit signal data
+
+**What it is:** One markdown file per pipeline org that has fired a signal. Contains the org's full intelligence record — signal timeline, compound score, AUM, leadership, action window, and call-prep notes.
+
+**What you should do:** Read profiles before outreach calls. The call-prep section at the bottom of each profile is written for the advisor, not for Lark.
+
+**What you should NOT do:** Edit the signal timeline, compound score, or action window manually. These are set by Lark during sweeps. If something looks wrong, flag it as an open thread in memory.md and let Lark correct it on the next sweep.
+
+You can add notes to the "What Lark currently knows" section if you have intelligence from a call or meeting — just label it clearly as human-added so Lark doesn't overwrite it.
+
+---
+
+### Credential rotation
+
+| Key | When to rotate | How |
+|---|---|---|
+| `APIFY_TOKEN` | If compromised or if you switch Apify accounts | console.apify.com → Settings → Integrations → Generate new token |
+| `CURRENTS_API_KEY` | If compromised | currentsapi.services → Dashboard |
+| contacts.csv export | Quarterly or when HubSpot contacts list changes significantly | HubSpot → Contacts → Export |
+
+---
+
+### What to do after each sweep
+
+1. Open `outputs/YYYY-MM-DD-lark-monthly.html` and review Score-2 and Score-3 cards
+2. Check `memory.md` for open threads Lark flagged
+3. Import `outputs/YYYY-MM-DD-lark-hubspot-writeback.csv` into HubSpot (until MCP is live)
+4. Check `outputs/YYYY-MM-DD-lark-rfp-intelligence.html` for any pipeline RFP matches
+5. Forward Score-2+ call-prep cards to the relevant advisor
+6. Update `conferences.md` if any monitoring windows have opened or passed
+7. Note any signal quality issues (wrong org matched, signal misclassified) in `memory.md`
+
+---
+
+
 
 Ask the person who set this up, or open `CLAUDE.md` — it contains Lark's full operating instructions and is the authoritative source on how she works.
