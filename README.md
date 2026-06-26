@@ -114,7 +114,7 @@ Scans for published nonprofit investment management RFPs — current and histori
 1. Install dependencies: `pip install feedparser pandas openpyxl python-dotenv`
 2. Configure `.env` at the project root (see Credentials section below)
 3. Make sure `contacts.csv` is in the project root (export from HubSpot)
-4. Have an Apify paid account (Starter plan, $49/month) for Channel 5
+4. Have an Apify paid account (Starter plan, $29/month) for Channel 5
 
 ### Step 1 — Run the launcher from your terminal
 ```bash
