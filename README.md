@@ -134,7 +134,7 @@ Scans for published nonprofit investment management RFPs — current and histori
 1. Install dependencies: `pip install feedparser pandas openpyxl python-dotenv`
 2. Configure `.env` at the project root (see Credentials section below)
 3. Make sure `contacts.csv` is in the project root (export from HubSpot)
-4. Have an Apify paid account (Starter plan, $29/month) for Channel 5
+4. Have an Apify paid account (Starter plan, $49/month) for Channel 5
 
 ### Step 1 — Run the launcher from your terminal
 ```bash
@@ -142,13 +142,10 @@ cd path/to/LARK
 python3 lark_launch.py
 ```
 
-This script:
-- Fetches Layer A (GlobeNewswire RSS) and Layer B (Currents API news) locally — these APIs block Claude Code's server IPs, so they must be pre-fetched on your machine
-- Builds the full sweep prompt and writes it to `preflight/sweep-prompt-YYYY-MM-DD.txt`
-- Launches Claude Code
-- Prints a one-liner to paste
+This script prefetches Layer A (GlobeNewswire RSS) and Layer B (Currents API news) on your local machine — these APIs block Claude Code's server IPs so they must be fetched locally first. It then builds the full sweep prompt, writes it to `preflight/sweep-prompt-YYYY-MM-DD.txt`, and prints the one-liner to paste.
 
-### Step 2 — Paste into Claude Code
+### Step 2 — Paste the one-liner into Claude Code
+
 ```
 Read preflight/sweep-prompt-YYYY-MM-DD.txt and follow the instructions.
 ```
@@ -189,7 +186,7 @@ The script lists Excel/CSV/text files it finds, you select one, optionally filte
    ✓ Prompt written to: preflight/enrichment-prompt-YYYY-MM-DD-[advisor-slug].txt
 ```
 
-### Step 3 — Paste into Claude Code
+### Step 3 — Paste the one-liner into Claude Code
 
 The launcher writes the full enrichment prompt to `preflight/` and prints a one-liner:
 
@@ -197,7 +194,7 @@ The launcher writes the full enrichment prompt to `preflight/` and prints a one-
 Read preflight/enrichment-prompt-YYYY-MM-DD-[advisor-slug].txt and follow the instructions.
 ```
 
-Paste that into Claude Code. Lark reads the prompt file — which contains the full org list with all contact data, GS figures, and instructions — and runs the enrichment.
+Lark reads the prompt file — which contains the full org list with all contact data, GS figures, and instructions — and runs the enrichment.
 
 ---
 
@@ -495,6 +492,119 @@ You can add notes to the "What Lark currently knows" section if you have intelli
 
 ---
 
+## Running Lark in the cloud — what changes
 
+The current architecture runs Lark locally inside Claude Code, with a human triggering each sweep manually. This is the right approach for a pilot — it lets the team validate that signals are real, enrichment is useful, and advisors act on the reports. Once that's confirmed, Lark can be moved to a fully automated cloud deployment.
+
+Here is what changes at each stage.
+
+---
+
+### Stage 1 — Current (local, manual trigger)
+
+```
+Human runs lark_launch.py in terminal
+       ↓
+Preflight files written locally
+       ↓
+Human pastes one-liner into Claude Code
+       ↓
+Lark runs sweep
+       ↓
+Outputs written to local outputs/ folder
+       ↓
+Human imports CSV to HubSpot manually
+       ↓
+Human emails/Slacks report to advisors
+```
+
+**What stays manual:** everything. Good for validation, not for production.
+
+---
+
+### Stage 2 — HubSpot MCP connected (next milestone)
+
+The MCP key is configured and Lark writes directly to HubSpot. The CSV import step disappears.
+
+**What changes:**
+- Add `HUBSPOT_MCP_KEY` to `.env`
+- Remove "MCP key pending" note from `CLAUDE.md`
+- Lark calls HubSpot write-back directly at the end of Phase 4 instead of writing a CSV
+- The sweep-only CSV (quiet contacts — `lark_last_sweep` only) still writes as a backup
+
+**What stays manual:** human still triggers the sweep, human still distributes the report.
+
+**Effort:** Low — the write-back code in `lark_hubspot_csv.py` already has the MCP path stubbed. Configure the key and flip the flag.
+
+---
+
+### Stage 3 — Automated trigger (cloud scheduler)
+
+A scheduler fires the sweep automatically on a set cadence — no human needed to initiate.
+
+**What changes:**
+
+*Replace `lark_launch.py` with a cloud trigger.* Options:
+- **GitHub Actions** — free, simple, runs on a cron schedule. Add a `.github/workflows/lark-sweep.yml` that calls the Claude API directly with the sweep prompt on the first Monday of each month.
+- **AWS EventBridge + Lambda** — more robust, better for production. EventBridge fires monthly, Lambda calls the Claude API.
+- **Anthropic's own scheduling infrastructure** — if available, the cleanest path.
+
+*Layer A and Layer B no longer need local prefetch.* The Cloudflare block that forced local prefetching was specific to Anthropic's consumer server IPs. A cloud deployment on a dedicated IP (AWS, GCP, etc.) won't be blocked. The preflight step goes away entirely.
+
+*The prompt file pattern stays.* The scheduler writes the prompt to a known location and passes it to the Claude API — same logic, no human copy-paste.
+
+**What stays manual:** enrichment runs (an advisor still decides which list to enrich and when), conference calendar updates, and contacts.csv refresh.
+
+**Effort:** Medium. Requires cloud infrastructure setup, Claude API integration, and testing. Lark's skill files and intelligence logic are unchanged.
+
+---
+
+### Stage 4 — Fully automated enrichment (HubSpot trigger)
+
+HubSpot triggers an enrichment run automatically when a new contact is added to a specific list — for example, a "New Prospects" list that advisors add contacts to.
+
+**What changes:**
+- HubSpot webhook fires when a contact is added to the trigger list
+- Webhook calls the Claude API with an enrichment prompt for that contact
+- Lark enriches the org and writes back to HubSpot directly via MCP
+- Advisor gets a Slack notification with the call-prep card
+
+**What this looks like for an advisor:** add an org to "New Prospects" in HubSpot, get a Slack message with the call-prep card 20 minutes later. No script, no Claude Code.
+
+**Effort:** Higher. Requires HubSpot webhook configuration, a lightweight API endpoint to receive the webhook and call Claude, and Slack integration.
+
+---
+
+### What never changes
+
+Regardless of how Lark is triggered or where she runs, the following stay exactly the same:
+
+- `CLAUDE.md` — her operating instructions
+- `honesty.md` — her honesty standard
+- All skill files (`monthly-sweep.md`, `enrichment-run.md`, `rfp-intelligence.md`, etc.)
+- Signal definitions (`signals.md`)
+- All utility scripts (`lark_fuzzy_matcher.py`, `lark_propublica.py`, etc.)
+- The output format — HTML reports, call-prep cards, HubSpot property structure
+
+The intelligence layer is fully portable. Only the trigger and delivery mechanism change.
+
+---
+
+### Migration checklist
+
+When ready to move to cloud:
+
+- [ ] HubSpot MCP key configured and tested (Stage 2)
+- [ ] Claude API key provisioned for server-side use
+- [ ] Cloud scheduler configured (GitHub Actions or AWS EventBridge)
+- [ ] Layer A and B prefetch removed from sweep prompt (no longer needed in cloud)
+- [ ] Lark tested on cloud IP — confirm Cloudflare no longer blocks news APIs
+- [ ] Report delivery configured (email or Slack) to replace manual distribution
+- [ ] HubSpot webhook configured for enrichment trigger (Stage 4, optional)
+- [ ] `lark_launch.py` retired or repurposed for local dev/testing only
+
+---
+
+## Questions?
 
 Ask the person who set this up, or open `CLAUDE.md` — it contains Lark's full operating instructions and is the authoritative source on how she works.
