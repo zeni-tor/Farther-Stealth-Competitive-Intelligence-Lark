@@ -3,4 +3,7 @@
 /inputs
 # Make these invisible later: Offical Production
 # /profiles
+# /EnrichmentProfileUpdate
+# /HistoricalRFPData
+# /preflight
 # memory.md
