@@ -417,59 +417,87 @@ Cross-reference against ProPublica 990. Use GS figures as a starting point,
 990 as the authoritative source. Note any divergence.
 """
 
-    return f"""Run an enrichment run on the following org list.
+    return f"""MODE: ENRICHMENT RUN
+Today: {today}
+Protocol: skills/enrichment-run.md · Honesty standard: honesty.md (read before any output)
 
-MODE: ENRICHMENT RUN — this is NOT a signal sweep.
-Do NOT search for signals. Do NOT run signal channels Ch1–Ch8.
-Do NOT score contacts. Do NOT set action windows or lark_contact_status.
-
-Today's date: {today}
-
-Read skills/enrichment-run.md before starting.
-Read honesty.md before any output.
+This is a list-first, targeted enrichment run — not a monthly sweep.
+The orgs below are confirmed contacts the advisor already qualified.
+These are LUKEWARM contacts, not warm. Write every card as if the advisor
+is preparing for a cold-but-informed first call. Goal: a second meeting.
 {gs_note}
-Each org below includes everything Farther already has on file.
-The data comes from a HubSpot export and column alignment may be off —
-headers and data rows don't always line up perfectly in these exports.
-Use the full row context (email domains, phone numbers, titles, GS figures)
-to infer which value is the actual org name if it's ambiguous.
-Use this as your starting point. Fill gaps. Add anything relevant you find.
-The goal is a call-prep card that answers Aaron's five advisor questions
-in plain English — not a data dump.
+─────────────────────────────────────────────
+THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
 
-Org list ({len(orgs)} orgs):
+  Q1 — What is this org focused on?
+       1–2 plain English sentences. What do they do, who do they serve.
+       Not the grant-application language — how you'd explain it to a friend.
+
+  Q2 — Any capital campaigns recently or coming up?
+       Active, recently closed, or planned. Revenue spike in 990 counts.
+       If nothing found, say so in one sentence — do not leave blank.
+
+  Q3 — How is their financial health?
+       Two years of 990 data minimum. Lead with the characterization
+       (growing / stable / under pressure), then support with numbers.
+       Always state the tax year. Never present 990 data as current.
+
+  Q4 — Who is on the board? Anyone worth referencing?
+       Full board list from org website. Then a short "Worth noting"
+       section flagging anyone with a recognizable title or institution.
+
+  Q5 — Is there something happening right now worth mentioning?
+       2–3 hooks labeled INVESTMENT OPENER or RELATIONSHIP OPENER.
+       Each hook requires Lark's explicit reasoning: why this hook,
+       why the timing is live, what contact it's matched to.
+       Dropped hooks listed with a one-line reason.
+
+─────────────────────────────────────────────
+PHASES — run in strict order:
+
+Phase A-0 — Signal Check (before research)
+  Check profiles/ and EnrichmentProfileUpdate/ for prior signal history.
+  Run SIG-001 through SIG-010 for every org (same search patterns as signals.md).
+  Run ENR-001: investment mgmt fees = $0 in 990 Part IX (greenfield check).
+  Run ENR-002: cash ÷ total assets from 990 Part X (flag 40–60% / 60%+).
+  Score and assign action windows if signals fire.
+  Every card opens with PRIORITY label and SIGNAL HISTORY section.
+
+Phase A — Research (the five advisor questions)
+  Use pre-existing context below as starting point. Fill gaps.
+  Pull TWO years of 990 data from ProPublica where available.
+  Fetch each org's website. Run all six targeted news searches.
+  Run incumbent advisor check and RFP cross-reference for every org.
+  See skills/enrichment-run.md Phase A for full source and search guidance.
+
+Phase B — Profile update
+  Call upsert_enrichment_profile() — never upsert_profile().
+  Do NOT touch signal timeline, compound score, or action window.
+
+Phase C — HubSpot CSV
+  Write to outputs/{today}-lark-enrichment.csv.
+  Enrichment fields only. Do NOT write lark_signal_type,
+  lark_compound_score, lark_action_window, or lark_contact_status
+  unless the org already had those values from a prior signal sweep.
+
+Phase D — Report
+  Write outputs/{today}-lark-enrichment-report.html.
+  One card per org. Plain English. See skills/enrichment-run.md Phase D
+  for full card format: PRIORITY → SIGNAL HISTORY → Q1–Q5 →
+  WHY REACH OUT NOW (labeled hooks + reasoning) → RFP HISTORY →
+  CALL CONTACT → OPEN THREADS.
+
+DO NOT run monthly sweep channels Ch1–Ch8.
+DO NOT run the fuzzy matcher or lark_run_matcher.py.
+DO NOT write to /tmp/lark_signals.json.
+DO NOT read contact_data/contacts.csv directly.
+
+─────────────────────────────────────────────
+ORG LIST ({len(orgs)} orgs):
 
 {org_blocks}
 
 ─────────────────────────────────────────────
-
-Instructions:
-
-Phase A — Research (answer the five advisor questions per org)
-  Do NOT run the fuzzy matcher. Do NOT write to /tmp/lark_signals.json.
-  Do NOT run lark_run_matcher.py. These are known contacts — trust the list.
-  See skills/enrichment-run.md Phase A for full instructions.
-  Use the pre-existing context above as a starting point for each org.
-  Pull TWO years of 990 data from ProPublica where available.
-  Fetch each org's website. Run all six targeted news searches.
-  Add anything relevant you find beyond the five questions.
-
-Phase B — Profile
-  Call upsert_enrichment_profile() for each org.
-  Do NOT overwrite existing signal timeline or compound score.
-
-Phase C — HubSpot CSV
-  Write enrichment fields only to outputs/{today}-lark-enrichment.csv.
-  Do NOT write lark_signal_type, lark_compound_score, lark_action_window,
-  or lark_contact_status.
-
-Phase D — Report
-  Generate outputs/{today}-lark-enrichment-report.html.
-  One call-prep card per org. Plain English. Human voice.
-  See skills/enrichment-run.md Phase D for card format.
-
-Do NOT read contact_data/contacts.csv directly.
-Do NOT run a monthly sweep.
 Ask if anything is unclear before starting."""
 
 
