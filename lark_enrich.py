@@ -490,8 +490,9 @@ Phase D — Report
 DO NOT run monthly sweep channels Ch1–Ch8.
 DO NOT run the fuzzy matcher or lark_run_matcher.py.
 DO NOT write to /tmp/lark_signals.json.
-DO NOT read contact_data/contacts.csv, these are NOT FOR enrichment.
-Use the contacts found in /inputs for enrichment.
+DO NOT read contact_data/contacts.csv — that is the 190K pipeline list,
+it is NOT the enrichment source. Enrichment contacts come from inputs/
+only. The org list for this run is embedded below.
 
 ─────────────────────────────────────────────
 ORG LIST ({len(orgs)} orgs):
