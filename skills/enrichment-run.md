@@ -226,17 +226,76 @@ search patterns defined in signals.md. Additionally run:
   OR: "Investment management fees: not separately broken out in Part IX —
   cannot confirm from 990 alone. Check Schedule D footnotes."
 
-**ENR-002 — Unusually high cash balance**
-- Source: 990 Part X (balance sheet) — Cash and cash equivalents line
-- Calculate: Cash ÷ Total Assets
-- Flag at:
-  - 40–60%: Noteworthy — cash-heavy for an org of this size
-  - 60%+: Significant — substantial funds sitting idle, not invested
-- Why it matters: high cash as a % of assets suggests money parked in a
-  bank account rather than professionally managed. Strong investment opener.
+**ENR-002 — Unusually high cash balance relative to total assets**
+
+# MAINTAINER NOTE — why this signal exists and how the thresholds were set
+#
+# The underlying question is: does this org have meaningful assets sitting
+# in a bank account rather than under professional investment management?
+# That is the investment opener. But cash-as-a-percentage-of-total-assets
+# alone is not sufficient to answer it — context is required.
+#
+# BENCHMARK BASIS:
+# The sector standard practitioners use is "months of cash on hand"
+# (recommended range: 3–6 months of operating expenses). That metric
+# requires expense data we often don't have at search time, so we use
+# the 990 Part X balance sheet instead, which is always available.
+#
+# For endowments, industry data is unambiguous: NACUBO/Commonfund studies
+# show well-managed endowments hold ~86% in equities and equity-like
+# strategies, with only ~14% in fixed income and other categories —
+# leaving almost no allocation for idle cash. Even small endowments
+# (which hold conservative portfolios) put only ~30% in cash AND fixed
+# income combined. Pure cash should be a fraction of that.
+#
+# THRESHOLD RATIONALE:
+# 40% cash-to-assets is the lower flag because it exceeds what even the
+# most conservative well-managed endowment would hold in pure cash. It is
+# not a red flag on its own — there are legitimate explanations (capital
+# campaign proceeds, building purchase pending, board-directed liquidity
+# reserve). But it is worth asking about.
+#
+# 60%+ is significant because at that level, the majority of the org's
+# balance sheet is sitting in a bank account. This is almost never
+# intentional investment strategy — it is almost always either the absence
+# of an advisor relationship or a board that hasn't addressed asset
+# allocation.
+#
+# CRITICAL QUALIFIER — always check for a corresponding investment pool:
+# A high cash % is only meaningful if there is NOT already a visible
+# investment pool on the 990 (Part X line 11: Investments — publicly
+# traded securities, or line 13: investments — program-related).
+# If a large investment pool exists alongside the cash, the cash may be
+# operating reserves held separately by design. The signal fires on
+# cash-heavy balance sheets WITHOUT a corresponding investment pool.
+#
+# If in doubt, note the finding and flag it for the advisor to ask about —
+# do not suppress it, but do not overstate confidence either.
+
+- Source: 990 Part X (balance sheet)
+  - Line 1: Cash and cash equivalents
+  - Line 11: Investments — publicly traded securities (check for existing pool)
+  - Line 13: Investments — program-related (check for existing pool)
+  - Line 16: Total assets
+- Calculate: Cash (line 1) ÷ Total assets (line 16)
+- Before flagging: check lines 11 and 13. If a substantial investment pool
+  already exists alongside the cash, note it but do NOT flag as ENR-002 —
+  the org likely manages liquidity tiers intentionally.
+- Flag only when cash is high AND no meaningful investment pool is visible:
+  - 40–60%: Noteworthy — exceeds what even conservative endowments hold
+    in pure cash; worth asking about
+  - 60%+: Significant — majority of balance sheet sitting idle; strong
+    indicator of no active investment management relationship
+- Why it matters: an org with meaningful assets and no investment pool is
+  either a greenfield opportunity (no advisor) or a relationship where the
+  board has not addressed asset allocation. Both are investment openers.
 - Write: "Cash balance: $[X]M out of $[X]M total assets ([X]%) as of
-  FY[year] — [noteworthy / significant]. This suggests meaningful assets
-  not currently under professional investment management."
+  FY[year], with no investment pool visible on the 990 balance sheet —
+  [noteworthy / significant]. This pattern suggests assets may not be
+  under active investment management. Worth asking on the call."
+- If investment pool exists alongside cash: "Cash balance: $[X]M ([X]%
+  of total assets) as of FY[year]. Investment pool also present ($[X]M) —
+  org appears to manage liquidity tiers separately. No ENR-002 flag."
 - Confidence: Confirmed if from 990 Part X. Inferred if estimated.
 
 **Step 3 — Score and assign action window if signals fire**
@@ -659,7 +718,8 @@ SIGNAL HISTORY
     [Tax year(s) checked]
 
   ENR-002 (Cash balance):
-    [Result: $[X]M cash / $[X]M total assets ([X]%) / [Noteworthy / Significant / Within normal range]]
+    [Result: $[X]M cash / $[X]M total assets ([X]%) / [Noteworthy / Significant / Within normal range / No flag — investment pool present]]
+    [Investment pool on 990: $[X]M / None visible]
     [Tax year checked]
 
   Compound score: [Score-1 / Score-2 / Score-3 / No signals]
