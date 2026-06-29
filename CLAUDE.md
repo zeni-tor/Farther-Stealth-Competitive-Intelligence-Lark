@@ -78,14 +78,7 @@ Lark/
     lark_profile.py                ← Phase 4 · profile create/update from _template.md
 
   contact_data/
-    contacts.csv                   ← full contacts list (190K)
-
-  outputs/
-    YYYY-MM-DD-lark-monthly.html            ← HTML report
-    YYYY-MM-DD-lark-hubspot-writeback.csv  ← staged write-back
-    YYYY-MM-DD-lark-hubspot-sweep-only.csv ← lark_last_sweep only
-    YYYY-MM-DD-lark-enrichment.csv          ← enrichment write-back (no signal data)
-    YYYY-MM-DD-lark-enrichment-report.html  ← enrichment report
+    contacts.csv                   ← full contacts list (190K) · matcher only · never read directly
 ```
 
 ---
@@ -117,10 +110,13 @@ automatically after Channels 1–8 every sweep.
 Triggered by: `python3 lark_enrich.py`, a prompt with `MODE: ENRICHMENT RUN`,
 or "Run an enrichment run on inputs/[filename]"
 Protocol: `skills/enrichment-run.md`
-A list of known contacts is provided. Do NOT run the fuzzy matcher. Do NOT
-search for signals. Enrich every org in the list directly and produce a
-call-prep report. Does NOT score, does NOT set action windows, does NOT
-change lark_contact_status.
+Contacts come from inputs/ only — never from contact_data/contacts.csv.
+These are LUKEWARM contacts the advisor already qualified. Do NOT run the
+fuzzy matcher. DO run Phase A-0 signal check (SIG-001–SIG-010, ENR-001,
+ENR-002) for every org before research. Score and assign action windows
+if signals fire. Produce a call-prep report with PRIORITY label, SIGNAL
+HISTORY, five advisor questions, labeled hooks with reasoning, and RFP
+cross-reference on every card.
 
 **CHANNEL 9 — RFP INTELLIGENCE** (runs after Channels 1–8 each sweep)
 Triggered by: automatically during monthly sweep, or "Run the RFP Intelligence channel"
@@ -497,15 +493,20 @@ On-demand enrichment run protocol. Read this instead of `monthly-sweep.md`
 when `MODE: ENRICHMENT RUN` is set in the prompt.
 
 Key differences from the monthly sweep:
-- No Phase 1 (no signal search)
-- Matching uses the provided org list instead of signal-discovered names
-- Enrichment runs ProPublica + website check + advisor search per org
+- Contacts come from inputs/ — never contact_data/contacts.csv
+- No fuzzy matcher — do NOT run lark_run_matcher.py
+- Phase A-0 runs FIRST: signal check (SIG-001–SIG-010 + ENR-001 + ENR-002)
+  for every org. Score and set action windows if signals fire.
+- Five advisor questions answered for every org (Q1–Q5)
+- Every card: PRIORITY label → SIGNAL HISTORY → Q1–Q5 → WHY REACH OUT NOW
+  (labeled INVESTMENT OPENER / RELATIONSHIP OPENER hooks with reasoning) →
+  RFP HISTORY → CALL CONTACT → OPEN THREADS
 - Profiles updated via `upsert_enrichment_profile(EnrichmentProfileUpdate(...))` —
   never `upsert_profile()`. Signal timeline, compound score, and action window
-  are not touched. Findings land in "What Lark currently knows" with an
-  `[ENRICHMENT RUN · date]` label.
+  are not touched unless a signal fired this run.
 - HubSpot CSV writes enrichment fields only — does NOT write
-  `lark_signal_type`, `lark_compound_score`, `lark_action_window`, or `lark_contact_status`
+  `lark_signal_type`, `lark_compound_score`, `lark_action_window`, or
+  `lark_contact_status` unless the org already had those from a prior sweep.
 - Output files use `-enrichment-` suffix, not `-monthly-`
 
 Never use this protocol during a monthly sweep.
