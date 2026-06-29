@@ -684,146 +684,159 @@ Write in plain, direct sentences. Use the advisor's voice, not a researcher's.
 
 ---
 
-**Call-prep card format:**
+**Call-prep card format — HTML**
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[ORG NAME]
-[City, State] · EIN: [number] · [org type / NTEE]
-AUM: $[X]M (IRS 990 · tax year [year]) · Incumbent: [firm or Unknown]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# MAINTAINER NOTE
+# The enrichment report is rendered as HTML, not plain text.
+# The card format below defines the HTML structure, CSS classes, and
+# content rules for every section. This was finalized via a live card
+# exercise on the American Board of Radiology (2026-06-29).
+#
+# KEY DESIGN DECISIONS:
+# - Every section where Lark draws a conclusion beyond raw data gets a
+#   blue-bordered LARK'S REASONING block immediately below the content.
+#   This block is the mechanism for surfacing assumptions and alternatives.
+# - Financial Health uses an inline <table> (fin-table), not prose numbers.
+#   Four years of 990 data in a grid is faster to scan than sentences.
+# - Hooks are labeled INVESTMENT OPENER or RELATIONSHIP OPENER with a
+#   colored pill, not just text. Color encodes the type at a glance.
+# - Hooks that need action before use (e.g., unreviewed Foundation EINs)
+#   get a red action-req block, not just a note.
+# - Dropped hooks appear explicitly at the bottom of Why Reach Out Now —
+#   never silently omitted.
+# - The card is one continuous HTML block per org, appended inside the
+#   report's <div class="main"> container.
+#
+# CSS CLASSES (all defined in the report <style> block):
+#   .lk-card               — outer card wrapper
+#   .lk-card-header        — org name, subtitle, pills row
+#   .lk-section            — each content section (border-bottom separated)
+#   .lk-label              — section label (uppercase, muted, small)
+#   .lk-text               — body text within a section
+#   .lk-source             — source/confidence line (italic, muted)
+#   .badge .b-conf         — green CONFIRMED badge
+#   .badge .b-inf          — amber INFERRED badge
+#   .badge .b-nf           — gray NOT FOUND badge
+#   .badge .b-spec         — red SPECULATIVE badge
+#   .reasoning             — blue-left-border reasoning block
+#   .priority-box          — PRIORITY label + rationale row
+#   .priority-label        — .p-high / .p-medium / .p-low pill
+#   .fin-table             — Financial Health 990 data table
+#   .fin-surplus           — green surplus cell
+#   .fin-deficit           — red deficit cell
+#   .board-list/.board-row — board member rows
+#   .board-notable         — amber "Worth noting" box
+#   .hook                  — individual hook block (blue left border)
+#   .hook-label            — .hook-inv (green) / .hook-rel (blue) pill
+#   .hook-dropped          — gray dropped hook entry
+#   .dropped-label         — "Hooks considered and dropped" label
+#   .action-req            — red action-required block (gate before use)
+#   .contact-box/.contact-row — Call Contact rows
+#   .clabel                — contact row label (uppercase, muted)
+#   .rfp-box               — RFP History content box
+#   .thread-list/.thread   — Open Threads list
+#   .thread-flag           — flag icon for urgent threads
+#   .enr-row               — ENR-001 / ENR-002 signal rows in Signal History
+#   .signal-tag            — .sig-none / .sig-fired pill
+#   .hubspot-footer        — HubSpot write-back line at card bottom
+#
+# The reference implementation is the ABR card rendered on 2026-06-29.
+# When building a new card, follow that structure section by section.
 
-PRIORITY: [HIGH / MEDIUM / LOW — with one-line rationale]
-  [Why is this org high/medium/low priority right now? State Lark's reasoning
-   explicitly. Examples:
-   HIGH — Score-2 compound signal (new ED + $0 investment fees). Action window
-          open. Greenfield opportunity with confirmed AUM.
-   MEDIUM — No active signal. AUM confirmed at $51M with investment income
-            indicating managed assets. No incumbent identified. Worth a call
-            but no urgency trigger.
-   LOW — Small AUM ($2.5M), no signals, no incumbent found, 990 data limited.
-         Background monitoring only.]
+---
 
-SIGNAL HISTORY
-  Prior signals: [list any prior signals from profiles/ — date, type, score]
-  OR: No prior signal history. Treat as cold contact.
+**Section-by-section content rules:**
 
-  This run:
-  [List any signals that fired in Phase A-0. For each:]
-  - [SIG/ENR code] [Signal name] · [date found] · [Confirmed / Inferred]
-    [One sentence: what was found and why it matters for the call]
+**CARD HEADER**
+Org name (large), subtitle line (city · EIN · org type), pills row.
+Pills: AUM (green), Incumbent status (gray=unknown / red=occupied /
+green=greenfield), Priority (amber=medium / red=high / gray=low).
 
-  ENR-001 (Investment fees):
-    [Result: $0 confirmed / Fees found: $[X]K / Not separately broken out]
-    [Tax year(s) checked]
+**PRIORITY**
+priority-box with priority-label pill + one paragraph of rationale.
+State: signals that fired (or "no signals"), AUM status, incumbent status,
+contact temperature, and what would need to change to upgrade priority.
 
-  ENR-002 (Cash balance):
-    [Result: $[X]M cash / $[X]M total assets ([X]%) / [Noteworthy / Significant / Within normal range / No flag — investment pool present]]
-    [Investment pool on 990: $[X]M / None visible]
-    [Tax year checked]
+**SIGNAL HISTORY**
+Prior signals from profiles/ (or "No prior signal history. Treat as cold contact.").
+This run: list signals that fired with .signal-tag. Then ENR-001 and
+ENR-002 as .enr-row entries — both required, never blank.
+Compound score and action window at the bottom.
 
-  Compound score: [Score-1 / Score-2 / Score-3 / No signals]
-  Action window: [closes date, or N/A]
+**WHAT THEY DO**
+1–2 sentences. Plain English. Source + badge. No reasoning block needed
+unless the description is Inferred (e.g., from 990 NTEE code only).
 
-WHAT THEY DO
-  [1–2 sentences in plain English. What is this org focused on?
-   Who do they serve and how? Write it the way you'd explain it to a
-   friend, not the way the org describes itself in a grant application.
-   Source and confidence label at the end.]
+**CAPITAL CAMPAIGNS & FUNDRAISING**
+What's happening or not happening. Source + badge.
+LARK'S REASONING block required if any finding is Inferred or Speculative:
+state (1) what data led to the conclusion and (2) what alternative
+explanations exist. If fully Confirmed, omit the reasoning block.
 
-  Source: [org website About page · retrieved YYYY-MM-DD] · [Confirmed / Inferred]
+**FINANCIAL HEALTH**
+2–3 sentence characterization first (lead with the story, not the numbers).
+Then fin-table with year-by-year 990 data: Tax Year / Total Assets / Net.
+Include all available years (up to 4). Color surplus green, deficit red.
+LARK'S REASONING block required whenever the characterization goes beyond
+the numbers — e.g., attributing a deficit to a cause, projecting a trend
+from limited data, or characterizing a one-year result as a pattern.
 
-CAPITAL CAMPAIGNS & FUNDRAISING
-  [What fundraising activity has there been recently, or is coming?
-   If a campaign is active or just closed, describe it in a sentence.
-   If revenue data from the 990 suggests a campaign spike, note it.
-   If nothing found, say so in one sentence — do not leave this blank.]
+**BOARD**
+Full board-list with board-row entries (name / role).
+Separate staff leadership rows clearly labeled "(staff)".
+board-notable box for anyone worth mentioning on the call — name, title,
+and one sentence on why they're relevant.
+Source + badge + retrieval date.
 
-  Source: [org website / web search / IRS 990 · tax year [year]] · [Confirmed / Inferred / Not found]
+**WHY REACH OUT NOW**
+Each hook as a .hook block:
+- hook-label pill: INVESTMENT OPENER (.hook-inv, green) or
+  RELATIONSHIP OPENER (.hook-rel, blue) or
+  RELATIONSHIP OPENER — ACTION REQUIRED FIRST (.hook-rel + .action-req block)
+- hook-text: what happened, when, suggested wording or question
+- .reasoning block: (1) what's confirmed vs. inferred, (2) what alternative
+  explanations exist if inferred, (3) why this hook passes the three tests
+  (investment path / timing / contact match)
+- hook-source: badges + source + date
 
-FINANCIAL HEALTH  (IRS 990 · tax year [year] vs. [prior year])
-  [2–3 sentences characterizing the org's financial trajectory in plain
-   English. Is this a healthy, growing org? Stable but not growing? Under
-   some budget pressure? Include the key numbers — revenue, surplus/deficit,
-   net asset trend — but lead with the characterization, not the numbers.
-   Always state the tax year. Never present as current.]
+If a hook cannot be used until a research gap is filled (e.g., unreviewed
+EIN, unconfirmed contact), add an .action-req block inside the hook with
+a flag and the specific action needed before outreach.
 
-  Revenue:   $[X]M → $[X]M  ([+/-X%] YoY)
-  Surplus / Deficit:  $[X]K [surplus / deficit]
-  Net assets: $[X]M → $[X]M  ([growing / flat / declining])
+Dropped hooks section (.dropped-label + .hook-dropped entries) always
+appears at the bottom, even if only one hook was dropped. Never omit.
 
-  [Confirmed · IRS 990 · tax year [year] vs. [prior year]]
+If no hooks pass all three tests: one hook-dropped-style note stating
+"No hooks identified. Nothing significant found in the past 12 months
+that creates a natural investment conversation opener. Do not manufacture
+urgency — background monitoring only."
 
-BOARD
-  [Full board list with titles, retrieved from org website.
-   Then a short "Worth noting" paragraph calling out anyone with a
-   recognizable title, institution, or mutual connection worth mentioning
-   on the call. If the board is not publicly listed, say so.]
+**RFP HISTORY**
+.rfp-box with one of three explicit outcomes — never blank:
+1. RFP found within 3 years: date, what org asked for, how Farther
+   compares, reference the report filename.
+2. RFP found, more than 3 years old: flag, year, human review note,
+   advisor review cycle context, report filename.
+3. No RFP found: state it, then context sentence calibrated to AUM
+   (private process likely at scale / greenfield at small AUM).
 
-  Worth noting: [Name · Title · why they may be worth a mention]
+**CALL CONTACT**
+.contact-box with .contact-row entries using flexible labels to fit the org
+(e.g., Who to ask for / Warm entry / Also on file / Finance path).
+LARK'S REASONING block required whenever:
+- Recommended contact differs from the HubSpot contact on file, OR
+- Decision-making authority is inferred from a title rather than confirmed.
+State: (1) why this person over others, (2) what their investment role
+is believed to be and the basis for that belief, (3) routing risk.
+Minimal note acceptable when routing is straightforward and confirmed.
 
-  Source: [org website Board page · retrieved YYYY-MM-DD] · [Confirmed / Not publicly listed]
+**OPEN THREADS**
+.thread-list. Thread-flag icon for threads that must be resolved before
+outreach. Circle (○) for background research threads.
 
-WHY REACH OUT NOW
-  [Hooks evaluated and labeled. Each hook includes Lark's explicit
-   reasoning — why she chose it, what makes the timing live, and what
-   the advisor should expect in response. Dropped hooks listed with reason.]
-
-  1. [INVESTMENT OPENER / RELATIONSHIP OPENER]
-     [What happened, when, why it's a good opener in plain English.]
-     WHY THIS HOOK: [Lark's reasoning — why this hook passes the three tests:
-     investment path, timing, contact match.]
-     [date] · [source URL] · [Confirmed / Inferred]
-
-  2. [INVESTMENT OPENER / RELATIONSHIP OPENER]
-     [What happened, when, why it's a good opener.]
-     WHY THIS HOOK: [Lark's reasoning.]
-     [date] · [source URL] · [Confirmed / Inferred]
-
-  Hooks considered and dropped:
-  - [Hook description] — [reason: stale / relationship opener only /
-    wrong contact / not actionable]
-
-  [If no hooks pass: "No hooks identified. Nothing significant found in
-   the past 12 months that creates a natural investment conversation opener.
-   Do not manufacture urgency — background monitoring only."]
-
-RFP HISTORY
-  [One of three explicit outcomes — never leave blank:]
-
-  [If RFP found within 3 years:]
-  RFP found · [Org name] · [year] · [X months ago]
-  [What the org asked for. What they weighted. How Farther compares.
-   Reference the RFP report by filename.]
-  See: [YYYY-MM-DD-lark-rfp-intelligence.html]
-
-  [If RFP found, more than 3 years old:]
-  ⚑ HISTORICAL RFP · [year] · [X years ago] · HUMAN REVIEW RECOMMENDED
-  [Org ran a public investment management RFP in [year]. At 3–5 year
-   advisor review cycles, a new review window may be approaching. Advisor:
-   review the RFP record to understand what this org valued.]
-  See: [YYYY-MM-DD-lark-rfp-intelligence.html]
-
-  [If no RFP found:]
-  No public RFP found · [date searched]
-  [Context sentence — e.g., "At $199M AUM, private invitation-only
-   process is more likely than a public RFP. The intelligence question is
-   when the current advisor relationship started." OR "At this asset level,
-   this org has likely never run a formal advisor search — greenfield."]
-
-CALL CONTACT
-  Who to ask for:  [ED / CEO name and title — this is the primary target]
-  Also on file:    [CFO, IC Chair, or board chair if found]
-  Contact on file: [Name · Title from HubSpot · Decision Maker: Yes/No]
-  Note:            [Any routing note — e.g., "Contact on file is a gatekeeper —
-                    ask Brittany to introduce you to the ED."]
-
-OPEN THREADS
-  - [anything that needs follow-up or verification before outreach]
-
-HubSpot write-back: STAGED · [N] fields queued
-```
-
+**HUBSPOT FOOTER**
+.hubspot-footer: "HubSpot write-back: STAGED · Company ID [N] · Fields
+queued: [field list]"
 ---
 
 **Sourcing rules for the card:**
