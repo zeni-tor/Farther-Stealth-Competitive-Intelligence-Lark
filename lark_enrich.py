@@ -430,7 +430,7 @@ is preparing for a cold-but-informed first call. Goal: a second meeting.
 THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
 
   Q1 — What is this org focused on?
-       1–2 plain English sentences. What do they do, who do they serve.
+       1-2 plain English sentences. What do they do, who do they serve.
        Not the grant-application language — how you'd explain it to a friend.
 
   Q2 — Any capital campaigns recently or coming up?
@@ -490,7 +490,8 @@ Phase D — Report
 DO NOT run monthly sweep channels Ch1–Ch8.
 DO NOT run the fuzzy matcher or lark_run_matcher.py.
 DO NOT write to /tmp/lark_signals.json.
-DO NOT read contact_data/contacts.csv directly.
+DO NOT read contact_data/contacts.csv, these are NOT FOR enrichment.
+Use the contacts found in /inputs for enrichment.
 
 ─────────────────────────────────────────────
 ORG LIST ({len(orgs)} orgs):
