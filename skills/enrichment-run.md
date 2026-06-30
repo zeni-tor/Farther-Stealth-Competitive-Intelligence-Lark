@@ -734,7 +734,7 @@ Farther would have scored against their criteria.
 Example: "Reproductive Freedom for All ran a public RFP in 2026.
 Evaluation weighted fee structure (25%), investment philosophy (25%), and
 reporting quality (20%). Farther's model is well-matched to all three.
-See: 2026-06-24-lark-rfp-intelligence.html for full record."
+See: <a href="outputs/2026-06-24-lark-rfp-intelligence.html">full record</a>."
 
 **Outcome 2 — RFP found, but more than 3 years old:**
 Flag this prominently. An older RFP means the org has been through an
@@ -744,7 +744,7 @@ cycle may be approaching. Refer the advisor to the relevant RFP report.
 Write: "⚑ HISTORICAL RFP — [ORG] · [YEAR] · HUMAN REVIEW RECOMMENDED
 An investment management RFP was found from [year] — [X] years ago. Orgs
 typically run advisor reviews every 3–5 years. If this org is on cycle, a
-new review may be approaching. See: [report filename] for full record.
+new review may be approaching. See: <a href="[report path]">full record</a>.
 Advisor: review the RFP to understand what this org valued and how their
 needs may have evolved."
 
@@ -980,9 +980,9 @@ urgency — background monitoring only."
 **RFP HISTORY**
 .rfp-box with one of three explicit outcomes — never blank:
 1. RFP found within 3 years: date, what org asked for, how Farther
-   compares, reference the report filename.
+   compares, hyperlink to the report (not just a filename reference).
 2. RFP found, more than 3 years old: flag, year, human review note,
-   advisor review cycle context, report filename.
+   advisor review cycle context, hyperlink to the report.
 3. No RFP found: state it, then context sentence calibrated to AUM
    (private process likely at scale / greenfield at small AUM).
 
@@ -1003,18 +1003,6 @@ outreach. Circle (○) for background research threads.
 **HUBSPOT FOOTER**
 .hubspot-footer: "HubSpot write-back: STAGED · Company ID [N] · Fields
 queued: [field list]"
----
-
-**Sourcing rules for the card:**
-- What they do: org website About page — Confirmed only. Inferred if from 990 only.
-- Fundraising: org website news/press + web search + 990 revenue trends
-- Financial health: IRS 990 only — always two years, always state tax year
-- Board: org website Board page — note retrieval date
-- Talking points: web search (6 triggers above) + org website news feed
-  - Prioritize items from the past 6 months
-  - If nothing in 6 months, go back 12 — note the age
-  - If nothing meaningful found: write "No recent news found — [date searched]"
-- All findings labeled Confirmed / Inferred / Speculative per honesty.md
 
 ---
 

@@ -440,6 +440,27 @@ These are LUKEWARM contacts, not warm. Write every card as if the advisor
 is preparing for a cold-but-informed first call. Goal: a second meeting.
 {gs_note}
 ─────────────────────────────────────────────
+READ FIRST — "Who is Farther Institutional" (top of skills/enrichment-run.md
+or CLAUDE.md): Farther's relevance is defined by four revenue streams —
+Investment Income, Cash Management, Fundraising Support, Program Revenue.
+A real, newsworthy event is NOT automatically a Q5 hook just because it's
+newsworthy — it must plausibly touch one of those four streams. If it
+doesn't, log it as found-but-not-relevant and move on. That is a complete,
+correct answer, not a gap to fill.
+
+─────────────────────────────────────────────
+CITATION RULES (honesty.md) — apply to every section:
+  - Every source is a clickable hyperlink to the specific page used —
+    never a bare domain name or a filename with no href.
+  - If a sentence contains both a confirmed fact and an inference built
+    on it, tag each clause separately. Never let an inference borrow the
+    confidence tag of the fact it's attached to (e.g. "Org launched a new
+    exam format [Confirmed]" is fine; appending an unsourced financial
+    claim inside that same Confirmed tag is not).
+  - Finding nothing relevant is a correct, complete answer — one calm
+    sentence, no padding, no manufactured relevance.
+
+─────────────────────────────────────────────
 THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
 
   Q1 — What is this org focused on?
@@ -460,10 +481,17 @@ THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
        section flagging anyone with a recognizable title or institution.
 
   Q5 — Is there something happening right now worth mentioning?
-       2–3 hooks labeled INVESTMENT OPENER or RELATIONSHIP OPENER.
-       Each hook requires Lark's explicit reasoning: why this hook,
-       why the timing is live, what contact it's matched to.
-       Dropped hooks listed with a one-line reason.
+       Run the relevance filter (see above) BEFORE labeling anything a
+       hook. Each hook that passes is labeled INVESTMENT OPENER or
+       RELATIONSHIP OPENER, with Lark's explicit reasoning: why this hook,
+       why the timing is live, what contact it's matched to, and — if the
+       finding is Inferred — what alternative explanation exists.
+       If a web search result returns a LinkedIn profile URL (a person,
+       not a company page), verify it with verify_linkedin_url() before
+       citing it — see utilities/lark_linkedin_channel.py. Do not cite an
+       unverified LinkedIn profile URL straight from search results.
+       Dropped hooks listed with a one-line reason. If nothing passes the
+       relevance filter, say so plainly — do not force a hook.
 
 ─────────────────────────────────────────────
 PHASES — run in strict order:
@@ -472,7 +500,8 @@ Phase A-0 — Signal Check (before research)
   Check profiles/ and EnrichmentProfileUpdate/ for prior signal history.
   Run SIG-001 through SIG-010 for every org (same search patterns as signals.md).
   Run ENR-001: investment mgmt fees = $0 in 990 Part IX (greenfield check).
-  Run ENR-002: cash ÷ total assets from 990 Part X (flag 40–60% / 60%+).
+  Run ENR-002: cash ÷ total assets from 990 Part X (flag 40–60% / 60%+,
+  but only if no investment pool is already visible on the balance sheet).
   Score and assign action windows if signals fire.
   Every card opens with PRIORITY label and SIGNAL HISTORY section.
 
@@ -486,6 +515,7 @@ Phase A — Research (the five advisor questions)
     publicly. This is a free web search (no Apify required) and often
     surfaces timely material not yet on the org's website.
     Treat any LinkedIn-sourced finding as Inferred — label accordingly.
+    Apply the Farther relevance filter before treating any result as a hook.
   Run incumbent advisor check and RFP cross-reference for every org.
   See skills/enrichment-run.md Phase A for full source and search guidance.
 
@@ -501,10 +531,11 @@ Phase C — HubSpot CSV
 
 Phase D — Report
   Write outputs/{today}-lark-enrichment-report.html.
-  One card per org. Plain English. See skills/enrichment-run.md Phase D
-  for full card format: PRIORITY → SIGNAL HISTORY → Q1–Q5 →
-  WHY REACH OUT NOW (labeled hooks + reasoning) → RFP HISTORY →
-  CALL CONTACT → OPEN THREADS.
+  One card per org. Plain English. Every source hyperlinked. See
+  skills/enrichment-run.md Phase D for full card format: PRIORITY →
+  SIGNAL HISTORY → Q1–Q5 → WHY REACH OUT NOW (labeled hooks + reasoning,
+  dropped hooks listed) → RFP HISTORY (hyperlinked) → CALL CONTACT →
+  OPEN THREADS.
 
 DO NOT run monthly sweep channels Ch1–Ch8.
 DO NOT run the fuzzy matcher or lark_run_matcher.py.
