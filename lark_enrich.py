@@ -15,6 +15,19 @@ USAGE:
     python3 lark_enrich.py --orgs pilot.xlsx --advisor "Will Gilmore"
     python3 lark_enrich.py --orgs pilot.xlsx --date 2026-06-22
     python3 lark_enrich.py --orgs pilot.xlsx --no-launch  # print prompt only
+    python3 lark_enrich.py --orgs pilot.xlsx --batch-size 10  # split into batches of 10
+
+BATCH MODE:
+    --batch-size N splits the org list into chunks of N and writes one prompt
+    file per chunk. Each chunk runs as its own Claude Code session. Output files
+    are suffixed -batch-01-of-03, -batch-02-of-03, etc. to prevent collisions.
+    Recommended for lists > 15 orgs. Default batch size: 10.
+
+    Example (81 orgs → 9 batches of 9):
+        python3 lark_enrich.py --orgs all_orgs.xlsx --batch-size 10
+        → inputs/enrichment-prompt-2026-06-29-all_orgs-batch-01-of-09.txt
+        → inputs/enrichment-prompt-2026-06-29-all_orgs-batch-02-of-09.txt
+        ... etc.
 
 WHAT GETS PASSED TO LARK:
     For Excel/CSV inputs: the full contact row for each org — all columns,
@@ -467,6 +480,12 @@ Phase A — Research (the five advisor questions)
   Use pre-existing context below as starting point. Fill gaps.
   Pull TWO years of 990 data from ProPublica where available.
   Fetch each org's website. Run all six targeted news searches.
+  For Question 5 (Why Reach Out Now), also run a LinkedIn company post search:
+    site:linkedin.com/company "[org name]" — scan the top results for
+    recent posts, announcements, or leadership activity the org has shared
+    publicly. This is a free web search (no Apify required) and often
+    surfaces timely material not yet on the org's website.
+    Treat any LinkedIn-sourced finding as Inferred — label accordingly.
   Run incumbent advisor check and RFP cross-reference for every org.
   See skills/enrichment-run.md Phase A for full source and search guidance.
 
@@ -490,9 +509,8 @@ Phase D — Report
 DO NOT run monthly sweep channels Ch1–Ch8.
 DO NOT run the fuzzy matcher or lark_run_matcher.py.
 DO NOT write to /tmp/lark_signals.json.
-DO NOT read contact_data/contacts.csv — that is the 190K pipeline list,
-it is NOT the enrichment source. Enrichment contacts come from inputs/
-only. The org list for this run is embedded below.
+DO NOT read contact_data/contacts.csv, these are NOT FOR enrichment.
+Use the contacts found in /inputs for enrichment.
 
 ─────────────────────────────────────────────
 ORG LIST ({len(orgs)} orgs):
@@ -613,8 +631,13 @@ def main():
         "--no-launch", action="store_true",
         help="Print prompt only — do not launch Claude Code"
     )
+    parser.add_argument(
+        "--batch-size", type=int, default=None,
+        help="Split org list into batches of N (default: no split). "
+             "Each batch writes a separate prompt file and can be run "
+             "as its own Claude Code session. Recommended: 10."
+    )
     args = parser.parse_args()
-
     # ── Interactive mode when run with no arguments ────────────────────────
     if args.orgs is None:
         filepath, advisor = _interactive_mode()
@@ -651,24 +674,64 @@ def main():
         print(f"  → {o['org_name']}{tag_str}")
     print()
 
-    prompt = build_enrichment_prompt(orgs, today)
+    # ── Batch splitting ───────────────────────────────────────────────────────
+    # If --batch-size is set, split the org list into chunks of N and write
+    # one prompt file per chunk. Each chunk runs as a separate Claude Code
+    # session. Output files are suffixed -batch-01, -batch-02, etc. so they
+    # never collide. Recommended batch size: 10 orgs.
+    # Without --batch-size, behaviour is unchanged (single prompt file).
 
-    # Write prompt to inputs/ so Lark can read it directly
     os.makedirs("inputs", exist_ok=True)
     input_slug = os.path.splitext(os.path.basename(args.orgs))[0].lower()
     input_slug = input_slug.replace(" ", "-")
-    prompt_file = os.path.join("inputs", f"enrichment-prompt-{today}-{input_slug}.txt")
-    with open(prompt_file, "w") as f:
-        f.write(prompt)
 
-    if args.no_launch:
+    batch_size = args.batch_size
+    if batch_size and len(orgs) > batch_size:
+        batches = [orgs[i:i + batch_size] for i in range(0, len(orgs), batch_size)]
+        total   = len(batches)
+        print(f"   Splitting {len(orgs)} orgs into {total} batches of ≤{batch_size}:\n")
+        prompt_files = []
+        for idx, batch in enumerate(batches, 1):
+            batch_label = f"batch-{idx:02d}-of-{total:02d}"
+            pf = os.path.join("inputs",
+                              f"enrichment-prompt-{today}-{input_slug}-{batch_label}.txt")
+            prompt = build_enrichment_prompt(batch, today)
+            with open(pf, "w") as f:
+                f.write(prompt)
+            prompt_files.append((idx, batch, pf))
+            org_names = ", ".join(o["org_name"] for o in batch)
+            print(f"   Batch {idx}/{total} ({len(batch)} orgs): {org_names}")
+
+        print()
         print("─" * 72)
-        print(f"✓ Prompt written to: {prompt_file}")
-        print(f"\nWhen ready, open Claude Code and paste:")
-        print(f"  Read {prompt_file} and follow the instructions.")
+        print(f"✓ {total} prompt files written to inputs/")
+        print()
+        print("Run each batch as a separate Claude Code session.")
+        print("Paste one line per session in this order:\n")
+        for idx, batch, pf in prompt_files:
+            print(f"  Batch {idx}/{total} ({len(batch)} orgs):")
+            print(f"    Read {pf} and follow the instructions.")
+            print()
         print("─" * 72)
+        print()
+        print("Each batch produces its own outputs/YYYY-MM-DD-lark-enrichment-report.html")
+        print("suffixed with the batch label. Combine into one report after all batches run.")
     else:
-        launch_claude(prompt, prompt_file)
+        # Single batch — original behaviour
+        prompt = build_enrichment_prompt(orgs, today)
+        prompt_file = os.path.join("inputs",
+                                   f"enrichment-prompt-{today}-{input_slug}.txt")
+        with open(prompt_file, "w") as f:
+            f.write(prompt)
+
+        if args.no_launch:
+            print("─" * 72)
+            print(f"✓ Prompt written to: {prompt_file}")
+            print(f"\nWhen ready, open Claude Code and paste:")
+            print(f"  Read {prompt_file} and follow the instructions.")
+            print("─" * 72)
+        else:
+            launch_claude(prompt, prompt_file)
 
 
 if __name__ == "__main__":
