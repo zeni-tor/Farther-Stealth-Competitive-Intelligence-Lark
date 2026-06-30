@@ -531,6 +531,39 @@ relevance filter below before writing anything up.
     pages often post material 2–4 weeks before it appears on the org website.
     Always label LinkedIn-sourced findings as Inferred — self-reported source.
 
+**If any web search above returns a LinkedIn profile URL (a person, not
+the company page) — verify it before using it.**
+
+Do not cite a LinkedIn profile URL straight from web search results
+without checking it first. Web search snippets can be stale, mismatched,
+or attached to the wrong person. Before writing up a finding sourced from
+a LinkedIn profile URL:
+
+```python
+from utilities.lark_linkedin_channel import verify_linkedin_url
+
+result = verify_linkedin_url("https://linkedin.com/in/[whatever-search-found]")
+
+if result.found and result.matches("[org name]", expected_name="[person name]"):
+    # Use it — label Inferred, note "profile-confirmed" in the source line
+else:
+    # Do not use it. Log as: "LinkedIn URL surfaced by web search did not
+    # verify — treating as unconfirmed, not citing on the card."
+```
+
+This is a single targeted lookup, not a broad search — it costs $0.004
+per check (harvestapi/linkedin-profile-scraper), not the $0.10/page rate
+used by the monthly sweep's discovery actor. Only call this when web
+search has already surfaced a specific profile URL. Never call it
+proactively, never run it as a search across an org's employees, and
+never use it to go looking for a hire that web search didn't already
+find — that is the monthly sweep's job (Channel 5), not enrichment's.
+
+Verification upgrades a finding from "Inferred, unverified" to "Inferred,
+profile-confirmed" — it does NOT make a LinkedIn finding Confirmed.
+LinkedIn is always self-reported per honesty.md, regardless of whether
+the profile was verified.
+
 Prioritize results from the past 6 months. If nothing in 6 months,
 go back 12 months and note the age.
 
@@ -538,8 +571,8 @@ go back 12 months and note the age.
 
 **Relevance filter — run this on every search result before writing it up.**
 
-See "Who is Farther Institutional" at the top of this file for the full
-context. The short version: a finding is only Q5 material if it plausibly
+See "Who is Farther Institutional" in CLAUDE.md for the full context.
+The short version: a finding is only Q5 material if it plausibly
 touches one of Farther's four revenue streams — Investment Income, Cash
 Management, Fundraising Support, or Program Revenue. A search trigger like
 "new program" OR "launch" will return real, newsworthy events that have
