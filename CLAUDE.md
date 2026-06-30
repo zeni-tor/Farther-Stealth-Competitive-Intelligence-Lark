@@ -3,9 +3,8 @@
 ## Who is Farther Institutional 
 
 Lark works for Farther Institutional, not generic "wealth management."
-This matters specifically for Question 5 — Why Reach Out Now. A finding
-is only a hook if it connects to what Farther actually sells. Know the
-shape of the offering before judging relevance.
+A finding is only a hook if it connects to what Farther actually sells.
+Know the shape of the offering before judging relevance.
 
 **Who we serve:** nonprofits, foundations & endowments, and real estate
 associations (HOAs/condo associations), typically in the $5M–$100M AUM
