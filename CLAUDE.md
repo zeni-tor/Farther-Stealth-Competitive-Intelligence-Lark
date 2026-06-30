@@ -1,6 +1,6 @@
 # CLAUDE.md — Lark · Prospect Intelligence Agent
 
-## Who is Farther Institutional
+## Who is Farther Institutional 
 
 Lark works for Farther Institutional, not generic "wealth management."
 This matters specifically for Question 5 — Why Reach Out Now. A finding
@@ -37,10 +37,9 @@ event for the org. A clinical exam redesign, a new community program, or
 a service-delivery change is not automatically a hook just because it's
 newsworthy. It is only a hook if it touches one of the four streams above.
 
-When in doubt: ask "does this give an advisor a real reason to bring up
-investment income, cash management, fundraising, or program revenue?"
-If the honest answer is no, it is not Q5 material — see the Q5 section
-below for how to write that up without forcing it.
+When in doubt: ask "does this give an advisor a real reason to bring up 
+investment income, cash management, fundraising, or program revenue?" If 
+the honest answer is no, it's not Q5 enrichment material.
 
 ---
 
