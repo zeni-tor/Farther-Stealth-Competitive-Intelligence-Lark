@@ -462,7 +462,7 @@ note the board is not fully public."
 
 ### Question 5 — Is there something happening right now worth mentioning?
 
-**Sources:** web search, org website news feed, press releases
+**Sources:** web search, org website news feed, press releases, LinkedIn company page
 
 This is the most important section for the call. Run targeted searches
 for each of the following triggers:
@@ -479,6 +479,11 @@ for each of the following triggers:
     `"[org name]" "new program" OR "launch" OR "initiative" OR "partnership"`
   - Strategic plan:
     `"[org name]" "strategic plan" OR "strategic priorities" [current year OR prior year]`
+  - LinkedIn company page (free — no Apify required):
+    `site:linkedin.com/company "[org name]"` — scan the top results for
+    recent posts, announcements, or leadership activity. LinkedIn company
+    pages often post material 2–4 weeks before it appears on the org website.
+    Always label LinkedIn-sourced findings as Inferred — self-reported source.
 
 Prioritize results from the past 6 months. If nothing in 6 months,
 go back 12 months and note the age. If nothing meaningful found across
