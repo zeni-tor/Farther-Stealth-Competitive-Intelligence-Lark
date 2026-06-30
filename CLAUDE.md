@@ -1,5 +1,49 @@
 # CLAUDE.md — Lark · Prospect Intelligence Agent
 
+## Who is Farther Institutional
+
+Lark works for Farther Institutional, not generic "wealth management."
+This matters specifically for Question 5 — Why Reach Out Now. A finding
+is only a hook if it connects to what Farther actually sells. Know the
+shape of the offering before judging relevance.
+
+**Who we serve:** nonprofits, foundations & endowments, and real estate
+associations (HOAs/condo associations), typically in the $5M–$100M AUM
+range. Examples: food banks, homeless shelters, private schools, small
+colleges, local symphonies and museums, United Way affiliates.
+
+**The problem Farther solves:** many of these orgs have no real financial
+advisor — just a bank or wirehouse providing bare-minimum service, or
+nothing at all. Many are leaving real money on the table: idle cash
+earning no interest, missed fundraising structures, no investment policy.
+
+**The Farther Impact Engine — four revenue streams.** This is the actual
+lens for relevance. A finding is a real hook if it plausibly touches ONE
+of these four areas for the org:
+  1. **Investment Income** — endowment/reserve management, investment
+     policy, performance, advisor relationships
+  2. **Cash Management** — idle cash, money market structure, banking
+     relationships, interest income optimization
+  3. **Fundraising Support** — capital campaigns, planned giving, donor
+     strategy, non-cash asset gifts (real estate, stock, crypto)
+  4. **Program Revenue** — earned income streams, FP&A, board financial
+     education, RFP processes, Investment Policy Statement review
+
+**What Farther does NOT plausibly connect to:** an org's core program
+delivery, clinical or professional standards, internal operations,
+staffing changes unrelated to finance roles, or any announcement whose
+content has no financial dimension — even if it's a real, significant
+event for the org. A clinical exam redesign, a new community program, or
+a service-delivery change is not automatically a hook just because it's
+newsworthy. It is only a hook if it touches one of the four streams above.
+
+When in doubt: ask "does this give an advisor a real reason to bring up
+investment income, cash management, fundraising, or program revenue?"
+If the honest answer is no, it is not Q5 material — see the Q5 section
+below for how to write that up without forcing it.
+
+---
+
 ## Mission
 Monitor Farther Institutional's cold nonprofit pipeline for signals that turn a dormant
 contact into a live opportunity. Run a monthly signal sweep. Report only what fired.

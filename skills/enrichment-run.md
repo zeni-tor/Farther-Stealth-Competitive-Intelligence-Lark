@@ -6,6 +6,50 @@
 
 ---
 
+## Who is Farther Institutional (read before Q5 of every card)
+
+Lark works for Farther Institutional, not generic "wealth management."
+This matters specifically for Question 5 — Why Reach Out Now. A finding
+is only a hook if it connects to what Farther actually sells. Know the
+shape of the offering before judging relevance.
+
+**Who we serve:** nonprofits, foundations & endowments, and real estate
+associations (HOAs/condo associations), typically in the $5M–$100M AUM
+range. Examples: food banks, homeless shelters, private schools, small
+colleges, local symphonies and museums, United Way affiliates.
+
+**The problem Farther solves:** many of these orgs have no real financial
+advisor — just a bank or wirehouse providing bare-minimum service, or
+nothing at all. Many are leaving real money on the table: idle cash
+earning no interest, missed fundraising structures, no investment policy.
+
+**The Farther Impact Engine — four revenue streams.** This is the actual
+lens for relevance. A finding is a real hook if it plausibly touches ONE
+of these four areas for the org:
+  1. **Investment Income** — endowment/reserve management, investment
+     policy, performance, advisor relationships
+  2. **Cash Management** — idle cash, money market structure, banking
+     relationships, interest income optimization
+  3. **Fundraising Support** — capital campaigns, planned giving, donor
+     strategy, non-cash asset gifts (real estate, stock, crypto)
+  4. **Program Revenue** — earned income streams, FP&A, board financial
+     education, RFP processes, Investment Policy Statement review
+
+**What Farther does NOT plausibly connect to:** an org's core program
+delivery, clinical or professional standards, internal operations,
+staffing changes unrelated to finance roles, or any announcement whose
+content has no financial dimension — even if it's a real, significant
+event for the org. A clinical exam redesign, a new community program, or
+a service-delivery change is not automatically a hook just because it's
+newsworthy. It is only a hook if it touches one of the four streams above.
+
+When in doubt: ask "does this give an advisor a real reason to bring up
+investment income, cash management, fundraising, or program revenue?"
+If the honest answer is no, it is not Q5 material — see the Q5 section
+below for how to write that up without forcing it.
+
+---
+
 ## What this is
 
 An Enrichment Run is a targeted operation on a specific list of orgs that
@@ -465,7 +509,9 @@ note the board is not fully public."
 **Sources:** web search, org website news feed, press releases, LinkedIn company page
 
 This is the most important section for the call. Run targeted searches
-for each of the following triggers:
+for each of the following triggers. Note: these searches are designed to
+surface candidate events — not every hit they return is a hook. See the
+relevance filter below before writing anything up.
 
   - Recent hires:
     `"[org name]" "new" "director" OR "president" OR "CEO" OR "executive director" OR "hired"`
@@ -486,12 +532,52 @@ for each of the following triggers:
     Always label LinkedIn-sourced findings as Inferred — self-reported source.
 
 Prioritize results from the past 6 months. If nothing in 6 months,
-go back 12 months and note the age. If nothing meaningful found across
-all searches, say so clearly — do not fabricate a hook.
+go back 12 months and note the age.
 
-**Every hook must be evaluated and labeled before appearing on the card.**
+---
 
-For each finding, ask three questions before including it:
+**Relevance filter — run this on every search result before writing it up.**
+
+See "Who is Farther Institutional" at the top of this file for the full
+context. The short version: a finding is only Q5 material if it plausibly
+touches one of Farther's four revenue streams — Investment Income, Cash
+Management, Fundraising Support, or Program Revenue. A search trigger like
+"new program" OR "launch" will return real, newsworthy events that have
+nothing to do with any of these — a clinical exam redesign, a new community
+service, an operational policy change. Finding the event is not the same
+as finding a hook.
+
+Before writing up any result, ask:
+1. Does this plausibly touch Investment Income, Cash Management,
+   Fundraising Support, or Program Revenue?
+2. If yes — which one, specifically, and how?
+3. If no — or if the connection requires inventing a financial angle the
+   source doesn't support — this is not Q5 material. Log it as found-but-
+   not-relevant and move on. Do not build a bridge the source doesn't hold.
+
+**This is a normal, good outcome — not a failure.** Most searches will
+turn up real events with no financial angle. That is useful information:
+it tells the advisor this isn't a path worth pursuing on the call. Write
+it as one calm, short line — do not pad, hedge, or strain to make
+something fit:
+
+> "Searched recent programs and news — found the org's 2028 exam format
+> change (real, but a clinical/educational matter, not financial). No
+> hook here."
+
+> "No recent hires, board changes, or program news in the past 12 months.
+> Nothing to flag for this call."
+
+Treat an empty or irrelevant Q5 section exactly as routinely as an empty
+ENR-001 or ENR-002 result. It does not need extra justification, apology,
+or filler. A short "nothing found" is a complete, correct answer.
+
+---
+
+**Every hook that DOES pass the relevance filter must be evaluated and
+labeled before appearing on the card.**
+
+For each finding that passed the relevance filter, ask three more questions:
 1. Does this open an investment conversation, or just a relationship?
 2. Is the timing still live — within 12 months of today?
 3. Is it matched to the right contact at this org?
@@ -502,13 +588,48 @@ Label each hook that passes:
 - **RELATIONSHIP OPENER** — good way to start the call, builds rapport,
   but does not naturally lead to an investment conversation
 
-For hooks that do NOT pass: list them explicitly under "Hooks considered
-and dropped" with a one-line reason (stale, relationship opener only,
-wrong contact, not actionable).
+For hooks that pass the relevance filter but fail one of these three
+tests: list them under "Hooks considered and dropped" with a one-line
+reason (stale, relationship opener only, wrong contact, not actionable).
 
-Lark must also state her reasoning: why she chose each hook, what makes
-the timing live, and what the advisor should expect in response. A hook
-without reasoning is not a hook — it is a data point.
+---
+
+**Citation rule — per clause, not per sentence.**
+
+If a sentence contains both a confirmed fact and an inference built on
+top of it, they are not one claim — they get separate tags. Never let an
+inference ride inside the same bracket as the fact it's attached to.
+
+Wrong (the inference borrows the fact's confidence):
+"ABR is launching a new oral exam format, increasing operational
+investment through 2028. [Confirmed · theabr.org/announcements · 2026]"
+— the exam format is Confirmed. "Increasing operational investment" has
+no source at all and should not be inside that bracket, or in the
+sentence, unless a source actually says so.
+
+Right (fact and inference separated, each tagged on its own terms):
+"ABR is launching a new oral exam format in 2028. [Confirmed ·
+theabr.org/announcements · 2026] This is a clinical/educational change —
+no source ties it to a budget or reserve impact, so it does not connect
+to Farther's offering. [No financial relevance found]"
+
+If there is no inference, one tag for the whole sentence is fine. The
+rule only applies when a fact and a conclusion are sharing a sentence.
+
+---
+
+**Reasoning should be precise, not padded.**
+
+Lark must still state her reasoning for every hook she keeps — why she
+chose it, what makes the timing live, what the advisor should expect.
+A hook without reasoning is not a hook, it's a data point. But reasoning
+is not measured by length. Write the shortest version that is fully
+correct — if that takes four sentences because the situation has real
+nuance (e.g., naming two alternative explanations for an Inferred claim),
+use four sentences. If one sentence fully covers it, use one. Do not add
+sentences to sound thorough, and do not cut sentences that are doing real
+work just to be brief. The standard is precision, not word count in
+either direction.
 
 Good hook (INVESTMENT OPENER):
 "$3.76M in investment income in FY2024 implies a managed pool of ~$75M–
@@ -525,17 +646,24 @@ Good hook (RELATIONSHIP OPENER):
 "Summer 2026 Concert Series launched — 70+ shows announced April 2026.
 Good opener: 'I saw the Summer lineup — how is the Music Theater performing
 as a revenue driver for the institution?'
-WHY THIS HOOK: Shows you pay attention to the org. Concert programming is
-not related to investment management, so this is a door-opener, not a
-close. Pair it with the investment income hook. RELATIONSHIP OPENER only."
+WHY THIS HOOK: Program Revenue angle — concert programming is a real
+earned-income stream worth asking about. Not an investment management
+opener on its own. Pair it with the investment income hook if one exists.
+RELATIONSHIP OPENER only."
 
 Dropped hook:
 "Hooks considered and dropped:
 - Phoenix Symphony residency (May 2024) — 25 months old, outside 12-month
   window. Also relationship opener only, not an investment conversation."
 
+Found, not relevant (the normal "nothing" case):
+"Searched recent programs and partnerships — found a new community
+outreach initiative (March 2026). Real and current, but no financial
+angle — doesn't touch any of Farther's four revenue streams. No hook here."
+
 Do not pad this section. Two strong labeled talking points beat five
 unlabeled ones. Quality of reasoning matters more than quantity of hooks.
+A clean "nothing found" beats a manufactured one every time.
 
 ---
 
@@ -547,7 +675,7 @@ Search: `"[org name]" "investment advisor" OR "endowment manager" OR "OCIO"
 Also check 990 Schedule D (if accessible) — some orgs disclose the name
 of their investment manager in the endowment footnotes.
 
-If found: log name, hyperlinked source URL, and confidence.
+If found: log name, source URL, and confidence.
 If not found: log as unknown. Do not estimate or guess.
 
 ---
@@ -718,12 +846,7 @@ Write in plain, direct sentences. Use the advisor's voice, not a researcher's.
 #   .lk-section            — each content section (border-bottom separated)
 #   .lk-label              — section label (uppercase, muted, small)
 #   .lk-text               — body text within a section
-#   .lk-source             — source/confidence line (italic, muted).
-#                            EVERY source in this line MUST be a clickable
-#                            <a href="[full URL]">[display text]</a> — never
-#                            plain domain text. See honesty.md "Always cite
-#                            sources." A source the advisor can't click is
-#                            not a citation, it's a label.
+#   .lk-source             — source/confidence line (italic, muted)
 #   .badge .b-conf         — green CONFIRMED badge
 #   .badge .b-inf          — amber INFERRED badge
 #   .badge .b-nf           — gray NOT FOUND badge
@@ -774,13 +897,11 @@ ENR-002 as .enr-row entries — both required, never blank.
 Compound score and action window at the bottom.
 
 **WHAT THEY DO**
-1–2 sentences. Plain English. Hyperlinked source + badge (see honesty.md —
-every source is a clickable <a href> to the actual page, never plain
-domain text). No reasoning block needed unless the description is
-Inferred (e.g., from 990 NTEE code only).
+1–2 sentences. Plain English. Source + badge. No reasoning block needed
+unless the description is Inferred (e.g., from 990 NTEE code only).
 
 **CAPITAL CAMPAIGNS & FUNDRAISING**
-What's happening or not happening. Hyperlinked source + badge.
+What's happening or not happening. Source + badge.
 LARK'S REASONING block required if any finding is Inferred or Speculative:
 state (1) what data led to the conclusion and (2) what alternative
 explanations exist. If fully Confirmed, omit the reasoning block.
@@ -789,7 +910,6 @@ explanations exist. If fully Confirmed, omit the reasoning block.
 2–3 sentence characterization first (lead with the story, not the numbers).
 Then fin-table with year-by-year 990 data: Tax Year / Total Assets / Net.
 Include all available years (up to 4). Color surplus green, deficit red.
-Source line must hyperlink directly to the ProPublica org page used.
 LARK'S REASONING block required whenever the characterization goes beyond
 the numbers — e.g., attributing a deficit to a cause, projecting a trend
 from limited data, or characterizing a one-year result as a pattern.
@@ -799,7 +919,7 @@ Full board-list with board-row entries (name / role).
 Separate staff leadership rows clearly labeled "(staff)".
 board-notable box for anyone worth mentioning on the call — name, title,
 and one sentence on why they're relevant.
-Hyperlinked source + badge + retrieval date.
+Source + badge + retrieval date.
 
 **WHY REACH OUT NOW**
 Each hook as a .hook block:
@@ -810,8 +930,7 @@ Each hook as a .hook block:
 - .reasoning block: (1) what's confirmed vs. inferred, (2) what alternative
   explanations exist if inferred, (3) why this hook passes the three tests
   (investment path / timing / contact match)
-- hook-source: badges + hyperlinked source + date. The URL must be the
-  specific page the finding came from — not the org's homepage as a stand-in.
+- hook-source: badges + source + date
 
 If a hook cannot be used until a research gap is filled (e.g., unreviewed
 EIN, unconfirmed contact), add an .action-req block inside the hook with
@@ -828,9 +947,9 @@ urgency — background monitoring only."
 **RFP HISTORY**
 .rfp-box with one of three explicit outcomes — never blank:
 1. RFP found within 3 years: date, what org asked for, how Farther
-   compares, hyperlink to the RFP report filename.
+   compares, reference the report filename.
 2. RFP found, more than 3 years old: flag, year, human review note,
-   advisor review cycle context, hyperlink to the RFP report filename.
+   advisor review cycle context, report filename.
 3. No RFP found: state it, then context sentence calibrated to AUM
    (private process likely at scale / greenfield at small AUM).
 
@@ -851,28 +970,18 @@ outreach. Circle (○) for background research threads.
 **HUBSPOT FOOTER**
 .hubspot-footer: "HubSpot write-back: STAGED · Company ID [N] · Fields
 queued: [field list]"
-
 ---
 
 **Sourcing rules for the card:**
-- Every source, in every section, is a clickable hyperlink to the exact
-  page the finding came from — never plain domain text, never the org's
-  homepage as a stand-in for a specific page. "theabr.org" with no <a href>
-  is a label, not a citation. See honesty.md "Always cite sources."
 - What they do: org website About page — Confirmed only. Inferred if from 990 only.
 - Fundraising: org website news/press + web search + 990 revenue trends
-- Financial health: IRS 990 only — always two years, always state tax year.
-  Hyperlink directly to the ProPublica organization page used.
-- Board: org website Board page — note retrieval date, hyperlink to the page
-- Talking points: web search (6 triggers above) + org website news feed +
-  LinkedIn company page search
+- Financial health: IRS 990 only — always two years, always state tax year
+- Board: org website Board page — note retrieval date
+- Talking points: web search (6 triggers above) + org website news feed
   - Prioritize items from the past 6 months
   - If nothing in 6 months, go back 12 — note the age
   - If nothing meaningful found: write "No recent news found — [date searched]"
 - All findings labeled Confirmed / Inferred / Speculative per honesty.md
-- Before finalizing the card: confirm every Source line and every hook-source
-  line has a live, specific href. If the exact URL was not retained while
-  researching, go back and recover it — do not publish an un-hyperlinked source.
 
 ---
 
