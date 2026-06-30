@@ -244,28 +244,65 @@ the others. The advisor needs to know that before picking up the phone.
 
 **Step 0 — Treat prior outputs/ files as off-limits for research**
 
-Before doing anything else, check `outputs/` for prior enrichment reports
-or CSVs covering any org on this list. If any exist:
-- Do NOT open, read, or reference them for research purposes.
-- Do NOT treat any data point inside them — financial figures, board
-  lists, hooks, characterizations, incumbent advisor findings, anything —
-  as a verified starting point, even if it looks like it would save a
-  duplicate lookup.
-- This applies even when the underlying facts are unlikely to have
-  changed (e.g., 990 data from a prior tax year). The instruction is not
-  "the facts might be wrong" — it's that a finding built without the
-  current relevance filter, per-clause citation, or reasoning-block
-  requirements cannot be trusted just because the number inside it is
-  probably still accurate. Re-derive it fresh, under the current rules,
-  every time.
-- It is fine to know that a prior report exists (e.g. for the PRIORITY
-  rationale: "last enriched [date], pre-dating current protocol") — the
-  restriction is on using its *contents* as research input, not on
-  acknowledging it exists.
-- If genuinely uncertain whether something counts as "off-limits
-  reference material" — treat it as off-limits. Re-running a ProPublica
-  lookup costs a few seconds. Carrying forward an unscreened hook costs
-  the advisor's credibility on a call.
+# MAINTAINER NOTE — why this got more specific (2026-06-30, second incident)
+#
+# The first version of this rule said "acknowledge a prior report exists,
+# don't use its contents." That sounded complete but left open exactly
+# how to check for existence — and Lark filled that gap with grep, which
+# by definition pulls matched text (hook content, financial figures,
+# EINs, incumbent names) directly into context. There is no such thing
+# as a "safe grep" for this purpose: any command that searches file
+# *contents* defeats the point, even if the stated intent afterward is
+# "I won't use what I saw." Once it's in context, full non-use can't be
+# verified or guaranteed — so the rule has to prevent exposure, not rely
+# on disciplined non-use after exposure. The run was killed rather than
+# continued on a best-effort promise, which was the right call.
+#
+# The fix: the existence check must use a command that returns ONLY
+# filenames/metadata, never file contents. No exceptions, no judgment call.
+
+Before doing anything else, check whether a prior enrichment report or
+CSV exists for any org on this list — using a metadata-only command:
+
+  ✅ ALLOWED (filenames/metadata only, never opens file contents):
+     ls outputs/
+     ls outputs/ | grep -i "enrichment"     ← OK: grep here matches
+                                                FILENAMES, not file content
+     find outputs/ -name "*enrichment*"
+     stat outputs/2026-06-24-lark-enrichment-report.html
+
+  ❌ NEVER (any command that returns matched text FROM INSIDE a file):
+     grep "[org name]" outputs/*.html        ← pulls hook text, figures,
+                                                 names into context
+     cat outputs/*.html
+     view / open / read on any prior outputs/ file
+     Any search tool pointed at file contents rather than filenames
+
+If a prior file's name and date are visible (e.g. from `ls`), that's
+sufficient to acknowledge it exists — for example, in a card's PRIORITY
+rationale: "last enriched [date from filename], pre-dating current
+protocol." Do not go further than the filename and modification date.
+
+If you accidentally view file contents anyway (wrong command, muscle
+memory, anything):
+- Stop. Do not try to "just not use it" — once content is in context,
+  full non-use cannot be verified or guaranteed, no matter how carefully
+  you intend to ignore it.
+- Tell the user directly and immediately: which file, which orgs were
+  covered, what was exposed.
+- Recommend ending the session and starting a fresh one for those orgs,
+  rather than continuing on a best-effort promise not to reuse what you
+  just saw. A clean context window is the only way to guarantee a clean
+  research process — there is no partial-credit version of this.
+
+This restriction applies even when the underlying facts are unlikely to
+have changed (e.g., 990 data from a prior tax year) — a finding built
+without the current relevance filter, per-clause citation, or reasoning-
+block requirements cannot be trusted just because the number inside it
+is probably still accurate. Re-derive it fresh, under the current rules,
+every time. If genuinely uncertain whether a metadata check is safe (e.g.
+unsure what a command will actually return), default to the most
+conservative option — `ls` only — and ask before trying anything broader.
 
 **Step 1 — Check existing signal history**
 
