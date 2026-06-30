@@ -16,10 +16,19 @@ ARCHITECTURE — fits into Phase 1 of Lark's sweep model:
     This module never reads contact_data/.
     This module never enriches results.
 
-APIFY ACTOR:
+APIFY ACTOR (monthly sweep — broad discovery):
     harvestapi/linkedin-profile-search
     Pricing: Short mode — $0.10 per search page (25 profiles/page)
     No cookies required.
+
+APIFY ACTOR (enrichment verification — targeted lookup):
+    harvestapi/linkedin-profile-scraper
+    Pricing: $0.004 per profile (Short mode)
+    Different actor, different use case — see verify_linkedin_url() below.
+    This is NOT a search actor. It takes a specific profile URL (already
+    found via web_search during enrichment Q5) and confirms what's
+    actually on it. Use this when web search surfaces a LinkedIn result
+    during enrichment, never as a broad discovery tool.
 
 ENVIRONMENT:
     APIFY_TOKEN   — required, set before running any sweep
@@ -43,6 +52,12 @@ LOOKBACK:
 COST ESTIMATE (monthly sweep):
     6 queries × 2 pages × $0.10 = $1.20/month
     Well within Apify Starter ($29/month).
+
+COST ESTIMATE (enrichment verification):
+    $0.004 per LinkedIn URL verified. Only runs when web_search already
+    surfaced a LinkedIn result during Q5 — not a per-org cost, a per-hit
+    cost. Worst case (every org in a 10-org batch triggers a verification):
+    10 × $0.004 = $0.04. Negligible next to the monthly sweep's $1.20.
 
 DEDUPLICATION:
     match_batch() does NOT deduplicate internally.
@@ -72,12 +87,25 @@ except ImportError:
 APIFY_BASE_URL = "https://api.apify.com/v2"
 ACTOR_ID       = "harvestapi~linkedin-profile-search"
 
+# Verification actor — separate from the search actor above.
+# Used ONLY by verify_linkedin_url() during enrichment, never by the
+# monthly sweep. Takes a profile URL directly, no search/filter logic.
+VERIFY_ACTOR_ID = "harvestapi~linkedin-profile-scraper"
+
 def _build_endpoint() -> str:
     """Build the correct API endpoint at call time so env vars are current."""
     task_id = os.getenv("APIFY_TASK_ID", "").strip()
     if task_id:
         return f"{APIFY_BASE_URL}/actor-tasks/{task_id}/run-sync-get-dataset-items"
     return f"{APIFY_BASE_URL}/acts/{ACTOR_ID}/run-sync-get-dataset-items"
+
+def _build_verify_endpoint() -> str:
+    """
+    Endpoint for the verification actor (harvestapi/linkedin-profile-scraper).
+    Deliberately separate from _build_endpoint() — verification never uses
+    a saved task ID, since it's a single targeted call, not a recurring sweep.
+    """
+    return f"{APIFY_BASE_URL}/acts/{VERIFY_ACTOR_ID}/run-sync-get-dataset-items"
 
 # Pages per query. Each page = 25 profiles = $0.10.
 # 2 pages = 50 profiles = $0.20 per query.
@@ -141,6 +169,48 @@ class LinkedInSignal:
         return (
             f"{self.signal_type} | {self.person_name} | "
             f"{self.current_title} | {self.org_name} | {self.location}"
+        )
+
+
+@dataclass
+class LinkedInVerification:
+    """
+    Result of verifying ONE LinkedIn profile URL that web_search surfaced
+    during enrichment. Not part of the monthly sweep — this is the
+    Q5 verification path described in enrichment-run.md.
+    """
+    requested_url:    str
+    found:            bool             # False if URL didn't resolve / no data returned
+    person_name:      str = ""
+    current_title:    str = ""
+    current_company:  str = ""
+    location:         str = ""
+    profile_url:       str = ""        # the URL actually returned by Apify
+    cost_usd:          float = 0.004
+    error:             str = ""
+
+    def matches(self, expected_org: str, expected_name: Optional[str] = None) -> bool:
+        """
+        Loose check: does the verified profile's company plausibly match
+        the org we were checking? Does NOT replace human/Lark judgment —
+        this is a string-overlap heuristic to flag obvious mismatches
+        (wrong org, wrong country, different person entirely).
+        """
+        if not self.found:
+            return False
+        org_match = expected_org.lower().strip() in self.current_company.lower().strip() \
+            or self.current_company.lower().strip() in expected_org.lower().strip()
+        if expected_name:
+            name_match = expected_name.lower().strip() in self.person_name.lower().strip()
+            return org_match and name_match
+        return org_match
+
+    def summary(self) -> str:
+        if not self.found:
+            return f"[Verify] NOT FOUND · {self.requested_url} · {self.error or 'no data returned'}"
+        return (
+            f"[Verify] {self.person_name} · {self.current_title} · "
+            f"{self.current_company} · {self.location} · ${self.cost_usd:.3f}"
         )
 
 
@@ -294,6 +364,141 @@ def _call_apify(payload: dict, token: str, timeout: int = 300) -> list[dict]:
         ) from e
     except urllib.error.URLError as e:
         raise RuntimeError(f"Apify network error: {e.reason}") from e
+
+
+def _call_apify_verify(url_to_check: str, token: str, timeout: int = 120) -> list[dict]:
+    """
+    Calls the verification actor (harvestapi/linkedin-profile-scraper) for
+    ONE profile URL. Separate from _call_apify() above — different actor,
+    different payload shape (urls: [...] instead of search filters),
+    deliberately short timeout since this is a single-profile lookup,
+    not a multi-page search.
+    """
+    payload  = {"urls": [url_to_check]}
+    url      = f"{_build_verify_endpoint()}?token={token}"
+    body     = json.dumps(payload).encode("utf-8")
+    headers  = {"Content-Type": "application/json"}
+    req      = urllib.request.Request(url, data=body, headers=headers,
+                                      method="POST")
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8")
+            return json.loads(raw)
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"Apify HTTP {e.code}: {body_text[:300]}"
+        ) from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Apify network error: {e.reason}") from e
+
+
+def verify_linkedin_url(
+    profile_url: str,
+    apify_token: Optional[str] = None,
+    verbose: bool = True,
+) -> LinkedInVerification:
+    """
+    Verify ONE LinkedIn profile URL that web_search surfaced during an
+    enrichment Q5 search. This is NOT part of the monthly sweep and does
+    NOT use run_linkedin_sweep()'s search/filter logic.
+
+    When to call this (per enrichment-run.md):
+        Only when a web_search result during Q5 includes a LinkedIn URL.
+        Never run proactively or on every org — this confirms a finding
+        web_search already surfaced, it does not go looking on its own.
+
+    What it answers:
+        Does this URL actually resolve to a real profile? Does the
+        person's current title/company match what web_search implied?
+        This lets Lark upgrade a LinkedIn-sourced Q5 finding from
+        "Inferred, unverified" toward "Inferred, profile-confirmed" —
+        it does not make a LinkedIn finding Confirmed (LinkedIn is
+        always self-reported, per honesty.md), but it does catch
+        obvious mismatches before they go on a card.
+
+    Args:
+        profile_url:  The LinkedIn profile URL found via web_search.
+        apify_token:  Apify API token. Defaults to APIFY_TOKEN env var.
+        verbose:      Print result to stdout (default True).
+
+    Returns:
+        LinkedInVerification — check .found and .matches(expected_org)
+        before using the result on a card.
+
+    Cost: $0.004 per call (Short mode, harvestapi/linkedin-profile-scraper).
+
+    Usage in enrichment (Q5):
+        from utilities.lark_linkedin_channel import verify_linkedin_url
+
+        # web_search returned a LinkedIn URL while researching Org X
+        result = verify_linkedin_url("https://linkedin.com/in/janedoe")
+
+        if result.found and result.matches("Org X", expected_name="Jane Doe"):
+            # safe to cite — label Inferred, note "profile-confirmed"
+            ...
+        else:
+            # mismatch or not found — do NOT use on the card.
+            # Log as: "LinkedIn URL surfaced by web search did not verify —
+            # treat web_search finding as unconfirmed, not Inferred."
+            ...
+    """
+    token = apify_token or os.environ.get("APIFY_TOKEN", "")
+    if not token:
+        raise EnvironmentError(
+            "APIFY_TOKEN not set. "
+            "Run: export APIFY_TOKEN=your_token_here"
+        )
+
+    if verbose:
+        print(f"\n[Verify] Checking LinkedIn URL: {profile_url}")
+        print(f"  Cost: $0.004")
+
+    try:
+        profiles = _call_apify_verify(profile_url, token)
+    except (RuntimeError, EnvironmentError) as e:
+        if verbose:
+            print(f"  ERROR: {e}")
+        return LinkedInVerification(
+            requested_url=profile_url,
+            found=False,
+            error=str(e),
+        )
+
+    if not profiles or not isinstance(profiles, list):
+        if verbose:
+            print("  No data returned — URL may not resolve or profile is private")
+        return LinkedInVerification(
+            requested_url=profile_url,
+            found=False,
+            error="No data returned from actor",
+        )
+
+    p = profiles[0]
+    person_name = (
+        p.get("fullName") or p.get("name") or
+        f"{p.get('firstName', '')} {p.get('lastName', '')}".strip()
+    )
+    company = _extract_org_name(p)
+    title   = _extract_title(p)
+    location = p.get("location") or p.get("locationName") or ""
+    returned_url = p.get("profileUrl") or p.get("url") or p.get("linkedInUrl") or profile_url
+
+    result = LinkedInVerification(
+        requested_url=profile_url,
+        found=True,
+        person_name=person_name,
+        current_title=title,
+        current_company=company,
+        location=location,
+        profile_url=returned_url,
+    )
+
+    if verbose:
+        print(f"  {result.summary()}")
+
+    return result
 
 
 # ── PROFILE PARSER ────────────────────────────────────────────────────────────
