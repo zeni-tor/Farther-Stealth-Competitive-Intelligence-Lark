@@ -547,7 +547,7 @@ Search: `"[org name]" "investment advisor" OR "endowment manager" OR "OCIO"
 Also check 990 Schedule D (if accessible) — some orgs disclose the name
 of their investment manager in the endowment footnotes.
 
-If found: log name, source URL, and confidence.
+If found: log name, hyperlinked source URL, and confidence.
 If not found: log as unknown. Do not estimate or guess.
 
 ---
@@ -718,7 +718,12 @@ Write in plain, direct sentences. Use the advisor's voice, not a researcher's.
 #   .lk-section            — each content section (border-bottom separated)
 #   .lk-label              — section label (uppercase, muted, small)
 #   .lk-text               — body text within a section
-#   .lk-source             — source/confidence line (italic, muted)
+#   .lk-source             — source/confidence line (italic, muted).
+#                            EVERY source in this line MUST be a clickable
+#                            <a href="[full URL]">[display text]</a> — never
+#                            plain domain text. See honesty.md "Always cite
+#                            sources." A source the advisor can't click is
+#                            not a citation, it's a label.
 #   .badge .b-conf         — green CONFIRMED badge
 #   .badge .b-inf          — amber INFERRED badge
 #   .badge .b-nf           — gray NOT FOUND badge
@@ -769,11 +774,13 @@ ENR-002 as .enr-row entries — both required, never blank.
 Compound score and action window at the bottom.
 
 **WHAT THEY DO**
-1–2 sentences. Plain English. Source + badge. No reasoning block needed
-unless the description is Inferred (e.g., from 990 NTEE code only).
+1–2 sentences. Plain English. Hyperlinked source + badge (see honesty.md —
+every source is a clickable <a href> to the actual page, never plain
+domain text). No reasoning block needed unless the description is
+Inferred (e.g., from 990 NTEE code only).
 
 **CAPITAL CAMPAIGNS & FUNDRAISING**
-What's happening or not happening. Source + badge.
+What's happening or not happening. Hyperlinked source + badge.
 LARK'S REASONING block required if any finding is Inferred or Speculative:
 state (1) what data led to the conclusion and (2) what alternative
 explanations exist. If fully Confirmed, omit the reasoning block.
@@ -782,6 +789,7 @@ explanations exist. If fully Confirmed, omit the reasoning block.
 2–3 sentence characterization first (lead with the story, not the numbers).
 Then fin-table with year-by-year 990 data: Tax Year / Total Assets / Net.
 Include all available years (up to 4). Color surplus green, deficit red.
+Source line must hyperlink directly to the ProPublica org page used.
 LARK'S REASONING block required whenever the characterization goes beyond
 the numbers — e.g., attributing a deficit to a cause, projecting a trend
 from limited data, or characterizing a one-year result as a pattern.
@@ -791,7 +799,7 @@ Full board-list with board-row entries (name / role).
 Separate staff leadership rows clearly labeled "(staff)".
 board-notable box for anyone worth mentioning on the call — name, title,
 and one sentence on why they're relevant.
-Source + badge + retrieval date.
+Hyperlinked source + badge + retrieval date.
 
 **WHY REACH OUT NOW**
 Each hook as a .hook block:
@@ -802,7 +810,8 @@ Each hook as a .hook block:
 - .reasoning block: (1) what's confirmed vs. inferred, (2) what alternative
   explanations exist if inferred, (3) why this hook passes the three tests
   (investment path / timing / contact match)
-- hook-source: badges + source + date
+- hook-source: badges + hyperlinked source + date. The URL must be the
+  specific page the finding came from — not the org's homepage as a stand-in.
 
 If a hook cannot be used until a research gap is filled (e.g., unreviewed
 EIN, unconfirmed contact), add an .action-req block inside the hook with
@@ -819,9 +828,9 @@ urgency — background monitoring only."
 **RFP HISTORY**
 .rfp-box with one of three explicit outcomes — never blank:
 1. RFP found within 3 years: date, what org asked for, how Farther
-   compares, reference the report filename.
+   compares, hyperlink to the RFP report filename.
 2. RFP found, more than 3 years old: flag, year, human review note,
-   advisor review cycle context, report filename.
+   advisor review cycle context, hyperlink to the RFP report filename.
 3. No RFP found: state it, then context sentence calibrated to AUM
    (private process likely at scale / greenfield at small AUM).
 
@@ -842,18 +851,28 @@ outreach. Circle (○) for background research threads.
 **HUBSPOT FOOTER**
 .hubspot-footer: "HubSpot write-back: STAGED · Company ID [N] · Fields
 queued: [field list]"
+
 ---
 
 **Sourcing rules for the card:**
+- Every source, in every section, is a clickable hyperlink to the exact
+  page the finding came from — never plain domain text, never the org's
+  homepage as a stand-in for a specific page. "theabr.org" with no <a href>
+  is a label, not a citation. See honesty.md "Always cite sources."
 - What they do: org website About page — Confirmed only. Inferred if from 990 only.
 - Fundraising: org website news/press + web search + 990 revenue trends
-- Financial health: IRS 990 only — always two years, always state tax year
-- Board: org website Board page — note retrieval date
-- Talking points: web search (6 triggers above) + org website news feed
+- Financial health: IRS 990 only — always two years, always state tax year.
+  Hyperlink directly to the ProPublica organization page used.
+- Board: org website Board page — note retrieval date, hyperlink to the page
+- Talking points: web search (6 triggers above) + org website news feed +
+  LinkedIn company page search
   - Prioritize items from the past 6 months
   - If nothing in 6 months, go back 12 — note the age
   - If nothing meaningful found: write "No recent news found — [date searched]"
 - All findings labeled Confirmed / Inferred / Speculative per honesty.md
+- Before finalizing the card: confirm every Source line and every hook-source
+  line has a live, specific href. If the exact URL was not retained while
+  researching, go back and recover it — do not publish an un-hyperlinked source.
 
 ---
 
