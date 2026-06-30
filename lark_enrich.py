@@ -9,7 +9,7 @@ tells Lark to fill in what we know about each one, answering Aaron's
 five advisor prep questions.
 
 USAGE:
-    python3 lark_enrich.py --orgs orgs.txt          # plain text, one org per line
+    python3 lark_enrich.py --orgs orgs.txt           # plain text, one org per line
     python3 lark_enrich.py --orgs pilot.xlsx         # HubSpot Excel export (preferred)
     python3 lark_enrich.py --orgs pilot.csv          # HubSpot CSV export
     python3 lark_enrich.py --orgs pilot.xlsx --advisor "Will Gilmore"
@@ -497,8 +497,19 @@ THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
 PHASES — run in strict order:
 
 Phase A-0 — Signal Check (before research)
+  STEP 0 — check outputs/ for prior enrichment reports/CSVs covering any
+  org on this list. If found: do NOT read or reference their contents —
+  not financial figures, board lists, hooks, or characterizations — even
+  if the underlying facts are probably unchanged. Re-derive everything
+  fresh under the current protocol. It's fine to acknowledge a prior
+  report exists (e.g. "last enriched [date]"); it is NOT fine to use
+  anything inside it as research input. If genuinely unsure whether
+  something counts as off-limits — treat it as off-limits.
   Check profiles/ and EnrichmentProfileUpdate/ for prior signal history.
   Run SIG-001 through SIG-010 for every org (same search patterns as signals.md).
+  Lookback: 6 months first; if nothing fires, extend to 12 months and note
+  the wider window. Do not narrow this on your own (e.g. to 30 days) —
+  state the actual window used in SIGNAL HISTORY every time.
   Run ENR-001: investment mgmt fees = $0 in 990 Part IX (greenfield check).
   Run ENR-002: cash ÷ total assets from 990 Part X (flag 40–60% / 60%+,
   but only if no investment pool is already visible on the balance sheet).

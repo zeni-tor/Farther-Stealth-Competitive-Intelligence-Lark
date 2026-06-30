@@ -242,6 +242,31 @@ against every org on the enrichment list. These are lukewarm contacts —
 but a signal may have fired that makes one of them a higher priority than
 the others. The advisor needs to know that before picking up the phone.
 
+**Step 0 — Treat prior outputs/ files as off-limits for research**
+
+Before doing anything else, check `outputs/` for prior enrichment reports
+or CSVs covering any org on this list. If any exist:
+- Do NOT open, read, or reference them for research purposes.
+- Do NOT treat any data point inside them — financial figures, board
+  lists, hooks, characterizations, incumbent advisor findings, anything —
+  as a verified starting point, even if it looks like it would save a
+  duplicate lookup.
+- This applies even when the underlying facts are unlikely to have
+  changed (e.g., 990 data from a prior tax year). The instruction is not
+  "the facts might be wrong" — it's that a finding built without the
+  current relevance filter, per-clause citation, or reasoning-block
+  requirements cannot be trusted just because the number inside it is
+  probably still accurate. Re-derive it fresh, under the current rules,
+  every time.
+- It is fine to know that a prior report exists (e.g. for the PRIORITY
+  rationale: "last enriched [date], pre-dating current protocol") — the
+  restriction is on using its *contents* as research input, not on
+  acknowledging it exists.
+- If genuinely uncertain whether something counts as "off-limits
+  reference material" — treat it as off-limits. Re-running a ProPublica
+  lookup costs a few seconds. Carrying forward an unscreened hook costs
+  the advisor's credibility on a call.
+
 **Step 1 — Check existing signal history**
 
 Read `profiles/` and `EnrichmentProfileUpdate/` for each org. Look for:
@@ -255,7 +280,18 @@ If no history: write "No prior signal history. Treat as cold contact."
 **Step 2 — Run all standard signals**
 
 Run SIG-001 through SIG-010 for every enrichment org, using the same
-search patterns defined in signals.md. Additionally run:
+search patterns defined in signals.md.
+
+**Lookback window — state this explicitly, don't default silently.**
+Search the past 6 months first, same as Q5. If nothing fires in 6 months,
+extend to 12 months and note the wider window in the SIGNAL HISTORY
+section (e.g., "No signals in the past 6 months; extended to 12 months —
+still none found"). Do not narrow this window on your own judgment (e.g.
+to 30 days) — a narrower search finds fewer real signals, not better ones.
+If a finding is older than 12 months, it generally belongs in WHAT THEY DO
+or FINANCIAL HEALTH as background context, not as an active signal.
+
+Additionally run:
 
 **ENR-001 — Investment management fee = $0**
 - Source: 990 functional expense breakdown (Part IX) or Schedule D footnotes
