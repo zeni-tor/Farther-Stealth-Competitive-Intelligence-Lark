@@ -497,14 +497,23 @@ THE FIVE ADVISOR QUESTIONS — answer all five, in order, for every org:
 PHASES — run in strict order:
 
 Phase A-0 — Signal Check (before research)
-  STEP 0 — check outputs/ for prior enrichment reports/CSVs covering any
-  org on this list. If found: do NOT read or reference their contents —
-  not financial figures, board lists, hooks, or characterizations — even
-  if the underlying facts are probably unchanged. Re-derive everything
-  fresh under the current protocol. It's fine to acknowledge a prior
-  report exists (e.g. "last enriched [date]"); it is NOT fine to use
-  anything inside it as research input. If genuinely unsure whether
-  something counts as off-limits — treat it as off-limits.
+  STEP 0 — check whether a prior enrichment report/CSV exists for any org
+  on this list, using FILENAME-ONLY commands — never a command that
+  returns file contents:
+    ALLOWED:  ls outputs/  ·  find outputs/ -name "*enrichment*"  ·  stat [file]
+    NEVER:    grep "[org name]" outputs/*.html  ·  cat/view/read on any
+              prior outputs/ file — these pull hook text, financial
+              figures, and names directly into context, which defeats
+              the point even if you intend not to use what you saw.
+  If a prior file's name/date is visible, that's enough to acknowledge it
+  exists (e.g. PRIORITY: "last enriched [date], pre-dating current
+  protocol"). Do not go further than filename and date — no reading
+  contents, no using old figures/hooks/characterizations as a starting
+  point, even if facts are probably unchanged. Re-derive everything fresh.
+  IF YOU ACCIDENTALLY VIEW FILE CONTENTS ANYWAY: stop, tell the user
+  immediately which file and which orgs were exposed, and recommend
+  ending the session rather than continuing on a promise not to reuse
+  what's now in context — that can't be verified after the fact.
   Check profiles/ and EnrichmentProfileUpdate/ for prior signal history.
   Run SIG-001 through SIG-010 for every org (same search patterns as signals.md).
   Lookback: 6 months first; if nothing fires, extend to 12 months and note
